@@ -10000,7 +10000,7 @@ const ALL_SIM_CASES=[...BRANCH_CASES,...SIM_CASES];
 // Guarda referencias (no texto) para poder releer el fundamento
 // exacto de cada equivocación. Alimentada por quiz, casos y simulador.
 // ═══════════════════════════════════════════════════════════════
-const ERR_KEY='sistole_errors_v1';
+const ERR_KEY='sistole_mistakes_v1';
 const ERR_MAX=60;
 const loadErrs=()=>{try{const s=localStorage.getItem(nk(ERR_KEY));if(s)return JSON.parse(s);}catch(e){}return[];};
 const saveErrs=(d)=>{try{localStorage.setItem(nk(ERR_KEY),JSON.stringify(d));}catch(e){}};
