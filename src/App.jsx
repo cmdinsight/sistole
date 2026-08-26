@@ -805,10 +805,16 @@ function useUser(){
   const [authError,setAuthError]=useState('');
 
   // Al cargar, confirmar contra el servidor si hay una sesión activa (cookie)
+  // y traer el progreso guardado, igual que en login (por si este dispositivo no lo tiene).
   useEffect(()=>{
     let cancelled=false;
-    apiJson('/api/me').then(res=>{
+    apiJson('/api/me').then(async res=>{
       if(cancelled||!res||!res.user) return;
+      try{
+        const prog=await apiJson('/api/progress');
+        if(prog&&prog.data) seedAccountStorage(res.user.email,prog.data);
+      }catch(e){}
+      if(cancelled) return;
       setActiveAccount(res.user);
       setAccounts(loadAccounts());
       setUser(res.user);
