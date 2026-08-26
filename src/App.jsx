@@ -1127,7 +1127,12 @@ const ACHIEVEMENTS = [
 
 // ─── Persistence ───
 const PROGRESS_KEY='sistole_progress_v2';
-const loadProgress=()=>{try{const s=localStorage.getItem(nk(PROGRESS_KEY));if(s)return JSON.parse(s);}catch(e){}return{xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}};};
+const DEFAULT_STATS={quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0};
+// Normaliza: el progreso puede venir de localStorage viejo o del servidor (sync entre dispositivos),
+// así que si falta algún campo (por una versión anterior o una sincronización parcial) se completa con el default
+// en vez de dejar `undefined` y romper las cuentas de logros (ej. stats.casesDone.length).
+const normalizeProgress=(p)=>({xp:(p&&p.xp)||0,achievements:(p&&p.achievements)||[],stats:{...DEFAULT_STATS,...((p&&p.stats)||{})}});
+const loadProgress=()=>{try{const s=localStorage.getItem(nk(PROGRESS_KEY));if(s)return normalizeProgress(JSON.parse(s));}catch(e){}return normalizeProgress(null);};
 const saveProgressData=(p)=>{try{localStorage.setItem(nk(PROGRESS_KEY),JSON.stringify(p));}catch(e){}};
 
 // ─── useProgress hook ───
