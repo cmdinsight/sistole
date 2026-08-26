@@ -40,22 +40,24 @@ export default async function handler(req, res) {
     FROM progress
   `;
 
+  // Ojo: el progreso real queda anidado un nivel más adentro — data.progress.xp, no data.xp —
+  // porque el cliente sincroniza {progress, srData, adaptData, errors, mistakes} como un solo objeto.
   const [activation] = await sql`
     SELECT
       COUNT(*)::int AS with_progress,
       COUNT(*) FILTER (
-        WHERE COALESCE((data->>'xp')::numeric, 0) > 0
-           OR COALESCE((data->'stats'->>'quizTotal')::int, 0) > 0
+        WHERE COALESCE((data->'progress'->>'xp')::numeric, 0) > 0
+           OR COALESCE((data->'progress'->'stats'->>'quizTotal')::int, 0) > 0
       )::int AS activated
     FROM progress
   `;
 
   const [depth] = await sql`
     SELECT
-      AVG(COALESCE((data->>'xp')::numeric, 0))                                    AS avg_xp,
-      SUM(COALESCE((data->'stats'->>'quizCorrect')::int, 0))                       AS total_correct,
-      SUM(COALESCE((data->'stats'->>'quizTotal')::int, 0))                         AS total_answered,
-      AVG(COALESCE(jsonb_array_length(data->'stats'->'casesDone'), 0))             AS avg_cases_done
+      AVG(COALESCE((data->'progress'->>'xp')::numeric, 0))                                    AS avg_xp,
+      SUM(COALESCE((data->'progress'->'stats'->>'quizCorrect')::int, 0))                       AS total_correct,
+      SUM(COALESCE((data->'progress'->'stats'->>'quizTotal')::int, 0))                         AS total_answered,
+      AVG(COALESCE(jsonb_array_length(data->'progress'->'stats'->'casesDone'), 0))             AS avg_cases_done
     FROM progress
   `;
 
