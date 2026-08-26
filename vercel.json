@@ -1,4 +1,7 @@
 {
   "installCommand": "npm install",
-  "rewrites": [{ "source": "/((?!assets/|api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/((?!assets/|api/|admin\\.html).*)", "destination": "/index.html" }
+  ]
 }
