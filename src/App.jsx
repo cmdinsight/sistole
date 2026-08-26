@@ -10853,18 +10853,25 @@ export default function App() {
   const cloudDataRef=useRef(null);
   cloudDataRef.current={progress,srData,adaptData,errors,mistakes};
   useEffect(()=>{ if(user) cloudDirtyRef.current=true; },[user,progress,srData,adaptData,errors,mistakes]);
+  const flushCloud=useCallback(()=>{
+    if(!cloudDirtyRef.current) return;
+    cloudDirtyRef.current=false;
+    apiJson('/api/progress',{method:'PUT',body:JSON.stringify(cloudDataRef.current)}).catch(()=>{cloudDirtyRef.current=true;});
+  },[]);
   useEffect(()=>{
     if(!user) return;
-    const flush=()=>{
+    const id=setInterval(flushCloud,20000);
+    const onHide=()=>{ if(document.visibilityState==='hidden') flushCloud(); };
+    // Respaldo: si se cierra/recarga la pestaña, sendBeacon intenta entregar el último estado igual.
+    const onUnload=()=>{
       if(!cloudDirtyRef.current) return;
-      cloudDirtyRef.current=false;
-      apiJson('/api/progress',{method:'PUT',body:JSON.stringify(cloudDataRef.current)}).catch(()=>{cloudDirtyRef.current=true;});
+      try{ navigator.sendBeacon('/api/progress',new Blob([JSON.stringify(cloudDataRef.current)],{type:'application/json'})); }catch(e){}
     };
-    const id=setInterval(flush,20000);
-    const onHide=()=>{ if(document.visibilityState==='hidden') flush(); };
     document.addEventListener('visibilitychange',onHide);
-    return()=>{clearInterval(id);document.removeEventListener('visibilitychange',onHide);flush();};
-  },[user]);
+    window.addEventListener('pagehide',onUnload);
+    return()=>{clearInterval(id);document.removeEventListener('visibilitychange',onHide);window.removeEventListener('pagehide',onUnload);flushCloud();};
+  },[user,flushCloud]);
+  const logoutAndSync=useCallback(()=>{ flushCloud(); logoutUser(); },[flushCloud,logoutUser]);
 
   const [adaptiveMode,setAdaptiveMode]=useState(false);
   const adaptiveModeRef=useRef(false);
@@ -11501,7 +11508,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutUser} onClose={()=>setShowProfile(false)}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)}/>}
     </div>
   );
 }

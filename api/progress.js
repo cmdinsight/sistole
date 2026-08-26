@@ -11,8 +11,12 @@ export default async function handler(req, res) {
     return res.status(200).json({ data: rows[0] ? rows[0].data : null });
   }
 
-  if (req.method === 'PUT') {
-    const data = req.body || {};
+  if (req.method === 'PUT' || req.method === 'POST') {
+    // POST también se acepta porque navigator.sendBeacon (usado al cerrar la pestaña) sólo puede enviar POST.
+    let data = req.body;
+    if (!data || typeof data !== 'object') {
+      try { data = JSON.parse(req.body || '{}'); } catch (e) { data = {}; }
+    }
     await sql`
       INSERT INTO progress (user_id, data, updated_at)
       VALUES (${user.id}, ${JSON.stringify(data)}::jsonb, now())
