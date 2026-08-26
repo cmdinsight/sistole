@@ -3242,9 +3242,6 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
 
   const pick=(ch)=>{
     if(chosen) return;
-    if((ch.q==='wrong'||ch.q==='fatal')&&onMistake){
-      onMistake({src:'sim',rhythm:kase.nodes[kase.start].rhythm,caseId:kase.id,node:nodeId,choiceId:ch.id});
-    }
     setChosen(ch);
     setScore(s=>s+ch.pts);
     setPath(p=>[...p,{node:nodeId,text:ch.text[lang],q:ch.q,pts:ch.pts,at:elapsed}]);
@@ -3672,14 +3669,14 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
     </div>
   );
 
-  if(simMode==='simcases') return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onMistake={onMistake} onLogMistake={onLogMistake} onExit={()=>setSimMode('pick')} pool={SIM_CASES}/>;
+  if(simMode==='simcases') return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onLogMistake={onLogMistake} onExit={()=>setSimMode('pick')} pool={SIM_CASES}/>;
 
   if(simMode==='branchblind'){
-    return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onMistake={onMistake} onLogMistake={onLogMistake}
+    return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onLogMistake={onLogMistake}
       onExit={()=>setSimMode('pick')} forcedCaseId={blindId} blind={true} pool={ALL_SIM_CASES}/>;
   }
 
-  if(simMode==='nonarrest') return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onMistake={onMistake} onLogMistake={onLogMistake}
+  if(simMode==='nonarrest') return <BranchSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP} onLearn={onLearn} onLogMistake={onLogMistake}
     onExit={()=>setSimMode('pick')} pool={BRANCH_CASES}/>;
 
   if(simMode==='nonarrest_legacy') return(
@@ -11490,7 +11487,7 @@ export default function App() {
         {/* ══ SIMULATOR ══ */}
         {mode==='simulator'&&(
           <SimulatorTab lang={lang} t={t} audio={audio} onEarnXP={earnXP}
-            onMistake={logMistake}
+            onLogMistake={logMistake}
             onLearn={(rk,ok,meta)=>{ if(!rk) return; updateSR(rk,ok); updateAdapt(rk,ok);
               if(!ok) logError({rhythm:rk, source:'sim', ...(meta||{})}); }}/>
         )}
