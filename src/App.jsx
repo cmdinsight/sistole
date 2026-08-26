@@ -752,8 +752,9 @@ const loadActiveUser=()=>{
   return null;
 };
 
-// Se resuelve al cargar el módulo para que los hooks lean el espacio correcto
-const INITIAL_USER=loadActiveUser();
+// Se resuelve al cargar el módulo para inicializar ACTIVE_ID (namespace de localStorage).
+// La sesión real ahora la confirma el servidor (ver useUser) — esto sólo evita arrancar en blanco.
+loadActiveUser();
 
 const setActiveAccount=(u)=>{
   try{
@@ -776,30 +777,78 @@ const deleteAccount=(email)=>{
   }catch(e){}
 };
 
-function useUser(){
-  const [user,setUser]=useState(INITIAL_USER);
-  const [accounts,setAccounts]=useState(loadAccounts);
+// ── Cliente de la API de cuentas (backend en /api, Postgres en Neon) ──
+async function apiJson(url,opts){
+  const r=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...opts});
+  let j=null;
+  try{j=await r.json();}catch(e){}
+  if(!r.ok) throw new Error((j&&j.error)||'Error de conexión. Intentá de nuevo.');
+  return j;
+}
 
-  // Crear cuenta nueva o guardar cambios de perfil
-  const saveUser=useCallback((u)=>{
-    const clean={...u,email:normEmail(u.email)};
-    setActiveAccount(clean);
-    setAccounts(loadAccounts());
-    setUser(clean);
+// Vuelca el progreso recibido del servidor al espacio local de esa cuenta,
+// para que los hooks existentes (que leen de localStorage al montar) lo encuentren.
+const seedAccountStorage=(email,data)=>{
+  if(!data) return;
+  const id=accountId(email);
+  const map={progress:'sistole_progress_v2',srData:'sistole_sr_v1',adaptData:'sistole_adaptive_v1',errors:'sistole_errors_v1',mistakes:'sistole_mistakes_v1'};
+  Object.entries(map).forEach(([k,base])=>{
+    if(data[k]!==undefined) localStorage.setItem(`${base}::${id}`,JSON.stringify(data[k]));
+  });
+};
+
+function useUser(){
+  const [user,setUser]=useState(null);
+  const [accounts,setAccounts]=useState(loadAccounts);
+  const [authReady,setAuthReady]=useState(false);
+  const [authBusy,setAuthBusy]=useState(false);
+  const [authError,setAuthError]=useState('');
+
+  // Al cargar, confirmar contra el servidor si hay una sesión activa (cookie)
+  useEffect(()=>{
+    let cancelled=false;
+    apiJson('/api/me').then(res=>{
+      if(cancelled||!res||!res.user) return;
+      setActiveAccount(res.user);
+      setAccounts(loadAccounts());
+      setUser(res.user);
+    }).catch(()=>{}).finally(()=>{if(!cancelled) setAuthReady(true);});
+    return ()=>{cancelled=true;};
   },[]);
 
-  // Iniciar sesión con una cuenta ya existente en el dispositivo
-  const loginUser=useCallback((email)=>{
-    const acc=loadAccounts()[normEmail(email)];
-    if(!acc) return false;
-    const touched={...acc,lastSeen:Date.now()};
-    setActiveAccount(touched);
-    setAccounts(loadAccounts());
-    setUser(touched);
-    return true;
+  // Crear cuenta nueva (servidor)
+  const signup=useCallback(async({name,email,password,role})=>{
+    setAuthBusy(true);setAuthError('');
+    try{
+      const res=await apiJson('/api/auth/register',{method:'POST',body:JSON.stringify({name,email,password,role})});
+      setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
+      return true;
+    }catch(e){setAuthError(e.message);return false;}
+    finally{setAuthBusy(false);}
+  },[]);
+
+  // Iniciar sesión (servidor) y traer el progreso guardado
+  const login=useCallback(async({email,password})=>{
+    setAuthBusy(true);setAuthError('');
+    try{
+      const res=await apiJson('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})});
+      if(res.data) seedAccountStorage(res.user.email,res.data);
+      setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
+      return true;
+    }catch(e){setAuthError(e.message);return false;}
+    finally{setAuthBusy(false);}
+  },[]);
+
+  // Editar nombre/rol del perfil (servidor)
+  const updateProfile=useCallback(async({name,role})=>{
+    try{
+      const res=await apiJson('/api/me',{method:'PATCH',body:JSON.stringify({name,role})});
+      setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
+    }catch(e){}
   },[]);
 
   const logoutUser=useCallback(()=>{
+    apiJson('/api/auth/logout',{method:'POST'}).catch(()=>{});
     setActiveAccount(null);
     setUser(null);
   },[]);
@@ -807,21 +856,22 @@ function useUser(){
   const removeAccount=useCallback((email)=>{
     deleteAccount(email);
     setAccounts(loadAccounts());
-    setUser(u=>(u&&normEmail(u.email)===normEmail(email))?null:u);
   },[]);
 
-  return{user,accounts,saveUser,loginUser,logoutUser,removeAccount};
+  return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount};
 }
 
-function RegistrationModal({lang,accounts,onSave,onLogin}){
+function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,clearAuthError}){
   const list=Object.values(accounts||{}).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
   const [tab,setTab]=useState(list.length>0?'login':'signup');
   // signup
   const [name,setName]=useState('');
   const [email,setEmail]=useState('');
+  const [password,setPassword]=useState('');
   const [role,setRole]=useState('medico');
   // login
   const [loginEmail,setLoginEmail]=useState('');
+  const [loginPassword,setLoginPassword]=useState('');
   const [errors,setErrors]=useState({});
 
   const L={
@@ -845,7 +895,10 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
     nameErr:{es:'Ingresá tu nombre',en:'Please enter your name',pt:'Insira seu nome'},
     emailErr:{es:'Ingresá un correo válido',en:'Please enter a valid email',pt:'Insira um e-mail válido'},
     dupErr:{es:'Ya existe una cuenta con ese correo. Usá "Iniciar sesión".',en:'An account with that email already exists. Use "Sign in".',pt:'Já existe conta com esse e-mail. Use "Entrar".'},
-    privacy:{es:'Las cuentas y el progreso se guardan solo en este dispositivo.',en:'Accounts and progress are stored only on this device.',pt:'Contas e progresso são salvos apenas neste dispositivo.'},
+    privacy:{es:'Tu cuenta y tu progreso quedan guardados y disponibles desde cualquier dispositivo.',en:'Your account and progress are saved and available from any device.',pt:'Sua conta e seu progresso ficam salvos e disponíveis em qualquer dispositivo.'},
+    passwordLabel:{es:'Contraseña',en:'Password',pt:'Senha'},
+    passwordErr:{es:'La contraseña debe tener al menos 8 caracteres',en:'Password must be at least 8 characters',pt:'A senha deve ter pelo menos 8 caracteres'},
+    working:{es:'Un momento…',en:'One moment…',pt:'Um momento…'},
   };
   const roleIcon=r=>r==='medico'?'🩺':r==='estudiante'?'📚':'🏥';
   const roleName=r=>r==='medico'?L.medico[lang]:r==='estudiante'?L.estudiante[lang]:L.otro[lang];
@@ -855,14 +908,17 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
     const e={};
     if(!name.trim()) e.name=true;
     if(!validEmail(email)) e.email=true;
-    if(!e.email&&accounts&&accounts[email.trim().toLowerCase()]) e.dup=true;
+    if(password.length<8) e.password=true;
     if(Object.keys(e).length){setErrors(e);return;}
-    onSave({name:name.trim(),email:email.trim().toLowerCase(),role,createdAt:Date.now(),lastSeen:Date.now()});
+    onSignup({name:name.trim(),email:email.trim().toLowerCase(),password,role});
   };
-  const doLogin=(mail)=>{
-    const target=(mail!==undefined?mail:loginEmail).trim().toLowerCase();
-    if(!validEmail(target)){setErrors({loginEmail:true});return;}
-    if(!onLogin(target)) setErrors({notFound:true,pending:target});
+  const doLogin=()=>{
+    const target=loginEmail.trim().toLowerCase();
+    const e={};
+    if(!validEmail(target)) e.loginEmail=true;
+    if(!loginPassword) e.loginPassword=true;
+    if(Object.keys(e).length){setErrors(e);return;}
+    onLogin({email:target,password:loginPassword});
   };
 
   const inputCls=(bad)=>`w-full px-4 py-3 rounded-xl bg-stone-900 border ${bad?'border-rose-500/60':'border-stone-700'} text-stone-100 placeholder-stone-600 text-sm outline-none focus:border-emerald-500/60 transition-colors`;
@@ -882,11 +938,11 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
 
         {/* Pestañas */}
         <div className="flex gap-1 p-1 bg-stone-900/70 border border-stone-800 rounded-xl mb-4">
-          <button onClick={()=>{setTab('login');setErrors({});}}
+          <button onClick={()=>{setTab('login');setErrors({});clearAuthError&&clearAuthError();}}
             className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='login'?'bg-stone-800 text-emerald-300':'text-stone-500 hover:text-stone-300'}`}>
             {L.tabLogin[lang]}
           </button>
-          <button onClick={()=>{setTab('signup');setErrors({});}}
+          <button onClick={()=>{setTab('signup');setErrors({});clearAuthError&&clearAuthError();}}
             className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='signup'?'bg-stone-800 text-emerald-300':'text-stone-500 hover:text-stone-300'}`}>
             {L.tabSignup[lang]}
           </button>
@@ -901,7 +957,7 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
                   <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-2">{L.pick[lang]}</label>
                   <div className="space-y-2">
                     {list.map(a=>(
-                      <button key={a.email} onClick={()=>doLogin(a.email)}
+                      <button key={a.email} onClick={()=>{setLoginEmail(a.email);setErrors({});}}
                         className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-stone-800 bg-stone-900/50 hover:border-emerald-700/50 hover:bg-stone-800/60 active:scale-[0.99] transition-all text-left">
                         <div className="w-10 h-10 rounded-xl bg-emerald-900/40 border border-emerald-700/40 flex items-center justify-center flex-shrink-0">
                           <span className="font-display text-lg text-emerald-300">{(a.name||'?').charAt(0).toUpperCase()}</span>
@@ -926,22 +982,24 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
                   onChange={e=>{setLoginEmail(e.target.value);setErrors({});}}
                   onKeyDown={e=>e.key==='Enter'&&doLogin()}
                   placeholder="correo@ejemplo.com"
-                  className={inputCls(errors.loginEmail||errors.notFound)}/>
+                  className={inputCls(errors.loginEmail)}/>
                 {errors.loginEmail&&<p className="text-rose-400 text-xs mt-1">{L.emailErr[lang]}</p>}
-                {errors.notFound&&(
-                  <div className="mt-2 p-3 rounded-xl bg-stone-900/60 border border-stone-800">
-                    <p className="text-stone-400 text-xs mb-2">{L.noAcc[lang]}</p>
-                    <button onClick={()=>{setEmail(errors.pending||loginEmail);setTab('signup');setErrors({});}}
-                      className="text-emerald-400 hover:text-emerald-300 text-xs font-medium">
-                      → {L.createIt[lang]}
-                    </button>
-                  </div>
-                )}
               </div>
 
-              <button onClick={()=>doLogin()}
-                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all">
-                {L.enter[lang]}
+              <div>
+                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
+                <input type="password" value={loginPassword}
+                  onChange={e=>{setLoginPassword(e.target.value);setErrors({});}}
+                  onKeyDown={e=>e.key==='Enter'&&doLogin()}
+                  placeholder="••••••••"
+                  className={inputCls(errors.loginPassword)}/>
+              </div>
+
+              {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
+
+              <button onClick={doLogin} disabled={authBusy}
+                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+                {authBusy?L.working[lang]:L.enter[lang]}
               </button>
             </>
           ):(
@@ -956,17 +1014,16 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
               <div>
                 <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.emailLabel[lang]}</label>
                 <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErrors({});}}
-                  onKeyDown={e=>e.key==='Enter'&&doSignup()}
-                  placeholder="correo@ejemplo.com" className={inputCls(errors.email||errors.dup)}/>
+                  placeholder="correo@ejemplo.com" className={inputCls(errors.email)}/>
                 {errors.email&&<p className="text-rose-400 text-xs mt-1">{L.emailErr[lang]}</p>}
-                {errors.dup&&(
-                  <p className="text-amber-400 text-xs mt-1">
-                    {L.dupErr[lang]}{' '}
-                    <button onClick={()=>{setLoginEmail(email);setTab('login');setErrors({});}} className="underline hover:text-amber-300">
-                      {L.tabLogin[lang]}
-                    </button>
-                  </p>
-                )}
+              </div>
+
+              <div>
+                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
+                <input type="password" value={password} onChange={e=>{setPassword(e.target.value);setErrors({});}}
+                  onKeyDown={e=>e.key==='Enter'&&doSignup()}
+                  placeholder="••••••••" className={inputCls(errors.password)}/>
+                {errors.password&&<p className="text-rose-400 text-xs mt-1">{L.passwordErr[lang]}</p>}
               </div>
 
               <div>
@@ -983,9 +1040,11 @@ function RegistrationModal({lang,accounts,onSave,onLogin}){
                 </div>
               </div>
 
-              <button onClick={doSignup}
-                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all">
-                {L.submit[lang]}
+              {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
+
+              <button onClick={doSignup} disabled={authBusy}
+                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+                {authBusy?L.working[lang]:L.submit[lang]}
               </button>
             </>
           )}
@@ -2522,26 +2581,11 @@ function ProfileSheet({children,onClose,lang}){
 function UserCard({user,lang,onSave}){
   const [editing,setEditing]=useState(false);
   const [name,setName]=useState(user.name);
-  const [email,setEmail]=useState(user.email);
   const [role,setRole]=useState(user.role);
 
   const save=()=>{
-    if(!name.trim()||!email.includes('@')) return;
-    const newEmail=email.trim().toLowerCase();
-    const oldEmail=String(user.email||'').toLowerCase();
-    // Si cambió el correo, trasladar el progreso al espacio de la cuenta nueva
-    if(newEmail!==oldEmail){
-      try{
-        const oldId=accountId(oldEmail), newId=accountId(newEmail);
-        for(const base of ['sistole_progress_v2','sistole_sr_v1','sistole_adaptive_v1']){
-          const data=localStorage.getItem(`${base}::${oldId}`);
-          if(data) localStorage.setItem(`${base}::${newId}`,data);
-          localStorage.removeItem(`${base}::${oldId}`);
-        }
-        deleteAccount(oldEmail);
-      }catch(e){}
-    }
-    onSave({...user,name:name.trim(),email:newEmail,role,lastSeen:Date.now()});
+    if(!name.trim()) return;
+    onSave({name:name.trim(),role});
     setEditing(false);
   };
 
@@ -2582,9 +2626,7 @@ function UserCard({user,lang,onSave}){
       <input type="text" value={name} onChange={e=>setName(e.target.value)}
         placeholder={lang==='en'?'Name':lang==='pt'?'Nome':'Nombre'}
         className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-700 text-stone-100 text-sm outline-none focus:border-emerald-500/60 transition-colors"/>
-      <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
-        placeholder="Email"
-        className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-700 text-stone-100 text-sm outline-none focus:border-emerald-500/60 transition-colors"/>
+      <div className="w-full px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-500 text-sm">{user.email}</div>
       <div className="grid grid-cols-3 gap-2">
         {[['medico','🩺'],['estudiante','📚'],['otro','🏥']].map(([r,icon])=>(
           <button key={r} onClick={()=>setRole(r)}
@@ -2598,7 +2640,7 @@ function UserCard({user,lang,onSave}){
           className="flex-1 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium transition-colors">
           {lang==='en'?'Save':lang==='pt'?'Salvar':'Guardar'}
         </button>
-        <button onClick={()=>{setName(user.name);setEmail(user.email);setRole(user.role);setEditing(false);}}
+        <button onClick={()=>{setName(user.name);setRole(user.role);setEditing(false);}}
           className="px-4 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm transition-colors">
           {lang==='en'?'Cancel':lang==='pt'?'Cancelar':'Cancelar'}
         </button>
@@ -10792,13 +10834,32 @@ export default function App() {
   const [mode,setMode]=useState('quiz');
   const t=T[lang];
   const audio=useAudio();
-  const {user,accounts,saveUser,loginUser,logoutUser,removeAccount}=useUser();
+  const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount}=useUser();
   const acctKey=user?normEmail(user.email):'guest';
   const {progress,earnXP,toasts,dismissToast,saveProgress}=useProgress(acctKey);
   const {srData,dueRhythms,updateSR,resetSR}=useSR(acctKey);
   const {adaptData,updateAdapt,getAdaptiveRhythm,getUnlockedTier,getMastery,resetAdapt}=useAdaptive(acctKey);
   const {errors,grouped:errorGroups,logError,clearRhythm,clearAll:clearErrors}=useErrors(acctKey);
   const {mistakes,logMistake,resolveMistake,clearMistakes,weakRhythms}=useMistakes(acctKey);
+
+  // ── Sincronización con el servidor: empuja el progreso local cuando cambia ──
+  const cloudDirtyRef=useRef(false);
+  const cloudDataRef=useRef(null);
+  cloudDataRef.current={progress,srData,adaptData,errors,mistakes};
+  useEffect(()=>{ if(user) cloudDirtyRef.current=true; },[user,progress,srData,adaptData,errors,mistakes]);
+  useEffect(()=>{
+    if(!user) return;
+    const flush=()=>{
+      if(!cloudDirtyRef.current) return;
+      cloudDirtyRef.current=false;
+      apiJson('/api/progress',{method:'PUT',body:JSON.stringify(cloudDataRef.current)}).catch(()=>{cloudDirtyRef.current=true;});
+    };
+    const id=setInterval(flush,20000);
+    const onHide=()=>{ if(document.visibilityState==='hidden') flush(); };
+    document.addEventListener('visibilitychange',onHide);
+    return()=>{clearInterval(id);document.removeEventListener('visibilitychange',onHide);flush();};
+  },[user]);
+
   const [adaptiveMode,setAdaptiveMode]=useState(false);
   const adaptiveModeRef=useRef(false);
   useEffect(()=>{adaptiveModeRef.current=adaptiveMode;},[adaptiveMode]);
@@ -10997,7 +11058,12 @@ export default function App() {
   };
   const currentCase=filteredCases[caseIdx];
 
-  if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSave={saveUser} onLogin={loginUser}/>;
+  if(!authReady) return(
+    <div className="min-h-screen w-full flex items-center justify-center" style={{background:'radial-gradient(ellipse at top,#0f1e18 0%,#030605 100%)'}}>
+      <Activity className="w-8 h-8 text-emerald-500/60 animate-pulse"/>
+    </div>
+  );
+  if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
 
   return(
     <div className="min-h-screen w-full text-stone-200" style={{fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:'radial-gradient(ellipse at top,#0f1e18 0%,#060a08 40%,#030605 100%)'}}>
@@ -11429,7 +11495,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={saveUser} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutUser} onClose={()=>setShowProfile(false)}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutUser} onClose={()=>setShowProfile(false)}/>}
     </div>
   );
 }
