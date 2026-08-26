@@ -1233,10 +1233,10 @@ function useErrors(accountKey){
   useEffect(()=>{setErrors(loadErrors());},[accountKey]);
 
   // source: 'quiz' | 'case' | 'sim' | 'arrest'
-  const logError=useCallback((rhythm,source,detail)=>{
+  const logError=useCallback(({rhythm,source,...detail})=>{
     if(!rhythm) return;
     setErrors(prev=>{
-      const next=[{rhythm,source,detail:detail||null,at:Date.now()},...prev].slice(0,MAX_ERRORS);
+      const next=[{rhythm,source,detail:Object.keys(detail).length?detail:null,at:Date.now()},...prev].slice(0,MAX_ERRORS);
       saveErrors(next);return next;
     });
   },[]);
@@ -11429,7 +11429,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorSummary} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={saveUser} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutUser} onClose={()=>setShowProfile(false)}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={saveUser} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutUser} onClose={()=>setShowProfile(false)}/>}
     </div>
   );
 }
