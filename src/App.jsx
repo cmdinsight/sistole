@@ -651,8 +651,9 @@ function ECGMonitor({rhythmKey,running,label,realism=true,audio,rateHint}){
       {label&&<div className="absolute bottom-3 left-4 font-mono text-[10px] sm:text-xs text-emerald-400/80 tracking-wider max-w-[60%] truncate">{label}</div>}
       <div className="absolute bottom-3 right-4 flex items-center gap-2">
         {audio&&(
-          <button onClick={audio.toggleMute} className="p-1 rounded opacity-60 hover:opacity-100 transition-opacity">
-            {audio.muted?<VolumeX className="w-3.5 h-3.5 text-emerald-400"/>:<Volume2 className="w-3.5 h-3.5 text-emerald-400"/>}
+          <button onClick={audio.toggleMute} aria-label={audio.muted?'Activar sonido':'Silenciar sonido'} title={audio.muted?'Activar sonido':'Silenciar sonido'}
+            className="p-1.5 rounded-full bg-black/50 border border-emerald-900/50 hover:bg-black/70 hover:border-emerald-700/60 active:scale-95 transition-all">
+            {audio.muted?<VolumeX className="w-4 h-4 text-emerald-400"/>:<Volume2 className="w-4 h-4 text-emerald-400"/>}
           </button>
         )}
         <div className="flex items-center gap-1.5">
