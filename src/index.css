@@ -4,3 +4,11 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+/* Títulos, nombres y cifras grandes: mismo family que el cuerpo (IBM Plex Sans)
+   pero un peso más marcado, para que se lean como jerarquía y no como texto normal. */
+.font-display {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
