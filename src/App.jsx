@@ -927,53 +927,53 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
     onLogin({email:target,password:loginPassword});
   };
 
-  const inputCls=(bad)=>`w-full px-4 py-3 rounded-xl bg-stone-900 border ${bad?'border-rose-500/60':'border-stone-700'} text-stone-100 placeholder-stone-600 text-sm outline-none focus:border-emerald-500/60 transition-colors`;
+  const inputCls=(bad)=>`w-full px-4 py-3 rounded-xl bg-slate-900 border ${bad?'border-rose-500/60':'border-slate-700'} text-slate-100 placeholder-slate-600 text-sm outline-none focus:border-indigo-500/60 transition-colors`;
 
   return(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto" style={{background:'radial-gradient(ellipse at top,#0f1e18 0%,#030605 100%)'}}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto" style={{background:'radial-gradient(ellipse at top,#0f1a26 0%,#03060c 100%)'}}>
       <div className="w-full max-w-md my-auto py-6">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-emerald-400"/>
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-indigo-400"/>
             </div>
           </div>
-          <h1 className="font-display text-4xl text-stone-100 mb-1">{L.title[lang]}</h1>
-          <p className="text-stone-500 text-sm">{L.sub[lang]}</p>
+          <h1 className="font-display text-4xl text-slate-100 mb-1">{L.title[lang]}</h1>
+          <p className="text-slate-500 text-sm">{L.sub[lang]}</p>
         </div>
 
         {/* Pestañas */}
-        <div className="flex gap-1 p-1 bg-stone-900/70 border border-stone-800 rounded-xl mb-4">
+        <div className="flex gap-1 p-1 bg-slate-900/70 border border-slate-800 rounded-xl mb-4">
           <button onClick={()=>{setTab('login');setErrors({});clearAuthError&&clearAuthError();}}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='login'?'bg-stone-800 text-emerald-300':'text-stone-500 hover:text-stone-300'}`}>
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='login'?'bg-slate-800 text-indigo-300':'text-slate-500 hover:text-slate-300'}`}>
             {L.tabLogin[lang]}
           </button>
           <button onClick={()=>{setTab('signup');setErrors({});clearAuthError&&clearAuthError();}}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='signup'?'bg-stone-800 text-emerald-300':'text-stone-500 hover:text-stone-300'}`}>
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='signup'?'bg-slate-800 text-indigo-300':'text-slate-500 hover:text-slate-300'}`}>
             {L.tabSignup[lang]}
           </button>
         </div>
 
-        <div className="bg-stone-950/90 border border-stone-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+        <div className="bg-slate-950/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl">
 
           {tab==='login'?(
             <>
               {list.length>0&&(
                 <div>
-                  <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-2">{L.pick[lang]}</label>
+                  <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-2">{L.pick[lang]}</label>
                   <div className="space-y-2">
                     {list.map(a=>(
                       <button key={a.email} onClick={()=>{setLoginEmail(a.email);setErrors({});}}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-stone-800 bg-stone-900/50 hover:border-emerald-700/50 hover:bg-stone-800/60 active:scale-[0.99] transition-all text-left">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-900/40 border border-emerald-700/40 flex items-center justify-center flex-shrink-0">
-                          <span className="font-display text-lg text-emerald-300">{(a.name||'?').charAt(0).toUpperCase()}</span>
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-slate-800 bg-slate-900/50 hover:border-indigo-700/50 hover:bg-slate-800/60 active:scale-[0.99] transition-all text-left">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-900/40 border border-indigo-700/40 flex items-center justify-center flex-shrink-0">
+                          <span className="font-display text-lg text-indigo-300">{(a.name||'?').charAt(0).toUpperCase()}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-stone-100 text-sm font-medium truncate">{a.name}</div>
-                          <div className="text-stone-500 text-xs truncate">{a.email}</div>
+                          <div className="text-slate-100 text-sm font-medium truncate">{a.name}</div>
+                          <div className="text-slate-500 text-xs truncate">{a.email}</div>
                         </div>
                         <span className="text-base flex-shrink-0">{roleIcon(a.role)}</span>
-                        <ChevronRight className="w-4 h-4 text-stone-600 flex-shrink-0"/>
+                        <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0"/>
                       </button>
                     ))}
                   </div>
@@ -981,7 +981,7 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
               )}
 
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">
                   {list.length>0?L.orEmail[lang]:L.emailLabel[lang]}
                 </label>
                 <input type="email" value={loginEmail}
@@ -993,7 +993,7 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
               </div>
 
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
                 <input type="password" value={loginPassword}
                   onChange={e=>{setLoginPassword(e.target.value);setErrors({});}}
                   onKeyDown={e=>e.key==='Enter'&&doLogin()}
@@ -1004,28 +1004,28 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
 
               <button onClick={doLogin} disabled={authBusy}
-                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+                className="w-full py-3.5 rounded-xl bg-indigo-700 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
                 {authBusy?L.working[lang]:L.enter[lang]}
               </button>
             </>
           ):(
             <>
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.nameLabel[lang]}</label>
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.nameLabel[lang]}</label>
                 <input type="text" value={name} onChange={e=>{setName(e.target.value);setErrors({});}}
                   placeholder={L.namePh[lang]} className={inputCls(errors.name)}/>
                 {errors.name&&<p className="text-rose-400 text-xs mt-1">{L.nameErr[lang]}</p>}
               </div>
 
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.emailLabel[lang]}</label>
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.emailLabel[lang]}</label>
                 <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErrors({});}}
                   placeholder="correo@ejemplo.com" className={inputCls(errors.email)}/>
                 {errors.email&&<p className="text-rose-400 text-xs mt-1">{L.emailErr[lang]}</p>}
               </div>
 
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
                 <input type="password" value={password} onChange={e=>{setPassword(e.target.value);setErrors({});}}
                   onKeyDown={e=>e.key==='Enter'&&doSignup()}
                   placeholder="••••••••" className={inputCls(errors.password)}/>
@@ -1033,14 +1033,14 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
               </div>
 
               <div>
-                <label className="font-mono text-[11px] text-stone-500 uppercase tracking-widest block mb-2">{L.roleLabel[lang]}</label>
+                <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-2">{L.roleLabel[lang]}</label>
                 <div className="space-y-2">
                   {['medico','estudiante','otro'].map(r=>(
                     <button key={r} onClick={()=>setRole(r)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${role===r?'border-emerald-500/50 bg-emerald-500/10 text-emerald-200':'border-stone-800 bg-stone-900/40 text-stone-400 hover:border-stone-700 hover:text-stone-200'}`}>
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${role===r?'border-indigo-500/50 bg-indigo-500/10 text-indigo-200':'border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'}`}>
                       <span className="text-lg flex-shrink-0">{roleIcon(r)}</span>
                       <span className="text-sm font-medium">{roleName(r)}</span>
-                      {role===r&&<Check className="w-4 h-4 text-emerald-400 ml-auto flex-shrink-0"/>}
+                      {role===r&&<Check className="w-4 h-4 text-indigo-400 ml-auto flex-shrink-0"/>}
                     </button>
                   ))}
                 </div>
@@ -1049,13 +1049,13 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
 
               <button onClick={doSignup} disabled={authBusy}
-                className="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+                className="w-full py-3.5 rounded-xl bg-indigo-700 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
                 {authBusy?L.working[lang]:L.submit[lang]}
               </button>
             </>
           )}
 
-          <p className="text-center text-stone-600 text-xs leading-relaxed pt-1">{L.privacy[lang]}</p>
+          <p className="text-center text-slate-600 text-xs leading-relaxed pt-1">{L.privacy[lang]}</p>
         </div>
       </div>
     </div>
@@ -2199,10 +2199,10 @@ function RhythmAnnotationCard({rhythmKey, lang}){
   };
 
   return(
-    <div className="rounded-xl border border-sky-900/40 bg-stone-950/80 overflow-hidden">
-      <div className="px-4 py-2 border-b border-stone-800/40 flex items-center gap-2">
+    <div className="rounded-xl border border-sky-900/40 bg-slate-950/80 overflow-hidden">
+      <div className="px-4 py-2 border-b border-slate-800/40 flex items-center gap-2">
         <div className="w-1.5 h-1.5 rounded-full bg-sky-400"/>
-        <span className="font-mono text-[9px] text-stone-500 uppercase tracking-[0.18em]">
+        <span className="font-mono text-[9px] text-slate-500 uppercase tracking-[0.18em]">
           {lang==='en'?'Rhythm anatomy':lang==='pt'?'Anatomia do ritmo':'Anatomía del ritmo'}
         </span>
         <span className="ml-auto font-mono text-[10px] font-semibold text-sky-300">{T[lang]?.rhythms[rhythmKey]||rhythmKey}</span>
@@ -2225,9 +2225,9 @@ function RhythmAnnotationCard({rhythmKey, lang}){
         </svg>
       </div>
       {/* Clinical tips */}
-      <div className="px-4 py-3 space-y-1 border-t border-stone-800/30">
+      <div className="px-4 py-3 space-y-1 border-t border-slate-800/30">
         {ann.tips[lang].map((tip,i)=>(
-          <div key={i} className="text-[13px] text-stone-300 leading-snug">{tip}</div>
+          <div key={i} className="text-[13px] text-slate-300 leading-snug">{tip}</div>
         ))}
       </div>
     </div>
@@ -2239,17 +2239,17 @@ function XPBar({progress,lang}){
   const nxt=getNextLevel(progress.xp);
   const pct=nxt?Math.round(((progress.xp-cur.min)/(nxt.min-cur.min))*100):100;
   return(
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-stone-900/60 border border-stone-800/60">
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{backgroundColor:cur.color}}/>
       <div className="text-right">
         <div className="font-semibold text-[11px] leading-none" style={{color:cur.color}}>{cur.title[lang]}</div>
       </div>
       <div className="w-16 sm:w-24 flex-shrink-0">
         <div className="flex justify-between mb-0.5">
-          <span className="font-mono text-[8px] text-stone-600">{progress.xp} XP</span>
-          {nxt&&<span className="font-mono text-[8px] text-stone-700">{nxt.min}</span>}
+          <span className="font-mono text-[8px] text-slate-600">{progress.xp} XP</span>
+          {nxt&&<span className="font-mono text-[8px] text-slate-700">{nxt.min}</span>}
         </div>
-        <div className="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700" style={{width:`${pct}%`,backgroundColor:cur.color}}/>
         </div>
       </div>
@@ -2260,19 +2260,19 @@ function XPBar({progress,lang}){
 function ProgressToast({item,lang,onDismiss}){
   useEffect(()=>{const t=setTimeout(onDismiss,4500);return()=>clearTimeout(t);},[onDismiss]);
   if(item.type==='tier_unlock') return(
-    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-stone-950 border border-violet-500/50 shadow-[0_0_40px_-8px_rgba(139,92,246,0.5)]">
+    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-slate-950 border border-violet-500/50 shadow-[0_0_40px_-8px_rgba(139,92,246,0.5)]">
       <span className="text-2xl">{item.icon}</span>
       <div>
         <div className="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-0.5">
           {lang==='en'?'Tier unlocked!':lang==='pt'?'Nível desbloqueado!':'¡Nivel desbloqueado!'}
         </div>
-        <div className="font-semibold text-stone-100 text-sm">{item.title[lang]}</div>
+        <div className="font-semibold text-slate-100 text-sm">{item.title[lang]}</div>
         <div className="text-violet-300/70 text-xs mt-0.5">{item.desc[lang]}</div>
       </div>
     </div>
   );
   if(item.type==='level') return(
-    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-stone-950 border shadow-2xl"
+    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-slate-950 border shadow-2xl"
       style={{borderColor:item.info.color+'66',boxShadow:`0 0 40px -8px ${item.info.color}44`}}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold border"
         style={{backgroundColor:item.info.color+'22',borderColor:item.info.color+'44',color:item.info.color}}>
@@ -2282,20 +2282,20 @@ function ProgressToast({item,lang,onDismiss}){
         <div className="font-mono text-[10px] uppercase tracking-widest mb-0.5" style={{color:item.info.color}}>
           {lang==='en'?'Level up!':lang==='pt'?'Subiu de nível!':'¡Subiste de nivel!'}
         </div>
-        <div className="font-semibold text-stone-100 text-sm">{item.info.title[lang]}</div>
+        <div className="font-semibold text-slate-100 text-sm">{item.info.title[lang]}</div>
       </div>
     </div>
   );
   const a=item.ach;
   return(
-    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-stone-950 border border-emerald-500/40 shadow-[0_0_40px_-8px_rgba(74,222,128,0.3)]">
+    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-slate-950 border border-indigo-500/40 shadow-[0_0_40px_-8px_rgba(79,91,213,0.35)]">
       <span className="text-2xl">{a.icon}</span>
       <div>
-        <div className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest mb-0.5">
-          {lang==='en'?'Achievement unlocked!':lang==='pt'?'Conquista desbloqueada!':'¡Logro desbloqueado!'}{a.xp>0&&<span className="ml-2 text-stone-500">+{a.xp} XP</span>}
+        <div className="font-mono text-[10px] text-indigo-400 uppercase tracking-widest mb-0.5">
+          {lang==='en'?'Achievement unlocked!':lang==='pt'?'Conquista desbloqueada!':'¡Logro desbloqueado!'}{a.xp>0&&<span className="ml-2 text-slate-500">+{a.xp} XP</span>}
         </div>
-        <div className="font-semibold text-stone-100 text-sm">{a.title[lang]}</div>
-        <div className="text-stone-400 text-xs mt-0.5">{a.desc[lang]}</div>
+        <div className="font-semibold text-slate-100 text-sm">{a.title[lang]}</div>
+        <div className="text-slate-400 text-xs mt-0.5">{a.desc[lang]}</div>
       </div>
     </div>
   );
@@ -2339,10 +2339,10 @@ function DifficultyDots({tier,lang}){
 function MasteryMap({adaptData,getMastery,lang,unlockedTier}){
   const tiers=[1,2,3];
   const dot={
-    mastered:'bg-emerald-400',
+    mastered:'bg-indigo-400',
     learning:'bg-amber-400',
     weak:'bg-rose-400',
-    unseen:'bg-stone-700',
+    unseen:'bg-slate-700',
   };
   const label={
     mastered:{es:'Dominado',en:'Mastered',pt:'Dominado'},
@@ -2359,7 +2359,7 @@ function MasteryMap({adaptData,getMastery,lang,unlockedTier}){
           <div key={tier} className={locked?'opacity-40':''}>
             <div className="flex items-center gap-2 mb-2">
               <DifficultyDots tier={tier} lang={lang}/>
-              {locked&&<span className="font-mono text-[10px] text-stone-600 ml-1">🔒 {lang==='en'?'Locked':lang==='pt'?'Bloqueado':'Bloqueado'}</span>}
+              {locked&&<span className="font-mono text-[10px] text-slate-600 ml-1">🔒 {lang==='en'?'Locked':lang==='pt'?'Bloqueado':'Bloqueado'}</span>}
             </div>
             <div className="grid grid-cols-1 gap-1.5">
               {rhythms.map(k=>{
@@ -2367,16 +2367,16 @@ function MasteryMap({adaptData,getMastery,lang,unlockedTier}){
                 const d=adaptData[k];
                 const a=d?.total>=2?Math.round((d.correct/d.total)*100):null;
                 return(
-                  <div key={k} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-stone-900/40">
+                  <div key={k} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-900/40">
                     <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot[m]}`}/>
-                    <span className="text-sm text-stone-300 flex-1 truncate">{T[lang]?.rhythms[k]||k}</span>
+                    <span className="text-sm text-slate-300 flex-1 truncate">{T[lang]?.rhythms[k]||k}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {a!==null&&(
-                        <span className={`font-mono text-[10px] ${a>=75?'text-emerald-400':a>=50?'text-amber-400':'text-rose-400'}`}>
+                        <span className={`font-mono text-[10px] ${a>=75?'text-indigo-400':a>=50?'text-amber-400':'text-rose-400'}`}>
                           {a}%
                         </span>
                       )}
-                      {d?.total>0&&<span className="font-mono text-[10px] text-stone-700">×{d.total}</span>}
+                      {d?.total>0&&<span className="font-mono text-[10px] text-slate-700">×{d.total}</span>}
                     </div>
                   </div>
                 );
@@ -2390,7 +2390,7 @@ function MasteryMap({adaptData,getMastery,lang,unlockedTier}){
         {['mastered','learning','weak','unseen'].map(s=>(
           <div key={s} className="flex items-center gap-1.5">
             <div className={`w-2 h-2 rounded-full ${dot[s]}`}/>
-            <span className="text-stone-500 text-[10px] font-mono">{label[s][lang]}</span>
+            <span className="text-slate-500 text-[10px] font-mono">{label[s][lang]}</span>
           </div>
         ))}
       </div>
@@ -2447,14 +2447,14 @@ function ModeHelpPanel({lang,onClose}){
     sky:{border:'border-sky-700/40',bg:'bg-sky-950/20',text:'text-sky-300'},
   };
   return(
-    <div className="rounded-2xl border border-stone-800 bg-stone-900/40 overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-stone-800/60">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800/60">
         <span className="text-sm">💡</span>
-        <span className="font-mono text-[11px] text-stone-400 uppercase tracking-widest">
+        <span className="font-mono text-[11px] text-slate-400 uppercase tracking-widest">
           {lang==='en'?'Practice modes':lang==='pt'?'Modos de prática':'Modos de práctica'}
         </span>
-        <button onClick={onClose} className="ml-auto p-1 rounded-lg hover:bg-stone-800 transition-colors">
-          <X className="w-3.5 h-3.5 text-stone-500"/>
+        <button onClick={onClose} className="ml-auto p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <X className="w-3.5 h-3.5 text-slate-500"/>
         </button>
       </div>
       <div className="p-3 space-y-2">
@@ -2466,13 +2466,13 @@ function ModeHelpPanel({lang,onClose}){
                 <span className="text-base">{m.icon}</span>
                 <span className={`font-semibold text-sm ${c.text}`}>{m.name[lang]}</span>
               </div>
-              <p className="text-stone-300 text-[13px] leading-snug mb-1.5">{m.what[lang]}</p>
-              <p className="text-stone-500 text-[12px] leading-relaxed mb-1.5">{m.why[lang]}</p>
-              <p className="text-stone-600 text-[12px] leading-snug italic">{m.when[lang]}</p>
+              <p className="text-slate-300 text-[13px] leading-snug mb-1.5">{m.what[lang]}</p>
+              <p className="text-slate-500 text-[12px] leading-relaxed mb-1.5">{m.why[lang]}</p>
+              <p className="text-slate-600 text-[12px] leading-snug italic">{m.when[lang]}</p>
             </div>
           );
         })}
-        <p className="text-stone-600 text-[11px] text-center pt-1">
+        <p className="text-slate-600 text-[11px] text-center pt-1">
           {lang==='en'?'Modes can be combined.':lang==='pt'?'Os modos podem ser combinados.':'Los modos se pueden combinar entre sí.'}
         </p>
       </div>
@@ -2488,7 +2488,7 @@ function TimerBar({timeLeft,lang,timerMax=60}){
   const urgent=timeLeft<=10;
   const warn=timeLeft<=20&&timeLeft>10;
   const col=urgent?'#f87171':warn?'#fbbf24':'#4ade80';
-  const bgClass=urgent?'border-rose-500/40 bg-rose-500/8':warn?'border-amber-500/30 bg-amber-500/5':'border-emerald-500/20 bg-emerald-500/5';
+  const bgClass=urgent?'border-rose-500/40 bg-rose-500/8':warn?'border-amber-500/30 bg-amber-500/5':'border-indigo-500/20 bg-indigo-500/5';
   const label=urgent
     ?(lang==='en'?'Decide NOW!':lang==='pt'?'Decida JÁ!':'¡Decide YA!')
     :warn
@@ -2503,9 +2503,9 @@ function TimerBar({timeLeft,lang,timerMax=60}){
       <div className="flex-1">
         <div className="flex items-center justify-between mb-1.5">
           <span className="font-mono text-[10px] uppercase tracking-widest" style={{color:col}}>{label}</span>
-          <span className="font-mono text-[10px] text-stone-600">{timerMax}s</span>
+          <span className="font-mono text-[10px] text-slate-600">{timerMax}s</span>
         </div>
-        <div className="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-1000 ease-linear" style={{width:`${pct}%`,backgroundColor:col}}/>
         </div>
       </div>
@@ -2520,16 +2520,16 @@ function SessionSummaryModal({stats,weakest,lang,onClose}){
   return(
     <div className="fixed inset-0 z-[190] flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}/>
-      <div className="relative w-full max-w-sm bg-stone-950 border border-stone-700 rounded-3xl p-7 text-center space-y-5">
+      <div className="relative w-full max-w-sm bg-slate-950 border border-slate-700 rounded-3xl p-7 text-center space-y-5">
         <div>
           <div className="text-4xl mb-2">{acc>=80?'🏆':acc>=60?'📊':'📉'}</div>
-          <div className="font-display text-2xl text-stone-100 mb-1">
+          <div className="font-display text-2xl text-slate-100 mb-1">
             {lang==='en'?'10-question checkpoint':lang==='pt'?'Checkpoint 10 perguntas':'Checkpoint 10 preguntas'}
           </div>
-          <div className={`font-mono text-3xl font-bold ${acc>=80?'text-emerald-300':acc>=60?'text-amber-300':'text-rose-300'}`}>
+          <div className={`font-mono text-3xl font-bold ${acc>=80?'text-indigo-300':acc>=60?'text-amber-300':'text-rose-300'}`}>
             {acc}%
           </div>
-          <div className="text-stone-500 text-sm mt-1">{stats.correct}/{stats.total} {lang==='en'?'correct':lang==='pt'?'corretas':'correctas'}</div>
+          <div className="text-slate-500 text-sm mt-1">{stats.correct}/{stats.total} {lang==='en'?'correct':lang==='pt'?'corretas':'correctas'}</div>
         </div>
         {topWeak&&(
           <div className="px-4 py-3 rounded-xl bg-rose-900/20 border border-rose-800/30">
@@ -2542,7 +2542,7 @@ function SessionSummaryModal({stats,weakest,lang,onClose}){
           </div>
         )}
         <button onClick={onClose}
-          className="w-full py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors">
+          className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors">
           {lang==='en'?'Keep going →':lang==='pt'?'Continuar →':'Seguir →'}
         </button>
       </div>
@@ -2564,18 +2564,18 @@ function ProfileSheet({children,onClose,lang}){
     return()=>window.removeEventListener('keydown',onKey);
   },[onClose]);
   return(
-    <div className="relative w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[85vh] bg-stone-950 border border-stone-800 sm:rounded-3xl flex flex-col overflow-hidden">
+    <div className="relative w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[85vh] bg-slate-950 border border-slate-800 sm:rounded-3xl flex flex-col overflow-hidden">
       {/* Header fijo — nunca se va de pantalla */}
-      <div className="flex-shrink-0 bg-stone-950 border-b border-stone-800/60 px-4 sm:px-6 py-3 flex items-center gap-2">
+      <div className="flex-shrink-0 bg-slate-950 border-b border-slate-800/60 px-4 sm:px-6 py-3 flex items-center gap-2">
         <button onClick={onClose}
           aria-label={lang==='en'?'Back':lang==='pt'?'Voltar':'Volver'}
-          className="flex items-center gap-1.5 px-3 py-2 -ml-1 rounded-lg text-stone-300 hover:bg-stone-800 active:bg-stone-700 transition-colors">
+          className="flex items-center gap-1.5 px-3 py-2 -ml-1 rounded-lg text-slate-300 hover:bg-slate-800 active:bg-slate-700 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
           </svg>
           <span className="text-sm font-medium">{lang==='en'?'Back':lang==='pt'?'Voltar':'Volver'}</span>
         </button>
-        <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mx-auto pr-4">
+        <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mx-auto pr-4">
           {lang==='en'?'My Progress':lang==='pt'?'Meu Progresso':'Mi Progreso'}
         </div>
       </div>
@@ -2606,21 +2606,21 @@ function UserCard({user,lang,onSave}){
                      :(lang==='en'?'Health Professional':lang==='pt'?'Profissional de Saúde':'Profesional de Salud');
 
   if(!editing) return(
-    <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800 flex items-center gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-emerald-900/40 border border-emerald-700/40 flex items-center justify-center flex-shrink-0">
-        <span className="font-display text-xl text-emerald-300">{user.name.charAt(0).toUpperCase()}</span>
+    <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-4">
+      <div className="w-12 h-12 rounded-2xl bg-indigo-900/40 border border-indigo-700/40 flex items-center justify-center flex-shrink-0">
+        <span className="font-display text-xl text-indigo-300">{user.name.charAt(0).toUpperCase()}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-stone-100 text-base truncate">{user.name}</div>
-        <div className="text-stone-500 text-xs truncate">{user.email}</div>
+        <div className="font-semibold text-slate-100 text-base truncate">{user.name}</div>
+        <div className="text-slate-500 text-xs truncate">{user.email}</div>
         <div className="mt-1">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-900/40 border border-emerald-700/30 text-emerald-300 text-[10px] font-mono uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-900/40 border border-indigo-700/30 text-indigo-300 text-[10px] font-mono uppercase tracking-wider">
             {roleIcon(user.role)} {roleLabel(user.role)}
           </span>
         </div>
       </div>
       <button onClick={()=>setEditing(true)}
-        className="p-2 rounded-lg hover:bg-stone-800 text-stone-600 hover:text-stone-300 transition-colors flex-shrink-0"
+        className="p-2 rounded-lg hover:bg-slate-800 text-slate-600 hover:text-slate-300 transition-colors flex-shrink-0"
         title={lang==='en'?'Edit profile':lang==='pt'?'Editar perfil':'Editar perfil'}>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -2630,29 +2630,29 @@ function UserCard({user,lang,onSave}){
   );
 
   return(
-    <div className="p-4 rounded-2xl bg-stone-900/60 border border-emerald-700/40 space-y-3">
-      <div className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest">
+    <div className="p-4 rounded-2xl bg-slate-900/60 border border-indigo-700/40 space-y-3">
+      <div className="font-mono text-[10px] text-indigo-400 uppercase tracking-widest">
         {lang==='en'?'Edit profile':lang==='pt'?'Editar perfil':'Editar perfil'}
       </div>
       <input type="text" value={name} onChange={e=>setName(e.target.value)}
         placeholder={lang==='en'?'Name':lang==='pt'?'Nome':'Nombre'}
-        className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-700 text-stone-100 text-sm outline-none focus:border-emerald-500/60 transition-colors"/>
-      <div className="w-full px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-500 text-sm">{user.email}</div>
+        className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm outline-none focus:border-indigo-500/60 transition-colors"/>
+      <div className="w-full px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-500 text-sm">{user.email}</div>
       <div className="grid grid-cols-3 gap-2">
         {[['medico','🩺'],['estudiante','📚'],['otro','🏥']].map(([r,icon])=>(
           <button key={r} onClick={()=>setRole(r)}
-            className={`px-2 py-2 rounded-lg border text-xs transition-all text-center ${role===r?'border-emerald-500/50 bg-emerald-500/10 text-emerald-200':'border-stone-800 text-stone-500 hover:border-stone-700'}`}>
+            className={`px-2 py-2 rounded-lg border text-xs transition-all text-center ${role===r?'border-indigo-500/50 bg-indigo-500/10 text-indigo-200':'border-slate-800 text-slate-500 hover:border-slate-700'}`}>
             {icon} {r==='medico'?(lang==='en'?'MD':lang==='pt'?'Médico':'Médico'):r==='estudiante'?(lang==='en'?'Student':lang==='pt'?'Estudante':'Estud.'):(lang==='en'?'Other':lang==='pt'?'Outro':'Otro')}
           </button>
         ))}
       </div>
       <div className="flex gap-2">
         <button onClick={save}
-          className="flex-1 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium transition-colors">
+          className="flex-1 py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-sm font-medium transition-colors">
           {lang==='en'?'Save':lang==='pt'?'Salvar':'Guardar'}
         </button>
         <button onClick={()=>{setName(user.name);setRole(user.role);setEditing(false);}}
-          className="px-4 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm transition-colors">
+          className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors">
           {lang==='en'?'Cancel':lang==='pt'?'Cancelar':'Cancelar'}
         </button>
       </div>
@@ -2686,38 +2686,38 @@ function ErrorReviewPanel({summary,errors,lang,onClear}){
   return(
     <div>
       <button onClick={()=>setOpen(v=>!v)} className="w-full flex items-center justify-between py-1 mb-1">
-        <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+        <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
           {L.title[lang]}
           {errors.length>0&&<span className="ml-2 text-rose-400/80">({errors.length})</span>}
         </div>
-        <span className={`text-stone-600 text-xs transition-transform ${open?'rotate-90':''}`}>▶</span>
+        <span className={`text-slate-600 text-xs transition-transform ${open?'rotate-90':''}`}>▶</span>
       </button>
 
       {open&&(errors.length===0?(
-        <div className="px-4 py-4 rounded-xl bg-stone-900/40 border border-stone-800/80">
-          <p className="text-stone-500 text-[13px] leading-relaxed">{L.none[lang]}</p>
+        <div className="px-4 py-4 rounded-xl bg-slate-900/40 border border-slate-800/80">
+          <p className="text-slate-500 text-[13px] leading-relaxed">{L.none[lang]}</p>
         </div>
       ):(
         <div className="space-y-2">
           <div className="space-y-1.5">
             {summary.slice(0,10).map(g=>(
-              <div key={g.rhythm} className="px-3 py-2.5 rounded-xl bg-stone-900/50 border border-stone-800">
+              <div key={g.rhythm} className="px-3 py-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-400 flex-shrink-0"/>
-                  <span className="text-stone-100 text-sm font-medium flex-1 truncate">{rn(g.rhythm)}</span>
+                  <span className="text-slate-100 text-sm font-medium flex-1 truncate">{rn(g.rhythm)}</span>
                   <span className="font-mono text-[11px] text-rose-300 flex-shrink-0">
                     {g.count} {L.times[lang]}
                   </span>
                 </div>
                 {g.topConfusion&&(
-                  <div className="mt-1.5 pl-4 text-[12px] text-stone-500">
+                  <div className="mt-1.5 pl-4 text-[12px] text-slate-500">
                     {L.confused[lang]} <span className="text-amber-300/90">{rn(g.topConfusion)}</span>
-                    {g.topConfusionN>1&&<span className="text-stone-600"> ×{g.topConfusionN}</span>}
+                    {g.topConfusionN>1&&<span className="text-slate-600"> ×{g.topConfusionN}</span>}
                   </div>
                 )}
                 <div className="mt-1 pl-4 flex flex-wrap gap-1.5">
                   {Object.entries(g.sources).map(([s,n])=>(
-                    <span key={s} className="font-mono text-[9px] text-stone-600 bg-stone-900 border border-stone-800 px-1.5 py-0.5 rounded">
+                    <span key={s} className="font-mono text-[9px] text-slate-600 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">
                       {(L.src[s]||{})[lang]||s} ×{n}
                     </span>
                   ))}
@@ -2726,21 +2726,21 @@ function ErrorReviewPanel({summary,errors,lang,onClear}){
             ))}
           </div>
 
-          <p className="text-stone-600 text-[11px] leading-relaxed px-1 pt-1">💡 {L.hint[lang]}</p>
+          <p className="text-slate-600 text-[11px] leading-relaxed px-1 pt-1">💡 {L.hint[lang]}</p>
 
           {!confirmClear?(
             <button onClick={()=>setConfirmClear(true)}
-              className="w-full py-2 text-[11px] font-mono text-stone-600 hover:text-rose-400 transition-colors">
+              className="w-full py-2 text-[11px] font-mono text-slate-600 hover:text-rose-400 transition-colors">
               {L.clear[lang]}
             </button>
           ):(
-            <div className="p-3 rounded-xl bg-stone-900/60 border border-stone-700/60 space-y-2">
-              <p className="text-xs text-stone-400 text-center">{L.sure[lang]}</p>
+            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 space-y-2">
+              <p className="text-xs text-slate-400 text-center">{L.sure[lang]}</p>
               <div className="flex gap-2">
                 <button onClick={()=>{onClear();setConfirmClear(false);}}
                   className="flex-1 py-2 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-sm transition-colors">{L.yes[lang]}</button>
                 <button onClick={()=>setConfirmClear(false)}
-                  className="flex-1 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm transition-colors">{L.no[lang]}</button>
+                  className="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors">{L.no[lang]}</button>
               </div>
             </div>
           )}
@@ -2781,7 +2781,7 @@ function SimStatsPanel({stats,lang}){
     outcomes:{es:'Desenlaces',en:'Outcomes',pt:'Desfechos'},
   };
   const OUT=[
-    {k:'success',c:'bg-emerald-500',t:'text-emerald-300',l:{es:'Correcto',en:'Correct',pt:'Correto'}},
+    {k:'success',c:'bg-indigo-500',t:'text-indigo-300',l:{es:'Correcto',en:'Correct',pt:'Correto'}},
     {k:'rescue', c:'bg-amber-500', t:'text-amber-300', l:{es:'Rescatado',en:'Rescued',pt:'Resgatado'}},
     {k:'partial',c:'bg-orange-600',t:'text-orange-300',l:{es:'Incompleto',en:'Incomplete',pt:'Incompleto'}},
     {k:'death',  c:'bg-rose-600',  t:'text-rose-300',  l:{es:'Fatal',en:'Fatal',pt:'Fatal'}},
@@ -2789,15 +2789,15 @@ function SimStatsPanel({stats,lang}){
   ].filter(x=>(o[x.k]||0)>0);
 
   const bar=(done,total,color)=>(
-    <div className="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+    <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
       <div className={`h-full rounded-full ${color} transition-all duration-700`} style={{width:`${total?Math.round(done/total*100):0}%`}}/>
     </div>
   );
   const row=(label,done,total,color)=>(
     <div>
       <div className="flex items-baseline justify-between mb-1">
-        <span className="text-stone-400 text-xs">{label}</span>
-        <span className="font-mono text-[11px] text-stone-300">{done}<span className="text-stone-600">/{total}</span></span>
+        <span className="text-slate-400 text-xs">{label}</span>
+        <span className="font-mono text-[11px] text-slate-300">{done}<span className="text-slate-600">/{total}</span></span>
       </div>
       {bar(done,total,color)}
     </div>
@@ -2805,30 +2805,30 @@ function SimStatsPanel({stats,lang}){
 
   return(
     <div>
-      <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-2">{L.title[lang]}</div>
+      <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-2">{L.title[lang]}</div>
 
       {runs===0?(
-        <div className="px-4 py-4 rounded-xl bg-stone-900/40 border border-stone-800/80">
-          <p className="text-stone-500 text-[13px] leading-relaxed">{L.none[lang]}</p>
+        <div className="px-4 py-4 rounded-xl bg-slate-900/40 border border-slate-800/80">
+          <p className="text-slate-500 text-[13px] leading-relaxed">{L.none[lang]}</p>
         </div>
       ):(
         <div className="space-y-3">
           {/* Efectividad */}
-          <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800">
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
             <div className="flex items-end justify-between mb-1">
               <div>
-                <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1">{L.eff[lang]}</div>
-                <div className={`font-mono text-3xl font-bold leading-none ${eff>=80?'text-emerald-300':eff>=50?'text-amber-300':'text-rose-300'}`}>{eff}%</div>
+                <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1">{L.eff[lang]}</div>
+                <div className={`font-mono text-3xl font-bold leading-none ${eff>=80?'text-indigo-300':eff>=50?'text-amber-300':'text-rose-300'}`}>{eff}%</div>
               </div>
               <div className="text-right">
-                <div className="font-mono text-[10px] text-stone-600">{L.runs[lang]}</div>
-                <div className="font-mono text-lg font-semibold text-stone-200 leading-none">{runs}</div>
+                <div className="font-mono text-[10px] text-slate-600">{L.runs[lang]}</div>
+                <div className="font-mono text-lg font-semibold text-slate-200 leading-none">{runs}</div>
               </div>
             </div>
-            <p className="text-stone-600 text-[11px] mb-3">{good} {L.effHint[lang]}</p>
+            <p className="text-slate-600 text-[11px] mb-3">{good} {L.effHint[lang]}</p>
 
             {/* Barra de desenlaces */}
-            <div className="flex h-2 rounded-full overflow-hidden bg-stone-800">
+            <div className="flex h-2 rounded-full overflow-hidden bg-slate-800">
               {OUT.map(x=>(
                 <div key={x.k} className={x.c} style={{width:`${Math.round((o[x.k]/runs)*100)}%`}}/>
               ))}
@@ -2850,9 +2850,9 @@ function SimStatsPanel({stats,lang}){
               {label:L.firstTry[lang],value:s.firstTryCount||0},
               {label:L.streak[lang],value:s.noLossStreak||0},
             ].map((x,i)=>(
-              <div key={i} className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800/80 text-center">
-                <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1 leading-tight">{x.label}</div>
-                <div className="font-semibold text-stone-100 text-sm">{x.value}</div>
+              <div key={i} className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800/80 text-center">
+                <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1 leading-tight">{x.label}</div>
+                <div className="font-semibold text-slate-100 text-sm">{x.value}</div>
               </div>
             ))}
           </div>
@@ -2860,17 +2860,17 @@ function SimStatsPanel({stats,lang}){
       )}
 
       {/* Cobertura */}
-      <div className="mt-3 p-4 rounded-2xl bg-stone-900/40 border border-stone-800/80 space-y-3">
-        <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider">{L.coverage[lang]}</div>
+      <div className="mt-3 p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+        <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider">{L.coverage[lang]}</div>
         {row(L.clinCases[lang],simDone,CASES.length,'bg-sky-500')}
         {row(L.branch[lang],brDone,BRANCH_CASES.length,'bg-violet-500')}
         {codes>0&&(
           <div>
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-stone-400 text-xs">{L.roscLbl[lang]}</span>
-              <span className="font-mono text-[11px] text-stone-300">{rosc}<span className="text-stone-600">/{codes} {L.arrest[lang].toLowerCase()}</span></span>
+              <span className="text-slate-400 text-xs">{L.roscLbl[lang]}</span>
+              <span className="font-mono text-[11px] text-slate-300">{rosc}<span className="text-slate-600">/{codes} {L.arrest[lang].toLowerCase()}</span></span>
             </div>
-            {bar(rosc,codes,roscPct>=50?'bg-emerald-500':'bg-amber-500')}
+            {bar(rosc,codes,roscPct>=50?'bg-indigo-500':'bg-amber-500')}
           </div>
         )}
       </div>
@@ -2913,17 +2913,17 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
             </div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
               <span style={{color:cur.color+'aa'}}>{progress.xp} XP</span>
-              {nxt&&<span className="text-stone-600">{nxt.min} XP → {nxt.title[lang]}</span>}
+              {nxt&&<span className="text-slate-600">{nxt.min} XP → {nxt.title[lang]}</span>}
             </div>
-            <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
               <div className="h-full rounded-full transition-all duration-700" style={{width:`${pct}%`,backgroundColor:cur.color}}/>
             </div>
-            {nxt&&<div className="text-xs text-stone-600 mt-1.5 font-mono">{nxt.min-progress.xp} XP {lang==='en'?'to next level':lang==='pt'?'para o próximo nível':'para el próximo nivel'}</div>}
+            {nxt&&<div className="text-xs text-slate-600 mt-1.5 font-mono">{nxt.min-progress.xp} XP {lang==='en'?'to next level':lang==='pt'?'para o próximo nível':'para el próximo nivel'}</div>}
           </div>
 
           {/* Estudio */}
           <div>
-            <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-2">
+            <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-2">
               {lang==='en'?'Study':lang==='pt'?'Estudo':'Estudio'}
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -2935,9 +2935,9 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
                 {label:lang==='en'?'Arrhythmia scen.':lang==='pt'?'Cenários arrit.':'Escen. arritmias',value:`${progress.stats.naCompleted?.length||0}/${NA_CASES.length}`},
                 {label:lang==='en'?'Achievements':lang==='pt'?'Conquistas':'Logros',value:`${progress.achievements.length}/${ACHIEVEMENTS.length}`},
               ].map((s,i)=>(
-                <div key={i} className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800/80 text-center">
-                  <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1 leading-tight">{s.label}</div>
-                  <div className="font-semibold text-stone-100 text-sm">{s.value}</div>
+                <div key={i} className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800/80 text-center">
+                  <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1 leading-tight">{s.label}</div>
+                  <div className="font-semibold text-slate-100 text-sm">{s.value}</div>
                 </div>
               ))}
             </div>
@@ -2954,21 +2954,21 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
 
           {/* Achievements */}
           <div>
-            <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-3">
+            <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">
               {lang==='en'?'Achievements':lang==='pt'?'Conquistas':'Logros'} ({progress.achievements.length}/{ACHIEVEMENTS.length})
             </div>
             <div className="grid grid-cols-1 gap-2">
               {ACHIEVEMENTS.map(a=>{
                 const unlocked=progress.achievements.includes(a.id);
                 return(
-                  <div key={a.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${unlocked?'border-emerald-500/30 bg-emerald-500/5':'border-stone-800/60 bg-stone-900/30 opacity-50'}`}>
+                  <div key={a.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${unlocked?'border-indigo-500/30 bg-indigo-500/5':'border-slate-800/60 bg-slate-900/30 opacity-50'}`}>
                     <span className={`text-xl flex-shrink-0 ${unlocked?'':'grayscale opacity-40'}`}>{a.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <div className={`font-semibold text-sm ${unlocked?'text-stone-100':'text-stone-500'}`}>{a.title[lang]}</div>
-                      <div className="text-stone-500 text-xs truncate">{a.desc[lang]}</div>
+                      <div className={`font-semibold text-sm ${unlocked?'text-slate-100':'text-slate-500'}`}>{a.title[lang]}</div>
+                      <div className="text-slate-500 text-xs truncate">{a.desc[lang]}</div>
                     </div>
-                    {a.xp>0&&<div className={`font-mono text-[10px] flex-shrink-0 ${unlocked?'text-emerald-400':'text-stone-700'}`}>+{a.xp} XP</div>}
-                    {unlocked&&<Check className="w-4 h-4 text-emerald-400 flex-shrink-0"/>}
+                    {a.xp>0&&<div className={`font-mono text-[10px] flex-shrink-0 ${unlocked?'text-indigo-400':'text-slate-700'}`}>+{a.xp} XP</div>}
+                    {unlocked&&<Check className="w-4 h-4 text-indigo-400 flex-shrink-0"/>}
                   </div>
                 );
               })}
@@ -2978,24 +2978,24 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
           {/* SR Progress */}
           {srData&&Object.keys(srData).length>0&&(
             <div>
-              <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-3">
+              <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">
                 {lang==='en'?'Spaced Repetition Progress':lang==='pt'?'Progresso de Repetição Espaçada':'Progreso de Repetición Espaciada'}
-                <span className="ml-2 text-stone-700">({Object.keys(srData).length} ritmos)</span>
+                <span className="ml-2 text-slate-700">({Object.keys(srData).length} ritmos)</span>
               </div>
               <div className="space-y-1.5">
                 {Object.entries(srData).sort((a,b)=>a[1].nextReview-b[1].nextReview).map(([key,d])=>{
                   const isDue=d.nextReview<=Date.now();
                   const daysUntil=isDue?0:Math.round((d.nextReview-Date.now())/86400000);
                   return(
-                    <div key={key} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-900/40">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isDue?'bg-sky-400':'bg-stone-700'}`}/>
-                      <span className="text-sm text-stone-300 flex-1 truncate">{(T[lang]&&T[lang].rhythms&&T[lang].rhythms[key])||key}</span>
-                      <span className={`font-mono text-[10px] flex-shrink-0 ${isDue?'text-sky-400':'text-stone-600'}`}>
+                    <div key={key} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-900/40">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isDue?'bg-sky-400':'bg-slate-700'}`}/>
+                      <span className="text-sm text-slate-300 flex-1 truncate">{(T[lang]&&T[lang].rhythms&&T[lang].rhythms[key])||key}</span>
+                      <span className={`font-mono text-[10px] flex-shrink-0 ${isDue?'text-sky-400':'text-slate-600'}`}>
                         {isDue
                           ?(lang==='en'?'Due now':lang==='pt'?'Agora':'Ahora')
                           :(lang==='en'?`${daysUntil}d`:lang==='pt'?`${daysUntil}d`:`${daysUntil}d`)}
                       </span>
-                      <span className="font-mono text-[10px] text-stone-700 flex-shrink-0">×{d.seen}</span>
+                      <span className="font-mono text-[10px] text-slate-700 flex-shrink-0">×{d.seen}</span>
                     </div>
                   );
                 })}
@@ -3008,13 +3008,13 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
             <div>
               <button onClick={()=>setMasteryOpen(v=>!v)}
                 className="w-full flex items-center justify-between py-1 group">
-                <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+                <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
                   {lang==='en'?'Adaptive Mastery Map':lang==='pt'?'Mapa de Maestria':'Mapa de Maestría'}
-                  <span className="ml-2 text-stone-700">
+                  <span className="ml-2 text-slate-700">
                     ({lang==='en'?`Tier ${getUnlockedTier(adaptData)}`:lang==='pt'?`Nível ${getUnlockedTier(adaptData)}`:`Nivel ${getUnlockedTier(adaptData)}`} 🔓)
                   </span>
                 </div>
-                <span className={`text-stone-600 text-xs transition-transform ${masteryOpen?'rotate-90':''}`}>▶</span>
+                <span className={`text-slate-600 text-xs transition-transform ${masteryOpen?'rotate-90':''}`}>▶</span>
               </button>
               {masteryOpen&&(
                 <div className="mt-3">
@@ -3028,10 +3028,10 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
           <div>
             <button onClick={()=>setRoadmapOpen(v=>!v)}
               className="w-full flex items-center justify-between py-1 mb-1 group">
-              <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+              <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
                 {lang==='en'?'Level Roadmap':lang==='pt'?'Caminho de Níveis':'Mapa de Niveles'}
               </div>
-              <span className={`text-stone-600 text-xs transition-transform ${roadmapOpen?'rotate-90':''}`}>▶</span>
+              <span className={`text-slate-600 text-xs transition-transform ${roadmapOpen?'rotate-90':''}`}>▶</span>
             </button>
             {roadmapOpen&&<div>
             <div className="space-y-1">
@@ -3039,7 +3039,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
                 const reached=progress.xp>=l.min;
                 const isCurrent=getLevelInfo(progress.xp).level===l.level;
                 return(
-                  <div key={l.level} className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${isCurrent?'bg-stone-800/60':'opacity-50'}`}>
+                  <div key={l.level} className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${isCurrent?'bg-slate-800/60':'opacity-50'}`}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                       style={{backgroundColor:l.color+(reached?'33':'11'),color:reached?l.color:l.color+'55'}}>
                       {l.level}
@@ -3047,7 +3047,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
                     <div className="flex-1">
                       <span className="text-sm font-medium" style={{color:reached?l.color:l.color+'66'}}>{l.title[lang]}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-stone-600">{l.min} XP</span>
+                    <span className="font-mono text-[10px] text-slate-600">{l.min} XP</span>
                     {reached&&<Check className="w-3 h-3" style={{color:l.color}}/>}
                   </div>
                 );
@@ -3057,7 +3057,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
           </div>
 
           {/* Share + Reset */}
-          <div className="space-y-2 pt-2 border-t border-stone-800/60">
+          <div className="space-y-2 pt-2 border-t border-slate-800/60">
             <button onClick={()=>{
               const lvl=getLevelInfo(progress.xp);
               const roleStr=user?.role==='medico'?(lang==='en'?'Physician':lang==='pt'?'Médico':'Médico'):user?.role==='estudiante'?(lang==='en'?'Student':lang==='pt'?'Estudante':'Estudiante'):(lang==='en'?'Health Pro':lang==='pt'?'Profissional':'Profesional');
@@ -3074,29 +3074,29 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
                 navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);}).catch(()=>{});
               }
             }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-stone-800/60 hover:bg-stone-700/60 text-stone-300 text-sm transition-colors">
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 text-sm transition-colors">
               {copied?'✅ '+(lang==='en'?'Copied!':lang==='pt'?'Copiado!':'¡Copiado!'):'📋 '+(lang==='en'?'Share progress':lang==='pt'?'Compartilhar progresso':'Compartir progreso')}
             </button>
             {/* Cerrar perfil — vuelve a la pantalla de registro */}
             {!confirmLogout?(
               <button onClick={()=>{setConfirmLogout(true);setConfirmReset(false);}}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-stone-800/40 border border-stone-700/60 text-stone-300 hover:bg-stone-700/50 hover:text-stone-100 text-sm transition-colors">
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-300 hover:bg-slate-700/50 hover:text-slate-100 text-sm transition-colors">
                 🚪 {lang==='en'?'Sign out':lang==='pt'?'Sair do perfil':'Cerrar perfil'}
               </button>
             ):(
-              <div className="space-y-2 p-3 rounded-xl bg-stone-900/60 border border-stone-700/60">
-                <p className="text-xs text-stone-400 text-center leading-relaxed">
+              <div className="space-y-2 p-3 rounded-xl bg-slate-900/60 border border-slate-700/60">
+                <p className="text-xs text-slate-400 text-center leading-relaxed">
                   {lang==='en'?'You will return to the sign-in screen. Your account and progress stay saved on this device — sign back in anytime.'
                    :lang==='pt'?'Você voltará à tela de entrada. Sua conta e progresso continuam salvos neste dispositivo.'
                    :'Vas a volver a la pantalla de inicio. Tu cuenta y tu progreso quedan guardados en este dispositivo — podés volver a entrar cuando quieras.'}
                 </p>
                 <div className="flex gap-2">
                   <button onClick={()=>{onLogout&&onLogout();onClose();}}
-                    className="flex-1 py-2 rounded-xl bg-stone-200 hover:bg-white text-stone-900 text-sm font-medium transition-colors">
+                    className="flex-1 py-2 rounded-xl bg-slate-200 hover:bg-white text-slate-900 text-sm font-medium transition-colors">
                     {lang==='en'?'Sign out':lang==='pt'?'Sair':'Cerrar perfil'}
                   </button>
                   <button onClick={()=>setConfirmLogout(false)}
-                    className="flex-1 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm transition-colors">
+                    className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors">
                     {lang==='en'?'Cancel':lang==='pt'?'Cancelar':'Cancelar'}
                   </button>
                 </div>
@@ -3105,7 +3105,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
 
             {!confirmReset?(
               <button onClick={()=>{setConfirmReset(true);setConfirmLogout(false);}}
-                className="w-full py-2.5 rounded-xl text-stone-600 hover:text-rose-400 text-xs font-mono transition-colors">
+                className="w-full py-2.5 rounded-xl text-slate-600 hover:text-rose-400 text-xs font-mono transition-colors">
                 🗑️ {lang==='en'?'Reset all progress':lang==='pt'?'Resetar todo o progresso':'Borrar todo el progreso'}
               </button>
             ):(
@@ -3119,7 +3119,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
                     {lang==='en'?'Delete everything':lang==='pt'?'Apagar tudo':'Borrar todo'}
                   </button>
                   <button onClick={()=>setConfirmReset(false)}
-                    className="flex-1 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm transition-colors">
+                    className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm transition-colors">
                     {lang==='en'?'Cancel':lang==='pt'?'Cancelar':'Cancelar'}
                   </button>
                 </div>
@@ -3160,13 +3160,13 @@ function nextBlindCaseId(pool){
 // MOTOR DE CASOS RAMIFICADOS
 // ═══════════════════════════════════════════════════════════════
 const Q_STYLE={
-  correct:{ring:'border-emerald-500/40 bg-emerald-500/8',text:'text-emerald-300',icon:'✓',label:{es:'Correcto',en:'Correct',pt:'Correto'}},
+  correct:{ring:'border-indigo-500/40 bg-indigo-500/8',text:'text-indigo-300',icon:'✓',label:{es:'Correcto',en:'Correct',pt:'Correto'}},
   partial:{ring:'border-amber-500/40 bg-amber-500/8',text:'text-amber-300',icon:'~',label:{es:'Subóptimo',en:'Suboptimal',pt:'Subótimo'}},
   wrong:{ring:'border-rose-500/40 bg-rose-500/8',text:'text-rose-300',icon:'✕',label:{es:'Incorrecto',en:'Incorrect',pt:'Incorreto'}},
   fatal:{ring:'border-red-600/50 bg-red-600/10',text:'text-red-300',icon:'☠',label:{es:'Error crítico',en:'Critical error',pt:'Erro crítico'}},
 };
 const TERM_STYLE={
-  success:{icon:'🟢',color:'emerald',label:{es:'Desenlace favorable',en:'Favourable outcome',pt:'Desfecho favorável'}},
+  success:{icon:'🟢',color:'indigo',label:{es:'Desenlace favorable',en:'Favourable outcome',pt:'Desfecho favorável'}},
   rescue:{icon:'🟡',color:'amber',label:{es:'Rescatado',en:'Rescued',pt:'Resgatado'}},
   partial:{icon:'🟠',color:'amber',label:{es:'Manejo incompleto',en:'Incomplete management',pt:'Manejo incompleto'}},
   death:{icon:'🔴',color:'rose',label:{es:'Paciente fallecido',en:'Patient died',pt:'Paciente falecido'}},
@@ -3178,8 +3178,8 @@ function ContextBlock({icon,title,body}){
     <div className="flex gap-3">
       <span className="text-base flex-shrink-0 mt-0.5">{icon}</span>
       <div className="min-w-0">
-        <div className="font-mono text-[10px] text-stone-600 uppercase tracking-widest mb-1">{title}</div>
-        <p className="text-stone-300 text-[14px] leading-relaxed">{body}</p>
+        <div className="font-mono text-[10px] text-slate-600 uppercase tracking-widest mb-1">{title}</div>
+        <p className="text-slate-300 text-[14px] leading-relaxed">{body}</p>
       </div>
     </div>
   );
@@ -3188,16 +3188,16 @@ function ContextBlock({icon,title,body}){
 function VitalsStrip({v,lang,alarm}){
   const cell=(label,val,unit,bad)=>(
     <div className="px-2 py-2 text-center">
-      <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-0.5">{label}</div>
-      <div className={`font-mono text-sm font-bold leading-none ${bad?'text-rose-400':'text-stone-200'}`}>
-        {val}<span className="text-stone-600 text-[9px] ml-0.5">{unit}</span>
+      <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-0.5">{label}</div>
+      <div className={`font-mono text-sm font-bold leading-none ${bad?'text-rose-400':'text-slate-200'}`}>
+        {val}<span className="text-slate-600 text-[9px] ml-0.5">{unit}</span>
       </div>
     </div>
   );
   const sys=parseInt(String(v.bp))||0;
   return(
-    <div className={`rounded-xl border overflow-hidden ${alarm?'border-rose-800/50 bg-rose-950/20':'border-stone-800 bg-stone-900/50'}`}>
-      <div className="grid grid-cols-5 divide-x divide-stone-800/60">
+    <div className={`rounded-xl border overflow-hidden ${alarm?'border-rose-800/50 bg-rose-950/20':'border-slate-800 bg-slate-900/50'}`}>
+      <div className="grid grid-cols-5 divide-x divide-slate-800/60">
         {cell('FC',v.hr,'lpm',v.hr<50||v.hr>150)}
         {cell('TA',v.bp,'',sys>0&&sys<90)}
         {cell('SpO₂',v.spo2,'%',v.spo2<92)}
@@ -3312,7 +3312,7 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
   if(phase==='pick'){
     return(
       <div className="space-y-5">
-        <button onClick={onExit} className="flex items-center gap-1.5 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+        <button onClick={onExit} className="flex items-center gap-1.5 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
           ← {lang==='en'?'Back to menu':lang==='pt'?'Voltar ao menu':'Volver al menú'}
         </button>
 
@@ -3325,7 +3325,7 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
               <div className="font-display text-xl text-violet-200 mb-1">
                 {lang==='en'?'Blind case':lang==='pt'?'Caso às cegas':'Caso a ciegas'}
               </div>
-              <p className="text-stone-400 text-sm leading-relaxed">
+              <p className="text-slate-400 text-sm leading-relaxed">
                 {lang==='en'?'A random patient arrives and you do not know what you are facing. The diagnosis is revealed only through the story and the monitor — as in a real shift.'
                  :lang==='pt'?'Chega um paciente aleatório e você não sabe o que enfrenta. O diagnóstico se revela pela história e pelo monitor — como num plantão real.'
                  :'Llega un paciente al azar y no sabés a qué te enfrentás. El diagnóstico se revela por la historia y el monitor — como en una guardia real.'}
@@ -3335,27 +3335,27 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-stone-800"/>
-          <span className="font-mono text-[10px] text-stone-600 uppercase tracking-widest">
+          <div className="flex-1 h-px bg-slate-800"/>
+          <span className="font-mono text-[10px] text-slate-600 uppercase tracking-widest">
             {lang==='en'?'or choose a case':lang==='pt'?'ou escolha um caso':'o elegí un caso'}
           </span>
-          <div className="flex-1 h-px bg-stone-800"/>
+          <div className="flex-1 h-px bg-slate-800"/>
         </div>
 
         <div className="space-y-3">
           {CASE_POOL.map(c=>(
             <button key={c.id} onClick={()=>beginCase(c.id,false)}
-              className="w-full text-left p-4 rounded-2xl border border-stone-800 bg-stone-900/40 hover:border-stone-600 hover:bg-stone-800/50 active:scale-[0.99] transition-all">
+              className="w-full text-left p-4 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-slate-600 hover:bg-slate-800/50 active:scale-[0.99] transition-all">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-stone-800/80 flex items-center justify-center text-xl flex-shrink-0">{c.icon}</div>
+                <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center text-xl flex-shrink-0">{c.icon}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span className="text-stone-100 text-sm font-semibold">{c.tag[lang]}</span>
+                    <span className="text-slate-100 text-sm font-semibold">{c.tag[lang]}</span>
                     <DifficultyDots tier={c.tier} lang={lang}/>
                   </div>
-                  <div className="text-stone-500 text-xs">{c.patient[lang]}</div>
+                  <div className="text-slate-500 text-xs">{c.patient[lang]}</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-stone-600 flex-shrink-0 mt-1"/>
+                <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0 mt-1"/>
               </div>
             </button>
           ))}
@@ -3370,16 +3370,16 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
   if(phase==='brief'){
     return(
       <div className="space-y-5">
-        <button onClick={()=>{setPhase('pick');setCaseId(null);}} className="flex items-center gap-1.5 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+        <button onClick={()=>{setPhase('pick');setCaseId(null);}} className="flex items-center gap-1.5 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
           ← {lang==='en'?'Back':lang==='pt'?'Voltar':'Volver'}
         </button>
 
         <div className="text-center">
-          <div className="font-mono text-[10px] text-stone-600 uppercase tracking-widest mb-1">
+          <div className="font-mono text-[10px] text-slate-600 uppercase tracking-widest mb-1">
             {lang==='en'?'Case briefing':lang==='pt'?'Briefing do caso':'Presentación del caso'}
           </div>
-          <h2 className="font-display text-3xl text-stone-100">{kase.patient[lang]}</h2>
-          {revealed&&<div className="mt-1 font-mono text-[11px] text-stone-500">{kase.tag[lang]}</div>}
+          <h2 className="font-display text-3xl text-slate-100">{kase.patient[lang]}</h2>
+          {revealed&&<div className="mt-1 font-mono text-[11px] text-slate-500">{kase.tag[lang]}</div>}
           {!revealed&&(
             <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-900/30 border border-violet-800/40">
               <span className="text-xs">🎲</span>
@@ -3390,16 +3390,16 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
           )}
         </div>
 
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/40 p-5 space-y-5">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-5">
           <ContextBlock icon="🚑" title={lang==='en'?'Presentation':lang==='pt'?'Apresentação':'Llegada'} body={kase.scene[lang]}/>
-          <div className="h-px bg-stone-800/60"/>
+          <div className="h-px bg-slate-800/60"/>
           <ContextBlock icon="📋" title={lang==='en'?'History':lang==='pt'?'História':'Antecedentes'} body={kase.history[lang]}/>
-          <div className="h-px bg-stone-800/60"/>
+          <div className="h-px bg-slate-800/60"/>
           <ContextBlock icon="🩺" title={lang==='en'?'Physical exam':lang==='pt'?'Exame físico':'Examen físico'} body={kase.exam[lang]}/>
         </div>
 
         <button onClick={()=>{setNodeId(kase.start);setPhase('play');}}
-          className="w-full py-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold transition-all">
+          className="w-full py-4 rounded-xl bg-indigo-700 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold transition-all">
           {lang==='en'?'Attend the patient →':lang==='pt'?'Atender o paciente →':'Atender al paciente →'}
         </button>
       </div>
@@ -3415,34 +3415,34 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
         <ECGMonitor rhythmKey={node.rhythm} running={true} rateHint={node.vitals.hr} label={kase.tag[lang]} audio={audio}/>
         <VitalsStrip v={{...node.vitals,__t:fmt(elapsed)}} lang={lang} alarm={term==='death'||term==='arrest'}/>
 
-        <div className={`p-5 rounded-2xl border ${st.color==='emerald'?'border-emerald-700/50 bg-emerald-950/25':st.color==='amber'?'border-amber-700/50 bg-amber-950/20':'border-rose-800/50 bg-rose-950/25'}`}>
+        <div className={`p-5 rounded-2xl border ${st.color==='indigo'?'border-indigo-700/50 bg-indigo-950/25':st.color==='amber'?'border-amber-700/50 bg-amber-950/20':'border-rose-800/50 bg-rose-950/25'}`}>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">{st.icon}</span>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-stone-400">{st.label[lang]}</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400">{st.label[lang]}</span>
           </div>
-          <h3 className="font-display text-2xl text-stone-100 mb-3">{node.title[lang]}</h3>
-          <p className="text-stone-300 text-[14px] leading-relaxed">{node.narrative[lang]}</p>
+          <h3 className="font-display text-2xl text-slate-100 mb-3">{node.title[lang]}</h3>
+          <p className="text-slate-300 text-[14px] leading-relaxed">{node.narrative[lang]}</p>
         </div>
 
         {/* Puntaje */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800 text-center">
-            <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1">{lang==='en'?'Score':'Puntaje'}</div>
-            <div className={`font-mono text-lg font-bold ${score>=60?'text-emerald-300':score>=0?'text-amber-300':'text-rose-300'}`}>{score}</div>
+          <div className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+            <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1">{lang==='en'?'Score':'Puntaje'}</div>
+            <div className={`font-mono text-lg font-bold ${score>=60?'text-indigo-300':score>=0?'text-amber-300':'text-rose-300'}`}>{score}</div>
           </div>
-          <div className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800 text-center">
-            <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1">{lang==='en'?'Decisions':'Decisiones'}</div>
-            <div className="font-mono text-lg font-bold text-stone-200">{nCorrect}/{path.length}</div>
+          <div className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+            <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1">{lang==='en'?'Decisions':'Decisiones'}</div>
+            <div className="font-mono text-lg font-bold text-slate-200">{nCorrect}/{path.length}</div>
           </div>
-          <div className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800 text-center">
-            <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1">{lang==='en'?'Time':'Tiempo'}</div>
-            <div className="font-mono text-lg font-bold text-stone-200">{fmt(elapsed)}</div>
+          <div className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+            <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1">{lang==='en'?'Time':'Tiempo'}</div>
+            <div className="font-mono text-lg font-bold text-slate-200">{fmt(elapsed)}</div>
           </div>
         </div>
 
         {/* Recorrido de decisiones */}
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/30 p-4">
-          <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
+          <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-3">
             {lang==='en'?'Your decision path':lang==='pt'?'Seu percurso de decisões':'Tu recorrido de decisiones'}
           </div>
           <div className="space-y-1.5">
@@ -3451,8 +3451,8 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
               return(
                 <div key={i} className={`flex items-start gap-2.5 px-3 py-2 rounded-lg border ${q.ring}`}>
                   <span className={`font-mono text-xs flex-shrink-0 mt-0.5 ${q.text}`}>{q.icon}</span>
-                  <span className="text-stone-300 text-[13px] leading-snug flex-1">{p.text}</span>
-                  <span className={`font-mono text-[10px] flex-shrink-0 ${p.pts>=0?'text-stone-600':'text-rose-400'}`}>{p.pts>0?'+':''}{p.pts}</span>
+                  <span className="text-slate-300 text-[13px] leading-snug flex-1">{p.text}</span>
+                  <span className={`font-mono text-[10px] flex-shrink-0 ${p.pts>=0?'text-slate-600':'text-rose-400'}`}>{p.pts>0?'+':''}{p.pts}</span>
                 </div>
               );
             })}
@@ -3460,15 +3460,15 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
         </div>
 
         {/* Puntos de aprendizaje */}
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/30 p-4">
-          <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
+          <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-3">
             {lang==='en'?'Learning points':lang==='pt'?'Pontos de aprendizado':'Puntos de aprendizaje'}
           </div>
           <div className="space-y-2.5">
             {(node.lessons?node.lessons[lang]:[]).map((l,i)=>(
               <div key={i} className="flex gap-2.5">
-                <span className="text-emerald-500/60 flex-shrink-0">▸</span>
-                <p className="text-stone-300 text-[13px] leading-relaxed">{l}</p>
+                <span className="text-indigo-500/60 flex-shrink-0">▸</span>
+                <p className="text-slate-300 text-[13px] leading-relaxed">{l}</p>
               </div>
             ))}
           </div>
@@ -3476,7 +3476,7 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
 
         <div className="flex gap-2">
           <button onClick={()=>beginCase(kase.id,false)}
-            className="flex-1 py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors">
+            className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors">
             {lang==='en'?'Retry this case':lang==='pt'?'Repetir este caso':'Repetir este caso'}
           </button>
           <button onClick={startRandom}
@@ -3485,7 +3485,7 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
           </button>
         </div>
         <button onClick={()=>{setPhase('pick');setCaseId(null);}}
-          className="w-full py-2.5 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+          className="w-full py-2.5 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
           {lang==='en'?'Case list':lang==='pt'?'Lista de casos':'Lista de casos'}
         </button>
       </div>
@@ -3499,10 +3499,10 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
   return(
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <button onClick={()=>{setPhase('pick');setCaseId(null);}} className="text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+        <button onClick={()=>{setPhase('pick');setCaseId(null);}} className="text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
           ← {lang==='en'?'Exit':lang==='pt'?'Sair':'Salir'}
         </button>
-        <span className="ml-auto font-mono text-[10px] text-stone-600">
+        <span className="ml-auto font-mono text-[10px] text-slate-600">
           {revealed?kase.tag[lang]:(lang==='en'?'🎲 Blind case':lang==='pt'?'🎲 Caso às cegas':'🎲 Caso a ciegas')}
         </span>
       </div>
@@ -3513,9 +3513,9 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
 
       {/* Aviso de cambio tras la decisión */}
       {trend&&trend!=='flat'&&(
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${trend==='arrest'?'border-rose-800/50 bg-rose-950/30':trend==='up'?'border-emerald-800/50 bg-emerald-950/25':'border-amber-800/50 bg-amber-950/25'}`}>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${trend==='arrest'?'border-rose-800/50 bg-rose-950/30':trend==='up'?'border-indigo-800/50 bg-indigo-950/25':'border-amber-800/50 bg-amber-950/25'}`}>
           <span className="text-sm">{trend==='arrest'?'🔴':trend==='up'?'📈':'📉'}</span>
-          <span className={`font-mono text-[11px] uppercase tracking-wider ${trend==='arrest'?'text-rose-300':trend==='up'?'text-emerald-300':'text-amber-300'}`}>
+          <span className={`font-mono text-[11px] uppercase tracking-wider ${trend==='arrest'?'text-rose-300':trend==='up'?'text-indigo-300':'text-amber-300'}`}>
             {trend==='arrest'?(lang==='en'?'Patient lost pulse':lang==='pt'?'Paciente perdeu pulso':'El paciente perdió el pulso')
              :trend==='up'?(lang==='en'?'Patient improving':lang==='pt'?'Paciente melhorando':'El paciente mejora')
              :(lang==='en'?'Patient deteriorating':lang==='pt'?'Paciente piorando':'El paciente se deteriora')}
@@ -3524,16 +3524,16 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
       )}
 
       {/* Contexto plegable, siempre disponible durante el caso */}
-      <div className="rounded-xl border border-stone-800/60 bg-stone-900/25 overflow-hidden">
-        <button onClick={()=>setShowCtx(v=>!v)} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-stone-800/30 transition-colors">
+      <div className="rounded-xl border border-slate-800/60 bg-slate-900/25 overflow-hidden">
+        <button onClick={()=>setShowCtx(v=>!v)} className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-800/30 transition-colors">
           <span className="text-sm">📋</span>
-          <span className="font-mono text-[10px] text-stone-500 uppercase tracking-widest">
+          <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
             {lang==='en'?'Patient file':lang==='pt'?'Ficha do paciente':'Ficha del paciente'}
           </span>
-          <span className={`ml-auto text-stone-600 text-xs transition-transform ${showCtx?'rotate-90':''}`}>▶</span>
+          <span className={`ml-auto text-slate-600 text-xs transition-transform ${showCtx?'rotate-90':''}`}>▶</span>
         </button>
         {showCtx&&(
-          <div className="px-4 pb-4 pt-1 space-y-4 border-t border-stone-800/40">
+          <div className="px-4 pb-4 pt-1 space-y-4 border-t border-slate-800/40">
             <ContextBlock icon="🚑" title={lang==='en'?'Presentation':lang==='pt'?'Apresentação':'Llegada'} body={kase.scene[lang]}/>
             <ContextBlock icon="📋" title={lang==='en'?'History':lang==='pt'?'História':'Antecedentes'} body={kase.history[lang]}/>
             <ContextBlock icon="🩺" title={lang==='en'?'Exam':lang==='pt'?'Exame':'Examen'} body={kase.exam[lang]}/>
@@ -3542,23 +3542,23 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
       </div>
 
       {/* Narrativa del momento */}
-      <div className="p-4 rounded-xl bg-stone-900/40 border-l-2 border-stone-700">
-        <p className="text-stone-200 text-[14px] leading-relaxed">{node.narrative[lang]}</p>
+      <div className="p-4 rounded-xl bg-slate-900/40 border-l-2 border-slate-700">
+        <p className="text-slate-200 text-[14px] leading-relaxed">{node.narrative[lang]}</p>
       </div>
 
       {/* Decisión o feedback */}
       {phase==='play'?(
         <div>
-          <p className="font-mono text-xs text-stone-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5"/>{node.question[lang]}
           </p>
           <div className="space-y-2">
             {node.choices.map(ch=>(
               <button key={ch.id} onClick={()=>pick(ch)}
-                className="w-full group text-left px-4 py-3.5 rounded-xl border border-stone-800 bg-stone-900/40 hover:bg-stone-800/60 hover:border-emerald-900/60 active:scale-[0.99] transition-all">
+                className="w-full group text-left px-4 py-3.5 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 hover:border-indigo-900/60 active:scale-[0.99] transition-all">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-stone-200 text-[14px] leading-snug">{ch.text[lang]}</span>
-                  <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-emerald-400 transition-colors flex-shrink-0"/>
+                  <span className="text-slate-200 text-[14px] leading-snug">{ch.text[lang]}</span>
+                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0"/>
                 </div>
               </button>
             ))}
@@ -3571,15 +3571,15 @@ function BranchSimulator({lang,t,audio,onEarnXP,onLearn,onLogMistake,onExit,forc
               <div className="flex items-center gap-2 mb-2">
                 <span className={`font-mono text-sm ${q.text}`}>{q.icon}</span>
                 <span className={`font-mono text-[10px] uppercase tracking-widest ${q.text}`}>{q.label[lang]}</span>
-                <span className={`ml-auto font-mono text-[11px] ${chosen.pts>=0?'text-stone-500':'text-rose-400'}`}>
+                <span className={`ml-auto font-mono text-[11px] ${chosen.pts>=0?'text-slate-500':'text-rose-400'}`}>
                   {chosen.pts>0?'+':''}{chosen.pts}
                 </span>
               </div>
-              <p className="text-stone-300 text-[13px] leading-relaxed">{chosen.fb[lang]}</p>
+              <p className="text-slate-300 text-[13px] leading-relaxed">{chosen.fb[lang]}</p>
             </div>
           );})()}
           <button onClick={advance}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-stone-100 text-stone-900 hover:bg-white font-medium transition-colors">
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-slate-100 text-slate-900 hover:bg-white font-medium transition-colors">
             {lang==='en'?'Continue':lang==='pt'?'Continuar':'Continuar'}<ChevronRight className="w-4 h-4"/>
           </button>
         </div>
@@ -3595,7 +3595,7 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
   if(simMode==='pick') return(
     <div className="space-y-4">
       <div className="text-center mb-2">
-        <p className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+        <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
           {lang==='en'?'Select simulation type':lang==='pt'?'Tipo de simulação':'Tipo de simulación'}
         </p>
       </div>
@@ -3611,7 +3611,7 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
             <div className="font-mono text-[10px] text-violet-400/70 uppercase tracking-wider mb-2">
               {ALL_SIM_CASES.length} {lang==='en'?'scenarios · random':lang==='pt'?'cenários · aleatório':'escenarios · al azar'}
             </div>
-            <p className="text-stone-400 text-sm leading-relaxed">
+            <p className="text-slate-400 text-sm leading-relaxed">
               {lang==='en'?'A patient arrives and you do not know what you are facing. Every decision changes the course — the patient can improve, deteriorate or die.'
                :lang==='pt'?'Chega um paciente e você não sabe o que enfrenta. Cada decisão muda o curso — o paciente pode melhorar, piorar ou morrer.'
                :'Llega un paciente y no sabés a qué te enfrentás. Cada decisión cambia el curso — el paciente puede mejorar, deteriorarse o morir.'}
@@ -3632,7 +3632,7 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
           <div className="font-mono text-[11px] text-sky-400/70 uppercase tracking-wider mb-3">
             {CASES.length} {lang==='en'?'cases · branching':lang==='pt'?'casos · ramificados':'casos · ramificados'}
           </div>
-          <p className="text-stone-400 text-sm leading-relaxed">
+          <p className="text-slate-400 text-sm leading-relaxed">
             {lang==='en'?'The 24 cases from the Cases tab, now playable as scenarios: the monitor and the vital signs respond to each decision.'
              :lang==='pt'?'Os 24 casos da aba Casos, agora jogáveis como cenários: o monitor e os sinais vitais respondem a cada decisão.'
              :'Los 24 casos de la pestaña Casos, ahora jugables como escenarios: el monitor y los signos vitales responden a cada decisión.'}
@@ -3647,24 +3647,24 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
             {lang==='en'?'Cardiac Arrest':lang==='pt'?'Parada Cardíaca':'Paro Cardíaco'}
           </div>
           <div className="font-mono text-[11px] text-red-400/70 uppercase tracking-wider mb-3">ACLS · FV · TV sin pulso · AESP</div>
-          <p className="text-stone-400 text-sm leading-relaxed">
+          <p className="text-slate-400 text-sm leading-relaxed">
             {lang==='en'?'Three arrest scenarios with full clinical context, rhythm identification, CPR cycles and a decision debrief at the end.'
              :lang==='pt'?'Três cenários de parada com contexto clínico completo, identificação do ritmo, ciclos de RCP e debriefing final.'
              :'Tres escenarios de paro con contexto clínico completo, identificación del ritmo, ciclos de RCP y debriefing final de decisiones.'}
           </p>
         </button>
         <button onClick={()=>setSimMode('nonarrest')}
-          className="group text-left p-6 rounded-2xl border border-emerald-900/40 bg-emerald-950/20 hover:border-emerald-700/60 hover:bg-emerald-900/20 active:scale-[0.99] transition-all">
-          <div className="w-10 h-10 rounded-xl bg-emerald-900/40 group-hover:bg-emerald-800/50 flex items-center justify-center mb-4 transition-colors">
-            <Activity className="w-5 h-5 text-emerald-400"/>
+          className="group text-left p-6 rounded-2xl border border-indigo-900/40 bg-indigo-950/20 hover:border-indigo-700/60 hover:bg-indigo-900/20 active:scale-[0.99] transition-all">
+          <div className="w-10 h-10 rounded-xl bg-indigo-900/40 group-hover:bg-indigo-800/50 flex items-center justify-center mb-4 transition-colors">
+            <Activity className="w-5 h-5 text-indigo-400"/>
           </div>
-          <div className="font-display text-xl text-emerald-200 mb-1">
+          <div className="font-display text-xl text-indigo-200 mb-1">
             {lang==='en'?'Arrhythmia Management':lang==='pt'?'Manejo de Arritmias':'Manejo de Arritmias'}
           </div>
-          <div className="font-mono text-[11px] text-emerald-400/70 uppercase tracking-wider mb-3">
+          <div className="font-mono text-[11px] text-indigo-400/70 uppercase tracking-wider mb-3">
             {BRANCH_CASES.length} {lang==='en'?'in-depth cases':lang==='pt'?'casos aprofundados':'casos en profundidad'}
           </div>
-          <p className="text-stone-400 text-sm leading-relaxed">
+          <p className="text-slate-400 text-sm leading-relaxed">
             {lang==='en'?'The hardest traps in arrhythmia management: pre-excited AF, Torsades, hyperkalemia, beta-blocker toxicity. Deep context and a decision tree with several endings.'
              :lang==='pt'?'As armadilhas mais difíceis do manejo de arritmias: FA pré-excitada, Torsades, hipercalemia, intoxicação por betabloqueadores.'
              :'Las trampas más difíciles del manejo de arritmias: FA preexcitada, Torsades, hipercalemia, intoxicación por betabloqueantes. Contexto extenso y árbol de decisiones.'}
@@ -3686,7 +3686,7 @@ function SimulatorTab({lang,t,audio,onEarnXP,onLearn,onLogMistake}){
 
   if(simMode==='nonarrest_legacy') return(
     <div className="space-y-4">
-      <button onClick={()=>setSimMode('pick')} className="flex items-center gap-1.5 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+      <button onClick={()=>setSimMode('pick')} className="flex items-center gap-1.5 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
         ← {lang==='en'?'Back to menu':lang==='pt'?'Voltar ao menu':'Volver al menú'}
       </button>
       <NonArrestSimulator lang={lang} t={t} audio={audio} onEarnXP={onEarnXP}/>
@@ -3701,7 +3701,7 @@ function ArrestDebrief({outcome,scenario,detail,decisions,score,elapsed,shocks,e
   const st=TERM_STYLE[outcome]||TERM_STYLE.partial;
   const nCorrect=decisions.filter(d=>d.q==='correct').length;
   const nFatal=decisions.filter(d=>d.q==='fatal').length;
-  const box=outcome==='success'?'border-emerald-700/50 bg-emerald-950/25'
+  const box=outcome==='success'?'border-indigo-700/50 bg-indigo-950/25'
     :outcome==='rescue'?'border-amber-700/50 bg-amber-950/20':'border-rose-800/50 bg-rose-950/25';
   const L={
     title:{ success:{es:'Retorno de circulación espontánea',en:'Return of spontaneous circulation',pt:'Retorno da circulação espontânea'},
@@ -3726,54 +3726,54 @@ function ArrestDebrief({outcome,scenario,detail,decisions,score,elapsed,shocks,e
       <div className={`p-5 rounded-2xl border ${box}`}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xl">{st.icon}</span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-stone-400">{st.label[lang]}</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-slate-400">{st.label[lang]}</span>
           {nFatal>0&&(
             <span className="ml-auto font-mono text-[10px] text-red-300 bg-red-950/40 border border-red-800/40 px-2 py-0.5 rounded-full">
               {nFatal} {lang==='en'?'critical':lang==='pt'?'críticos':'críticos'}
             </span>
           )}
         </div>
-        <h3 className="font-display text-2xl text-stone-100 mb-3">{L.title[outcome==='success'?'success':'death'][lang]}</h3>
-        <p className="text-stone-300 text-[14px] leading-relaxed">{L.narr[outcome==='success'?'success':'death'][lang]}</p>
+        <h3 className="font-display text-2xl text-slate-100 mb-3">{L.title[outcome==='success'?'success':'death'][lang]}</h3>
+        <p className="text-slate-300 text-[14px] leading-relaxed">{L.narr[outcome==='success'?'success':'death'][lang]}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        {[[L.metrics[lang][0],score,score>=60?'text-emerald-300':score>=0?'text-amber-300':'text-rose-300'],
-          [L.metrics[lang][1],`${nCorrect}/${decisions.length}`,'text-stone-200'],
-          [L.metrics[lang][2],fmt(elapsed),'text-stone-200']].map((m,i)=>(
-          <div key={i} className="px-3 py-3 rounded-xl bg-stone-900/60 border border-stone-800 text-center">
-            <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-1">{m[0]}</div>
+        {[[L.metrics[lang][0],score,score>=60?'text-indigo-300':score>=0?'text-amber-300':'text-rose-300'],
+          [L.metrics[lang][1],`${nCorrect}/${decisions.length}`,'text-slate-200'],
+          [L.metrics[lang][2],fmt(elapsed),'text-slate-200']].map((m,i)=>(
+          <div key={i} className="px-3 py-3 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+            <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-1">{m[0]}</div>
             <div className={`font-mono text-lg font-bold ${m[2]}`}>{m[1]}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-stone-800 bg-stone-900/30 p-4">
-        <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-3">{L.inter[lang]}</div>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
+        <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-3">{L.inter[lang]}</div>
         <div className="flex flex-wrap gap-2">
           {[['⚡',shocks,{es:'choques',en:'shocks',pt:'choques'}],
             ['💊',epi.count,{es:'adrenalina',en:'epinephrine',pt:'adrenalina'}],
             ['💉',amio.count,{es:'amiodarona',en:'amiodarone',pt:'amiodarona'}],
             ['🔍',checkedCauses.length,{es:'causas 5H/5T',en:'5H/5T causes',pt:'causas 5H/5T'}]].map((x,i)=>(
-            <div key={i} className="px-3 py-1.5 rounded-lg bg-stone-900/60 border border-stone-800 font-mono text-[11px] text-stone-300">
-              {x[0]} {x[1]} <span className="text-stone-600">{x[2][lang]}</span>
+            <div key={i} className="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 font-mono text-[11px] text-slate-300">
+              {x[0]} {x[1]} <span className="text-slate-600">{x[2][lang]}</span>
             </div>
           ))}
         </div>
       </div>
 
       {decisions.length>0&&(
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/30 p-4">
-          <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-3">{L.path[lang]}</div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
+          <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-3">{L.path[lang]}</div>
           <div className="space-y-1.5">
             {decisions.map((d,i)=>{
               const q=Q_STYLE[d.q]||Q_STYLE.partial;
               return(
                 <div key={i} className={`flex items-start gap-2.5 px-3 py-2 rounded-lg border ${q.ring}`}>
                   <span className={`font-mono text-xs flex-shrink-0 mt-0.5 ${q.text}`}>{q.icon}</span>
-                  <span className="text-stone-300 text-[13px] leading-snug flex-1">{d.text[lang]}</span>
-                  <span className="font-mono text-[10px] text-stone-600 flex-shrink-0">{fmt(d.at)}</span>
-                  <span className={`font-mono text-[10px] flex-shrink-0 ${d.pts>=0?'text-stone-600':'text-rose-400'}`}>{d.pts>0?'+':''}{d.pts}</span>
+                  <span className="text-slate-300 text-[13px] leading-snug flex-1">{d.text[lang]}</span>
+                  <span className="font-mono text-[10px] text-slate-600 flex-shrink-0">{fmt(d.at)}</span>
+                  <span className={`font-mono text-[10px] flex-shrink-0 ${d.pts>=0?'text-slate-600':'text-rose-400'}`}>{d.pts>0?'+':''}{d.pts}</span>
                 </div>
               );
             })}
@@ -3782,13 +3782,13 @@ function ArrestDebrief({outcome,scenario,detail,decisions,score,elapsed,shocks,e
       )}
 
       {outcome==='success'&&(
-        <div className="rounded-2xl border border-emerald-900/40 bg-emerald-950/15 p-4">
-          <div className="font-mono text-[10px] text-emerald-400/80 uppercase tracking-widest mb-3">{L.postRosc[lang]}</div>
+        <div className="rounded-2xl border border-indigo-900/40 bg-indigo-950/15 p-4">
+          <div className="font-mono text-[10px] text-indigo-400/80 uppercase tracking-widest mb-3">{L.postRosc[lang]}</div>
           <div className="space-y-2">
             {ROSC_CARE[lang].map((tip,i)=>(
               <div key={i} className="flex gap-2.5">
-                <span className="text-emerald-500/60 flex-shrink-0">▸</span>
-                <p className="text-stone-300 text-[13px] leading-relaxed">{tip}</p>
+                <span className="text-indigo-500/60 flex-shrink-0">▸</span>
+                <p className="text-slate-300 text-[13px] leading-relaxed">{tip}</p>
               </div>
             ))}
           </div>
@@ -3796,13 +3796,13 @@ function ArrestDebrief({outcome,scenario,detail,decisions,score,elapsed,shocks,e
       )}
 
       {detail&&(
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/30 p-4">
-          <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-3">{L.lessons[lang]}</div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
+          <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-3">{L.lessons[lang]}</div>
           <div className="space-y-2.5">
             {detail.lessons[lang].map((l,i)=>(
               <div key={i} className="flex gap-2.5">
-                <span className="text-emerald-500/60 flex-shrink-0">▸</span>
-                <p className="text-stone-300 text-[13px] leading-relaxed">{l}</p>
+                <span className="text-indigo-500/60 flex-shrink-0">▸</span>
+                <p className="text-slate-300 text-[13px] leading-relaxed">{l}</p>
               </div>
             ))}
           </div>
@@ -3811,7 +3811,7 @@ function ArrestDebrief({outcome,scenario,detail,decisions,score,elapsed,shocks,e
 
       <div className="flex gap-2">
         <button onClick={()=>onPick(scenario.id)}
-          className="flex-1 py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors">
+          className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors">
           {L.again[lang]}
         </button>
         <button onClick={onRestart}
@@ -3987,11 +3987,11 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
       {phase==='scenario'&&(
         <div className="space-y-5">
           <div className="text-center">
-            <div className="font-mono text-[10px] text-stone-500 uppercase tracking-widest mb-1">ACLS · Simulador</div>
-            <h2 className="font-display text-3xl text-stone-100 mb-2">
+            <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-1">ACLS · Simulador</div>
+            <h2 className="font-display text-3xl text-slate-100 mb-2">
               {lang==='en'?'Select scenario':lang==='pt'?'Selecionar cenário':'Seleccionar escenario'}
             </h2>
-            <p className="text-stone-500 text-sm">
+            <p className="text-slate-500 text-sm">
               {lang==='en'?'Each scenario has a different algorithm and teaching objectives.':lang==='pt'?'Cada cenário tem algoritmo e objetivos didáticos distintos.':'Cada escenario tiene algoritmo y objetivos didácticos distintos.'}
             </p>
           </div>
@@ -4004,7 +4004,7 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
                   <div className="font-display text-lg text-violet-200">
                     {lang==='en'?'Surprise arrest':lang==='pt'?'Parada surpresa':'Paro sorpresa'}
                   </div>
-                  <p className="text-stone-500 text-xs">
+                  <p className="text-slate-500 text-xs">
                     {lang==='en'?'Random scenario — you identify the rhythm on arrival':lang==='pt'?'Cenário aleatório — identifique o ritmo na chegada':'Escenario al azar — identificás el ritmo al llegar'}
                   </p>
                 </div>
@@ -4024,8 +4024,8 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
                         {sc.shockable?(lang==='en'?'SHOCKABLE':lang==='pt'?'DESFIBRILÁVEL':'DESFIBRILABLE'):(lang==='en'?'NON-SHOCKABLE':lang==='pt'?'NÃO DESFIBRILÁVEL':'NO DESFIBRILABLE')}
                       </span>
                     </div>
-                    <p className="text-stone-400 text-sm leading-relaxed">{sc.desc[lang]}</p>
-                    <p className="text-stone-600 text-xs mt-1">{sc.patient.name[lang]}</p>
+                    <p className="text-slate-400 text-sm leading-relaxed">{sc.desc[lang]}</p>
+                    <p className="text-slate-600 text-xs mt-1">{sc.patient.name[lang]}</p>
                   </div>
                 </div>
               </button>
@@ -4038,19 +4038,19 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
       {phase==='intro'&&(
         <div className="space-y-4">
           <div className="text-center">
-            <div className="font-mono text-[10px] text-stone-600 uppercase tracking-widest mb-1">
+            <div className="font-mono text-[10px] text-slate-600 uppercase tracking-widest mb-1">
               {lang==='en'?'Case briefing':lang==='pt'?'Briefing do caso':'Presentación del caso'}
             </div>
-            <h3 className="font-display text-3xl text-stone-100">{scenario.patient.name[lang]}</h3>
-            <div className="mt-1 font-mono text-[11px] text-stone-500">{scenario.label[lang]}</div>
+            <h3 className="font-display text-3xl text-slate-100">{scenario.patient.name[lang]}</h3>
+            <div className="mt-1 font-mono text-[11px] text-slate-500">{scenario.label[lang]}</div>
           </div>
 
           {detail&&(
-            <div className="rounded-2xl border border-stone-800 bg-stone-900/40 p-5 space-y-5">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-5">
               <ContextBlock icon="🚑" title={lang==='en'?'Presentation':lang==='pt'?'Apresentação':'Llegada'} body={detail.scene[lang]}/>
-              <div className="h-px bg-stone-800/60"/>
+              <div className="h-px bg-slate-800/60"/>
               <ContextBlock icon="📋" title={lang==='en'?'History':lang==='pt'?'História':'Antecedentes'} body={detail.history[lang]}/>
-              <div className="h-px bg-stone-800/60"/>
+              <div className="h-px bg-slate-800/60"/>
               <ContextBlock icon="🩺" title={lang==='en'?'Physical exam':lang==='pt'?'Exame físico':'Examen físico'} body={detail.exam[lang]}/>
             </div>
           )}
@@ -4080,33 +4080,33 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
       {phase!=='intro'&&(
         <>
           {/* Enhanced vitals bar */}
-          <div className="rounded-xl bg-stone-900/60 border border-stone-800 overflow-hidden">
-            <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-stone-800/60">
+          <div className="rounded-xl bg-slate-900/60 border border-slate-800 overflow-hidden">
+            <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-slate-800/60">
               <VitalChip label="FC" value={phase==='rosc'?'95':'—'} unit="lpm" accent={phase!=='rosc'?'rose':null}/>
               <VitalChip label="TA" value={phase==='rosc'?'88/60':'0/0'} unit="mmHg" accent={phase!=='rosc'?'rose':'amber'}/>
               <VitalChip label="SpO₂" value={phase==='rosc'?'94':'—'} unit="%" accent={phase!=='rosc'?'rose':'amber'}/>
               <VitalChip label="EtCO₂"
                 value={phase==='cpr'||phase==='rosc'?etco2:'—'}
                 unit="mmHg"
-                accent={phase==='rosc'?'emerald':phase==='cpr'&&etco2<10?'rose':phase==='cpr'?'amber':null}/>
+                accent={phase==='rosc'?'indigo':phase==='cpr'&&etco2<10?'rose':phase==='cpr'?'amber':null}/>
               <VitalChip label={lang==='en'?'TIME':'TIEMPO'} value={fmt(elapsed)} unit=""/>
               <div className="px-3 py-2 text-center">
-                <div className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mb-0.5">
+                <div className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mb-0.5">
                   {lang==='en'?'EPI':lang==='pt'?'EPI':'EPI'}
                 </div>
-                <div className={`font-mono text-xs font-semibold ${epiDue?'text-emerald-400':'text-amber-400'}`}>
+                <div className={`font-mono text-xs font-semibold ${epiDue?'text-indigo-400':'text-amber-400'}`}>
                   {epiDue?(lang==='en'?'READY':lang==='pt'?'PRONTO':'LISTA'):`~${epiWait}c`}
                 </div>
-                {epi.count>0&&<div className="font-mono text-[9px] text-stone-700">×{epi.count}</div>}
+                {epi.count>0&&<div className="font-mono text-[9px] text-slate-700">×{epi.count}</div>}
               </div>
             </div>
             {/* Status bar */}
-            <div className={`px-3 py-1.5 flex items-center gap-2 border-t border-stone-800/60 ${phase==='rosc'?'bg-emerald-900/20':phase==='cpr'?'bg-amber-900/10':''}`}>
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${phase==='rosc'?'bg-emerald-400':phase==='cpr'?'bg-amber-400 animate-pulse':'bg-rose-400 animate-pulse'}`}/>
-              <span className="font-mono text-[10px] text-stone-500 uppercase tracking-wider">
+            <div className={`px-3 py-1.5 flex items-center gap-2 border-t border-slate-800/60 ${phase==='rosc'?'bg-indigo-900/20':phase==='cpr'?'bg-amber-900/10':''}`}>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${phase==='rosc'?'bg-indigo-400':phase==='cpr'?'bg-amber-400 animate-pulse':'bg-rose-400 animate-pulse'}`}/>
+              <span className="font-mono text-[10px] text-slate-500 uppercase tracking-wider">
                 {phase==='rosc'?(lang==='en'?'ROSC — Organized rhythm':lang==='pt'?'RCEV — Ritmo organizado':'ROSC — Ritmo organizado'):phase==='cpr'?(lang==='en'?'CPR IN PROGRESS':lang==='pt'?'RCP EM ANDAMENTO':'RCP EN CURSO'):(lang==='en'?'NO PULSE — CARDIAC ARREST':lang==='pt'?'SEM PULSO — PARADA CARDÍACA':'SIN PULSO — PARO CARDÍACO')}
               </span>
-              <span className="ml-auto font-mono text-[10px] text-stone-700">
+              <span className="ml-auto font-mono text-[10px] text-slate-700">
                 {lang==='en'?`Round ${round+1}/${MAX_R} · ${shocks} shock${shocks===1?'':'s'}`:lang==='pt'?`Ciclo ${round+1}/${MAX_R} · ${shocks} choque${shocks===1?'':'s'}`:`Ciclo ${round+1}/${MAX_R} · ${shocks} choque${shocks===1?'':'s'}`}
               </span>
             </div>
@@ -4127,28 +4127,28 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
           {/* ── IDENTIFY ── */}
           {phase==='identify'&&(
             <div className="space-y-3">
-              <p className="font-mono text-xs text-stone-500 uppercase tracking-widest flex items-center gap-2">
+              <p className="font-mono text-xs text-slate-500 uppercase tracking-widest flex items-center gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400"/>{t.identifyQ}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {idChoices.map(k=>(
                   <button key={k} onClick={()=>handleIdentify(k)} disabled={idAnswer!==null}
                     className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all text-left leading-snug ${
-                      idAnswer===null?'border-stone-800 bg-stone-900/40 hover:border-stone-700 hover:bg-stone-800/50 text-stone-200 active:scale-[0.99]'
-                      :k===rhythm?'border-emerald-500/50 bg-emerald-500/10 text-emerald-200'
+                      idAnswer===null?'border-slate-800 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-800/50 text-slate-200 active:scale-[0.99]'
+                      :k===rhythm?'border-indigo-500/50 bg-indigo-500/10 text-indigo-200'
                       :k===idAnswer&&k!==rhythm?'border-rose-500/50 bg-rose-500/10 text-rose-200'
-                      :'border-stone-800/40 bg-stone-900/20 text-stone-600'
+                      :'border-slate-800/40 bg-slate-900/20 text-slate-600'
                     }`}>
                     {t.rhythms[k]}
                   </button>
                 ))}
               </div>
               {idAnswer!==null&&(
-                <div className={`p-4 rounded-xl border ${idAnswer===rhythm?'bg-emerald-500/8 border-emerald-500/30':'bg-rose-500/8 border-rose-500/30'}`}>
-                  <div className={`font-semibold text-sm mb-1 ${idAnswer===rhythm?'text-emerald-300':'text-rose-300'}`}>
+                <div className={`p-4 rounded-xl border ${idAnswer===rhythm?'bg-indigo-500/8 border-indigo-500/30':'bg-rose-500/8 border-rose-500/30'}`}>
+                  <div className={`font-semibold text-sm mb-1 ${idAnswer===rhythm?'text-indigo-300':'text-rose-300'}`}>
                     {idAnswer===rhythm?`✅ ${t.identifyCorrect}`:`❌ ${t.identifyWrong} ${t.rhythms[rhythm]}`}
                   </div>
-                  <p className="text-stone-400 text-xs leading-relaxed mb-1">{(IDENTIFY_TIP[rhythm]||IDENTIFY_TIP.vf)[lang]}</p>
+                  <p className="text-slate-400 text-xs leading-relaxed mb-1">{(IDENTIFY_TIP[rhythm]||IDENTIFY_TIP.vf)[lang]}</p>
                   <button onClick={goToAction}
                     className="mt-3 w-full py-3 rounded-lg bg-red-800/80 hover:bg-red-700 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2">
                     {t.proceedAction}<ChevronRight className="w-4 h-4"/>
@@ -4162,13 +4162,13 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
           {phase==='action'&&(
             <div className="space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
-                <p className="font-mono text-xs text-stone-500 uppercase tracking-widest flex items-center gap-2">
+                <p className="font-mono text-xs text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-400"/>
                   {round===0?(lang==='en'?'No pulse. First action?':lang==='pt'?'Sem pulso. Primeira ação?':'Sin pulso. ¿Primera acción?'):t.conductQ}
                 </p>
-                <div className="flex gap-2 ml-auto text-[10px] font-mono text-stone-600">
-                  {epi.count>0&&<span className="px-2 py-1 rounded bg-stone-900 border border-stone-800">{t.epiLabel} ×{epi.count}</span>}
-                  {amio.count>0&&<span className="px-2 py-1 rounded bg-stone-900 border border-stone-800">{t.amioLabel} ×{amio.count}</span>}
+                <div className="flex gap-2 ml-auto text-[10px] font-mono text-slate-600">
+                  {epi.count>0&&<span className="px-2 py-1 rounded bg-slate-900 border border-slate-800">{t.epiLabel} ×{epi.count}</span>}
+                  {amio.count>0&&<span className="px-2 py-1 rounded bg-slate-900 border border-slate-800">{t.amioLabel} ×{amio.count}</span>}
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-2">
@@ -4178,17 +4178,17 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
                   return(
                     <button key={ch.id} onClick={()=>handleAction(ch)} disabled={picked}
                       className={`text-left py-4 px-5 rounded-xl border transition-all ${
-                        !picked?'border-stone-800 bg-stone-900/40 hover:border-stone-700 hover:bg-stone-800/50 active:scale-[0.99]'
-                        :isThis&&ch.correct?'border-emerald-500/40 bg-emerald-500/8'
+                        !picked?'border-slate-800 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-800/50 active:scale-[0.99]'
+                        :isThis&&ch.correct?'border-indigo-500/40 bg-indigo-500/8'
                         :isThis&&!ch.correct?'border-rose-500/40 bg-rose-500/8'
-                        :'border-stone-800/30 bg-stone-900/20 opacity-40'
+                        :'border-slate-800/30 bg-slate-900/20 opacity-40'
                       }`}>
                       <div className={`font-medium text-sm leading-snug ${
-                        !picked?'text-stone-200':isThis?(ch.correct?'text-emerald-200':'text-rose-200'):'text-stone-600'}`}>
+                        !picked?'text-slate-200':isThis?(ch.correct?'text-indigo-200':'text-rose-200'):'text-slate-600'}`}>
                         {ch.text[lang]}
                       </div>
                       {isThis&&(
-                        <p className="text-stone-400 text-xs leading-relaxed mt-2">{ch.feedback[lang]}</p>
+                        <p className="text-slate-400 text-xs leading-relaxed mt-2">{ch.feedback[lang]}</p>
                       )}
                     </button>
                   );
@@ -4201,27 +4201,27 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
               )}
 
               {/* 5H/5T Reversible Causes */}
-              <div className="rounded-xl border border-stone-800/60 bg-stone-900/20 overflow-hidden">
+              <div className="rounded-xl border border-slate-800/60 bg-slate-900/20 overflow-hidden">
                 <button onClick={()=>setShow5HT(v=>!v)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-stone-800/30 transition-colors">
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/30 transition-colors">
                   <div className="flex items-center gap-2">
                     <span className="text-base">🔍</span>
-                    <span className="font-mono text-[11px] text-stone-400 uppercase tracking-wider">
+                    <span className="font-mono text-[11px] text-slate-400 uppercase tracking-wider">
                       {lang==='en'?'Reversible causes — 5H/5T':lang==='pt'?'Causas reversíveis — 5H/5T':'Causas reversibles — 5H/5T'}
                     </span>
                     {checkedCauses.length>0&&(
-                      <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                      <span className="font-mono text-[10px] text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded-full">
                         {checkedCauses.length}
                       </span>
                     )}
                   </div>
-                  <span className={`text-stone-600 text-xs transition-transform ${show5HT?'rotate-90':''}`}>▶</span>
+                  <span className={`text-slate-600 text-xs transition-transform ${show5HT?'rotate-90':''}`}>▶</span>
                 </button>
                 {show5HT&&(
-                  <div className="px-4 pb-4 space-y-3 border-t border-stone-800/40">
+                  <div className="px-4 pb-4 space-y-3 border-t border-slate-800/40">
                     {['H','T'].map(type=>(
                       <div key={type}>
-                        <div className="font-mono text-[10px] text-stone-600 uppercase tracking-widest mt-3 mb-2">
+                        <div className="font-mono text-[10px] text-slate-600 uppercase tracking-widest mt-3 mb-2">
                           {type==='H'?'5H (Causas metabólicas)':'5T (Causas mecánicas/obstructivas)'}
                         </div>
                         <div className="space-y-1.5">
@@ -4233,15 +4233,15 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
                                   if(next.length>=5&&onEarnXP) onEarnXP(0,{causesChecked:next.length});
                                   return next;
                                 })}
-                                className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all ${checked?'border-emerald-500/40 bg-emerald-900/20':'border-stone-800/60 bg-stone-900/30 hover:border-stone-700'}`}>
+                                className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all ${checked?'border-indigo-500/40 bg-indigo-900/20':'border-slate-800/60 bg-slate-900/30 hover:border-slate-700'}`}>
                                 <div className="flex items-start gap-2.5">
                                   <span className="text-base flex-shrink-0 mt-0.5">{c.icon}</span>
                                   <div className="flex-1 min-w-0">
-                                    <div className={`font-semibold text-sm ${checked?'text-emerald-200':'text-stone-300'}`}>{c.label[lang]}</div>
-                                    <div className="text-stone-500 text-xs mt-0.5">{c.clue[lang]}</div>
-                                    {checked&&<div className="text-emerald-400/80 text-xs mt-1 font-mono">→ {c.treat[lang]}</div>}
+                                    <div className={`font-semibold text-sm ${checked?'text-indigo-200':'text-slate-300'}`}>{c.label[lang]}</div>
+                                    <div className="text-slate-500 text-xs mt-0.5">{c.clue[lang]}</div>
+                                    {checked&&<div className="text-indigo-400/80 text-xs mt-1 font-mono">→ {c.treat[lang]}</div>}
                                   </div>
-                                  {checked&&<span className="text-emerald-400 text-base flex-shrink-0">✓</span>}
+                                  {checked&&<span className="text-indigo-400 text-base flex-shrink-0">✓</span>}
                                 </div>
                               </button>
                             );
@@ -4265,12 +4265,12 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
                   </span>
                   <span className="font-mono text-amber-200 font-semibold">{Math.round(cprProg*100)}%</span>
                 </div>
-                <div className="h-2.5 rounded-full bg-stone-800 overflow-hidden mb-4">
+                <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden mb-4">
                   <div className="h-full rounded-full bg-amber-500 transition-all duration-100" style={{width:`${cprProg*100}%`}}/>
                 </div>
                 <div className="space-y-1.5">
                   {CPR_TIPS[lang].map((tip,i)=>(
-                    <div key={i} className={`text-sm transition-all duration-300 ${i===cprTipIdx?'text-amber-200 font-medium':'text-stone-600'}`}>
+                    <div key={i} className={`text-sm transition-all duration-300 ${i===cprTipIdx?'text-amber-200 font-medium':'text-slate-600'}`}>
                       {tip}
                     </div>
                   ))}
@@ -4295,18 +4295,18 @@ function ArrestSimulator({lang,t,audio,onEarnXP,onLearn}){
           {log.length>0&&(
             <div>
               <button onClick={()=>setShowLog(v=>!v)}
-                className="flex items-center gap-2 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors uppercase tracking-widest mb-2">
+                className="flex items-center gap-2 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest mb-2">
                 <Activity className="w-3 h-3"/>
                 {t.eventLog} ({log.length})
                 <ChevronRight className={`w-3 h-3 transition-transform ${showLog?'rotate-90':''}`}/>
               </button>
               {showLog&&(
-                <div className="rounded-xl bg-stone-900/40 border border-stone-800 max-h-48 overflow-y-auto">
+                <div className="rounded-xl bg-slate-900/40 border border-slate-800 max-h-48 overflow-y-auto">
                   {log.map((e,i)=>(
-                    <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-stone-800/50 last:border-0">
+                    <div key={i} className="flex items-start gap-3 px-4 py-2.5 border-b border-slate-800/50 last:border-0">
                       <span className="text-sm">{e.icon}</span>
-                      <span className="text-stone-400 text-xs leading-relaxed flex-1">{e.text[lang]}</span>
-                      <span className="font-mono text-[10px] text-stone-600 flex-shrink-0">{e.time}</span>
+                      <span className="text-slate-400 text-xs leading-relaxed flex-1">{e.text[lang]}</span>
+                      <span className="font-mono text-[10px] text-slate-600 flex-shrink-0">{e.time}</span>
                     </div>
                   ))}
                 </div>
@@ -10143,23 +10143,23 @@ function MistakeReview({mistakes,lang,onResolve,onClear,onDrill}){
     times:{es:'veces',en:'times',pt:'vezes'},
   };
   const srcColor={quiz:'text-sky-400 border-sky-800/40 bg-sky-950/20',
-                  case:'text-emerald-400 border-emerald-800/40 bg-emerald-950/20',
+                  case:'text-indigo-400 border-indigo-800/40 bg-indigo-950/20',
                   sim:'text-violet-400 border-violet-800/40 bg-violet-950/20'};
   return(
     <div>
       <button onClick={()=>setOpen(v=>!v)} className="w-full flex items-center justify-between py-1 group">
-        <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+        <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
           {L.title[lang]}
           {mistakes.length>0&&<span className="ml-2 text-rose-400">({mistakes.length})</span>}
         </div>
-        <span className={`text-stone-600 text-xs transition-transform ${open?'rotate-90':''}`}>▶</span>
+        <span className={`text-slate-600 text-xs transition-transform ${open?'rotate-90':''}`}>▶</span>
       </button>
 
       {open&&(
         <div className="mt-3 space-y-2">
           {mistakes.length===0?(
-            <div className="px-4 py-4 rounded-xl bg-stone-900/40 border border-stone-800/80">
-              <p className="text-stone-500 text-[13px] leading-relaxed">{L.empty[lang]}</p>
+            <div className="px-4 py-4 rounded-xl bg-slate-900/40 border border-slate-800/80">
+              <p className="text-slate-500 text-[13px] leading-relaxed">{L.empty[lang]}</p>
             </div>
           ):(
             <>
@@ -10179,22 +10179,22 @@ function MistakeReview({mistakes,lang,onResolve,onClear,onDrill}){
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className={`font-mono text-[9px] uppercase tracking-wider ${srcColor[m.src]?.split(' ')[0]||''}`}>{d.tag}</span>
-                            <span className="font-mono text-[9px] text-stone-600">
+                            <span className="font-mono text-[9px] text-slate-600">
                               {(T[lang]&&T[lang].rhythms&&T[lang].rhythms[m.rhythm])||m.rhythm}
                             </span>
                             {m.n>1&&<span className="font-mono text-[9px] text-rose-400">×{m.n} {L.times[lang]}</span>}
                           </div>
-                          <div className="text-stone-200 text-[13px] leading-snug">{d.title}</div>
-                          {d.patient&&<div className="text-stone-600 text-[11px] mt-0.5">{d.patient}</div>}
+                          <div className="text-slate-200 text-[13px] leading-snug">{d.title}</div>
+                          {d.patient&&<div className="text-slate-600 text-[11px] mt-0.5">{d.patient}</div>}
                         </div>
-                        <span className={`text-stone-600 text-xs flex-shrink-0 mt-0.5 transition-transform ${isOpen?'rotate-90':''}`}>▶</span>
+                        <span className={`text-slate-600 text-xs flex-shrink-0 mt-0.5 transition-transform ${isOpen?'rotate-90':''}`}>▶</span>
                       </div>
                     </button>
                     {isOpen&&(
                       <div className="px-3.5 pb-3.5 pt-0.5 border-t border-white/5">
-                        <p className="text-stone-300 text-[13px] leading-relaxed mb-3">{d.body}</p>
+                        <p className="text-slate-300 text-[13px] leading-relaxed mb-3">{d.body}</p>
                         <button onClick={()=>onResolve(m.sig)}
-                          className="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs transition-colors">
+                          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors">
                           ✓ {L.got[lang]}
                         </button>
                       </div>
@@ -10204,7 +10204,7 @@ function MistakeReview({mistakes,lang,onResolve,onClear,onDrill}){
               })}
 
               <button onClick={onClear}
-                className="w-full py-2 text-[11px] font-mono text-stone-600 hover:text-rose-400 transition-colors">
+                className="w-full py-2 text-[11px] font-mono text-slate-600 hover:text-rose-400 transition-colors">
                 {L.clear[lang]}
               </button>
             </>
@@ -10585,8 +10585,8 @@ const NA_CASES = [
 
 // ─── Outcome labels ───
 const NA_OUTCOME_LABELS = {
-  convert:{es:'✅ Ritmo convertido',en:'✅ Rhythm converted',pt:'✅ Ritmo convertido', color:'emerald'},
-  improve:{es:'✅ Paciente estabilizado',en:'✅ Patient stabilized',pt:'✅ Paciente estabilizado', color:'emerald'},
+  convert:{es:'✅ Ritmo convertido',en:'✅ Rhythm converted',pt:'✅ Ritmo convertido', color:'indigo'},
+  improve:{es:'✅ Paciente estabilizado',en:'✅ Patient stabilized',pt:'✅ Paciente estabilizado', color:'indigo'},
   stable: {es:'📋 Manejo correcto — sin cambio de ritmo',en:'📋 Correct management — no rhythm change',pt:'📋 Manejo correto — sem mudança de ritmo', color:'sky'},
   neutral:{es:'⚠️ Sin cambio significativo',en:'⚠️ No significant change',pt:'⚠️ Sem mudança significativa', color:'amber'},
   worsen: {es:'🚨 Deterioro del paciente',en:'🚨 Patient deterioration',pt:'🚨 Deterioração do paciente', color:'rose'},
@@ -10673,27 +10673,27 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
     return null;
   };
 
-  const outcomeColor={emerald:'border-emerald-500/40 bg-emerald-500/8 text-emerald-300',sky:'border-sky-500/40 bg-sky-500/8 text-sky-300',amber:'border-amber-500/40 bg-amber-500/8 text-amber-300',rose:'border-rose-500/40 bg-rose-500/8 text-rose-300'};
+  const outcomeColor={indigo:'border-indigo-500/40 bg-indigo-500/8 text-indigo-300',sky:'border-sky-500/40 bg-sky-500/8 text-sky-300',amber:'border-amber-500/40 bg-amber-500/8 text-amber-300',rose:'border-rose-500/40 bg-rose-500/8 text-rose-300'};
 
   if(phase==='pick') return(
     <div className="space-y-4">
-      <p className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+      <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
         {lang==='en'?'Select a scenario':lang==='pt'?'Selecionar cenário':'Seleccionar escenario'}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {NA_CASES.map((c,i)=>(
           <button key={c.id} onClick={()=>startCase(i)}
-            className="text-left p-4 rounded-xl border border-stone-800 bg-stone-900/40 hover:border-emerald-900/60 hover:bg-stone-800/50 active:scale-[0.99] transition-all group">
+            className="text-left p-4 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-indigo-900/60 hover:bg-slate-800/50 active:scale-[0.99] transition-all group">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-stone-800 group-hover:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 transition-colors">
-                <Activity className="w-4 h-4 text-emerald-400"/>
+              <div className="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-indigo-500/10 flex items-center justify-center flex-shrink-0 transition-colors">
+                <Activity className="w-4 h-4 text-indigo-400"/>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-stone-200 text-sm mb-0.5">{c.tag[lang]}</div>
-                <div className="font-mono text-[11px] text-stone-500 uppercase tracking-wider">{t.rhythms[c.initialRhythm]}</div>
-                <div className="text-stone-500 text-xs mt-1 truncate">{c.patient[lang]}</div>
+                <div className="font-semibold text-slate-200 text-sm mb-0.5">{c.tag[lang]}</div>
+                <div className="font-mono text-[11px] text-slate-500 uppercase tracking-wider">{t.rhythms[c.initialRhythm]}</div>
+                <div className="text-slate-500 text-xs mt-1 truncate">{c.patient[lang]}</div>
               </div>
-              <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5"/>
+              <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0 mt-0.5"/>
             </div>
           </button>
         ))}
@@ -10703,13 +10703,13 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
 
   if(phase==='intro'&&kase) return(
     <div className="space-y-4">
-      <button onClick={()=>setPhase('pick')} className="flex items-center gap-1.5 text-xs font-mono text-stone-500 hover:text-stone-300 transition-colors">
+      <button onClick={()=>setPhase('pick')} className="flex items-center gap-1.5 text-xs font-mono text-slate-500 hover:text-slate-300 transition-colors">
         ← {lang==='en'?'Back':lang==='pt'?'Voltar':'Volver'}
       </button>
-      <div className="rounded-xl bg-stone-900/40 border border-stone-800/80 p-5">
-        <div className="flex items-center gap-2 mb-3"><User className="w-4 h-4 text-stone-500"/><span className="font-mono text-[11px] uppercase tracking-widest text-stone-500">{t.patient}</span></div>
-        <h3 className="font-display text-2xl text-stone-100 mb-2">{kase.patient[lang]}</h3>
-        <p className="text-stone-300 leading-relaxed text-[15px]">{kase.context[lang]}</p>
+      <div className="rounded-xl bg-slate-900/40 border border-slate-800/80 p-5">
+        <div className="flex items-center gap-2 mb-3"><User className="w-4 h-4 text-slate-500"/><span className="font-mono text-[11px] uppercase tracking-widest text-slate-500">{t.patient}</span></div>
+        <h3 className="font-display text-2xl text-slate-100 mb-2">{kase.patient[lang]}</h3>
+        <p className="text-slate-300 leading-relaxed text-[15px]">{kase.context[lang]}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         <VitalChip label="FC" value={kase.steps[0].vitals.hr} unit="lpm" accent={accentVitals(kase.steps[0].vitals.hr,'hr')}/>
@@ -10718,7 +10718,7 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
       </div>
       <ECGMonitor rhythmKey={kase.initialRhythm} running={true} rateHint={kase.steps[0].vitals.hr} label={t.rhythms[kase.initialRhythm]} audio={audio}/>
       <button onClick={()=>setPhase('step')}
-        className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-emerald-800/80 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-base transition-all">
+        className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-indigo-800/80 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-base transition-all">
         <Stethoscope className="w-5 h-5"/>
         {lang==='en'?'Evaluate patient →':lang==='pt'?'Avaliar paciente →':'Evaluar paciente →'}
       </button>
@@ -10728,7 +10728,7 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
   if((phase==='step'||phase==='transition')&&kase&&currentStep) return(
     <div className="space-y-4">
       {/* Vitals bar */}
-      <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-stone-900/60 border border-stone-800">
+      <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
         <VitalChip label="FC" value={vitals.hr} unit="lpm" accent={accentVitals(vitals.hr,'hr')}/>
         <VitalChip label="TA" value={vitals.bp} unit="mmHg" accent={accentVitals(vitals.bp,'bp')}/>
         <VitalChip label="SpO₂" value={vitals.spo2} unit="%" accent={accentVitals(vitals.spo2,'spo2')}/>
@@ -10740,7 +10740,7 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
         <ECGMonitor rhythmKey={rhythm} running={true} rateHint={vitals&&vitals.hr} label={t.rhythms[rhythm]} audio={audio}/>
         {transitioning&&(
           <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 backdrop-blur-[2px]">
-            <div className="font-mono text-sm text-emerald-300 animate-pulse uppercase tracking-widest">
+            <div className="font-mono text-sm text-indigo-300 animate-pulse uppercase tracking-widest">
               {lang==='en'?'Applying intervention...':lang==='pt'?'Aplicando intervenção...':'Aplicando intervención...'}
             </div>
           </div>
@@ -10757,8 +10757,8 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
           <div className="grid grid-cols-1 gap-2">
             {currentStep.choices.map(ch=>(
               <button key={ch.id} onClick={()=>pickChoice(ch)}
-                className="text-left py-4 px-5 rounded-xl border border-stone-800 bg-stone-900/40 hover:border-stone-700 hover:bg-stone-800/50 active:scale-[0.99] transition-all">
-                <span className="text-stone-200 font-medium text-sm leading-snug">{ch.text[lang]}</span>
+                className="text-left py-4 px-5 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-slate-700 hover:bg-slate-800/50 active:scale-[0.99] transition-all">
+                <span className="text-slate-200 font-medium text-sm leading-snug">{ch.text[lang]}</span>
               </button>
             ))}
           </div>
@@ -10780,14 +10780,14 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
           })()}
           {/* Feedback text */}
           {!transitioning&&(
-            <div className={`p-4 rounded-xl border ${chosen.correct?'bg-emerald-500/8 border-emerald-500/30':'bg-rose-500/8 border-rose-500/30'}`}>
-              <p className="text-stone-300 text-sm leading-relaxed">{chosen.feedback[lang]}</p>
+            <div className={`p-4 rounded-xl border ${chosen.correct?'bg-indigo-500/8 border-indigo-500/30':'bg-rose-500/8 border-rose-500/30'}`}>
+              <p className="text-slate-300 text-sm leading-relaxed">{chosen.feedback[lang]}</p>
             </div>
           )}
           {/* Continue button */}
           {!transitioning&&(
             <button onClick={()=>{ if(pendingNext||stepIdx+1<kase.steps.length){goNextStep();}else{setPhase('done');} }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors">
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors">
               {lang==='en'?'Continue →':lang==='pt'?'Continuar →':'Continuar →'}
             </button>
           )}
@@ -10798,19 +10798,19 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
 
   if(phase==='done'&&kase) return(
     <div className="space-y-4">
-      <div className="p-5 rounded-xl border border-emerald-500/30 bg-emerald-900/10">
-        <div className="font-display text-3xl text-emerald-300 mb-1">
+      <div className="p-5 rounded-xl border border-indigo-500/30 bg-indigo-900/10">
+        <div className="font-display text-3xl text-indigo-300 mb-1">
           {lang==='en'?'Case completed':lang==='pt'?'Caso concluído':'Caso completado'}
         </div>
-        <div className="font-mono text-xs text-stone-500 mb-5">
+        <div className="font-mono text-xs text-slate-500 mb-5">
           {lang==='en'?`Score: ${score}`:lang==='pt'?`Pontuação: ${score}`:`Puntaje: ${score}`}
         </div>
-        <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-3">
+        <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-3">
           {lang==='en'?'Your decisions':lang==='pt'?'Suas decisões':'Tus decisiones'}
         </div>
         <div className="space-y-2">
           {history.map((h,i)=>(
-            <div key={i} className={`flex items-center gap-3 py-2 px-3 rounded-lg text-sm ${h.pts>0?'bg-emerald-500/8 text-emerald-200':h.pts<0?'bg-rose-500/8 text-rose-200':'bg-stone-800/40 text-stone-400'}`}>
+            <div key={i} className={`flex items-center gap-3 py-2 px-3 rounded-lg text-sm ${h.pts>0?'bg-indigo-500/8 text-indigo-200':h.pts<0?'bg-rose-500/8 text-rose-200':'bg-slate-800/40 text-slate-400'}`}>
               <span className="flex-1 leading-snug">{h.text[lang]}</span>
               <span className="font-mono text-xs flex-shrink-0">{h.pts>0?'+':''}{h.pts}</span>
             </div>
@@ -10819,12 +10819,12 @@ function NonArrestSimulator({lang,t,audio,onEarnXP}){
       </div>
       <div className="flex gap-2">
         <button onClick={()=>startCase(caseIdx)}
-          className="flex-1 py-3 rounded-xl bg-emerald-800/60 hover:bg-emerald-700 text-emerald-200 font-medium transition-colors flex items-center justify-center gap-2">
+          className="flex-1 py-3 rounded-xl bg-indigo-800/60 hover:bg-indigo-700 text-indigo-200 font-medium transition-colors flex items-center justify-center gap-2">
           <RotateCcw className="w-4 h-4"/>
           {lang==='en'?'Retry':lang==='pt'?'Refazer':'Repetir'}
         </button>
         <button onClick={()=>setPhase('pick')}
-          className="flex-1 py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors">
+          className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors">
           {lang==='en'?'Other scenarios':lang==='pt'?'Outros cenários':'Otros escenarios'}
         </button>
       </div>
@@ -11074,14 +11074,14 @@ export default function App() {
   const currentCase=filteredCases[caseIdx];
 
   if(!authReady) return(
-    <div className="min-h-screen w-full flex items-center justify-center" style={{background:'radial-gradient(ellipse at top,#0f1e18 0%,#030605 100%)'}}>
-      <Activity className="w-8 h-8 text-emerald-500/60 animate-pulse"/>
+    <div className="min-h-screen w-full flex items-center justify-center" style={{background:'radial-gradient(ellipse at top,#0f1a26 0%,#03060c 100%)'}}>
+      <Activity className="w-8 h-8 text-indigo-500/60 animate-pulse"/>
     </div>
   );
   if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
 
   return(
-    <div className="min-h-screen w-full text-stone-200" style={{fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:'radial-gradient(ellipse at top,#0f1e18 0%,#060a08 40%,#030605 100%)'}}>
+    <div className="min-h-screen w-full text-slate-200" style={{fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:'radial-gradient(ellipse at top,#0f1a26 0%,#0a1420 40%,#03060c 100%)'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
         .font-display{font-family:'Instrument Serif',Georgia,serif;font-feature-settings:'liga' 1;}
@@ -11095,18 +11095,18 @@ export default function App() {
         <header className="flex items-start justify-between mb-8 sm:mb-12">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Activity className="w-5 h-5 text-emerald-400"/>
-              <span className="font-mono text-[10px] sm:text-xs text-emerald-400/70 tracking-[0.25em] uppercase">ECG · 6 SEC</span>
+              <Activity className="w-5 h-5 text-indigo-400"/>
+              <span className="font-mono text-[10px] sm:text-xs text-indigo-400/70 tracking-[0.25em] uppercase">ECG · 6 SEC</span>
             </div>
-            <h1 className="font-display text-5xl sm:text-7xl leading-none tracking-tight text-stone-100">{t.appTitle}</h1>
-            <p className="font-display italic text-lg sm:text-xl text-stone-400 mt-1">{t.appSubtitle}</p>
+            <h1 className="font-display text-5xl sm:text-7xl leading-none tracking-tight text-slate-100">{t.appTitle}</h1>
+            <p className="font-display italic text-lg sm:text-xl text-slate-400 mt-1">{t.appSubtitle}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
               <LangToggle lang={lang} setLang={setLang}/>
               <button onClick={()=>setShowProfile(true)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-900/30 border border-emerald-700/50 hover:bg-emerald-800/40 hover:border-emerald-600/60 active:scale-[0.98] transition-all text-emerald-200">
-                <User className="w-4 h-4 text-emerald-400 flex-shrink-0"/>
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-900/30 border border-indigo-700/50 hover:bg-indigo-800/40 hover:border-indigo-600/60 active:scale-[0.98] transition-all text-indigo-200">
+                <User className="w-4 h-4 text-indigo-400 flex-shrink-0"/>
                 <span className="hidden sm:block font-medium text-sm">
                   {user?user.name.split(' ')[0]:(lang==='en'?'Profile':lang==='pt'?'Perfil':'Perfil')}
                 </span>
@@ -11116,7 +11116,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex gap-1 mb-6 p-1 bg-stone-900/60 border border-stone-800/80 rounded-xl w-full overflow-x-auto">
+        <div className="flex gap-1 mb-6 p-1 bg-slate-900/60 border border-slate-800/80 rounded-xl w-full overflow-x-auto">
           <TabButton active={mode==='quiz'} onClick={()=>setMode('quiz')} icon={Brain}>{t.quiz}</TabButton>
           <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
           <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
@@ -11130,12 +11130,12 @@ export default function App() {
           <div className="space-y-6">
             <div className="grid grid-cols-4 gap-2 sm:gap-3">
               <Stat label={t.score} value={`${stats.correct}/${stats.total}`}/>
-              <Stat label={t.accuracy} value={`${accuracy}%`} accent={accuracy>=70?'emerald':accuracy>=40?'amber':'rose'}/>
-              <Stat label={t.streak} value={stats.streak} accent="emerald"/>
+              <Stat label={t.accuracy} value={`${accuracy}%`} accent={accuracy>=70?'indigo':accuracy>=40?'amber':'rose'}/>
+              <Stat label={t.streak} value={stats.streak} accent="indigo"/>
               <Stat
                 label="🔁"
                 value={dueRhythms.length>0?dueRhythms.length:Object.keys(srData).length>0?'✓':'—'}
-                accent={dueRhythms.length>0?'sky':Object.keys(srData).length>0?'emerald':null}
+                accent={dueRhythms.length>0?'sky':Object.keys(srData).length>0?'indigo':null}
               />
             </div>
 
@@ -11170,7 +11170,7 @@ export default function App() {
                 {(()=>{
                   const tier=getUnlockedTier(adaptData);
                   return tier>=2&&(
-                    <span className="font-mono text-[10px] text-stone-600">
+                    <span className="font-mono text-[10px] text-slate-600">
                       {lang==='en'?`Tier ${tier} unlocked`:lang==='pt'?`Nível ${tier} desbloqueado`:`Nivel ${tier} desbloqueado`} 🔓
                     </span>
                   );
@@ -11185,7 +11185,7 @@ export default function App() {
                   <div className="font-semibold text-rose-300 text-sm">
                     {lang==='en'?"Time's up!":lang==='pt'?'Tempo esgotado!':'¡Se acabó el tiempo!'}
                   </div>
-                  <div className="text-stone-400 text-xs">
+                  <div className="text-slate-400 text-xs">
                     {lang==='en'?`Correct answer: ${t.rhythms[quizQ.correct]}`:lang==='pt'?`Resposta correta: ${t.rhythms[quizQ.correct]}`:`Respuesta correcta: ${t.rhythms[quizQ.correct]}`}
                   </div>
                 </div>
@@ -11201,14 +11201,14 @@ export default function App() {
               audio={audio}/>
             {answer===null&&answer!=='__timeout__'?(
               <div>
-                <p className="font-mono text-xs text-stone-500 uppercase tracking-widest mb-3">{t.selectPrompt}</p>
+                <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3">{t.selectPrompt}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   {quizQ.options.map(k=>(
                     <button key={k} onClick={()=>pickAnswer(k)}
-                      className="group text-left px-5 py-4 rounded-xl border border-stone-800 bg-stone-900/40 hover:bg-stone-800/60 hover:border-emerald-900/60 transition-all active:scale-[0.99]">
+                      className="group text-left px-5 py-4 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 hover:border-indigo-900/60 transition-all active:scale-[0.99]">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-stone-200 font-medium text-sm sm:text-base">{t.rhythms[k]}</span>
-                        <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-emerald-400 transition-colors flex-shrink-0"/>
+                        <span className="text-slate-200 font-medium text-sm sm:text-base">{t.rhythms[k]}</span>
+                        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0"/>
                       </div>
                     </button>
                   ))}
@@ -11224,30 +11224,30 @@ export default function App() {
               {/* Row 1: Reset + mode pills */}
               <div className="flex items-center gap-2">
                 <button onClick={()=>{setStats({correct:0,total:0,streak:0,bestStreak:0});setTimerStreak(0);sessionStartRef.current={correct:0,total:0,weakest:{}};newQuestion();}}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-mono transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono transition-colors">
                   <RotateCcw className="w-3 h-3"/>{t.reset}
                 </button>
                 <button onClick={()=>showHelp?closeHelp():setShowHelp(true)}
                   aria-label={lang==='en'?'What do these modes do?':lang==='pt'?'O que fazem estes modos?':'¿Qué hacen estos modos?'}
-                  className={`flex items-center justify-center w-8 h-8 rounded-lg border text-xs font-mono transition-all ${showHelp?'bg-stone-700 border-stone-600 text-stone-100':'bg-stone-900/60 border-stone-800 text-stone-500 hover:text-stone-200 hover:border-stone-700'}`}>
+                  className={`flex items-center justify-center w-8 h-8 rounded-lg border text-xs font-mono transition-all ${showHelp?'bg-slate-700 border-slate-600 text-slate-100':'bg-slate-900/60 border-slate-800 text-slate-500 hover:text-slate-200 hover:border-slate-700'}`}>
                   ?
                 </button>
                 <div className="flex gap-1.5 ml-auto flex-wrap justify-end">
                   {/* Timer pill */}
                   <button onClick={()=>{setTimerMode(v=>!v);setTimeLeft(TIMER_MAX);setTimedOut(false);}}
                     title={lang==="en"?"Countdown: 60s per rhythm, bonus XP for speed":lang==="pt"?"Cronômetro: 60s por ritmo, XP bônus por velocidade":"Contrarreloj: 60s por ritmo, XP extra por velocidad"}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-all ${timerMode?'bg-amber-900/40 border-amber-700/60 text-amber-200':'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'}`}>
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-all ${timerMode?'bg-amber-900/40 border-amber-700/60 text-amber-200':'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}>
                     <span>⏱</span>
                     <span className="hidden sm:inline">{timerMode?(lang==='en'?'Timer':lang==='pt'?'Crono':'Crono'):(lang==='en'?'Timer':lang==='pt'?'Crono':'Crono')}</span>
-                    {timerMode?<span className="font-bold text-amber-300">ON{timerStreak>0?` ×${timerStreak}`:''}</span>:<span className="text-stone-600">OFF</span>}
+                    {timerMode?<span className="font-bold text-amber-300">ON{timerStreak>0?` ×${timerStreak}`:''}</span>:<span className="text-slate-600">OFF</span>}
                   </button>
                   {/* Adaptive pill */}
                   <button onClick={()=>setAdaptiveMode(v=>!v)}
                     title={lang==="en"?"Adaptive: the system picks rhythms based on your weak spots":lang==="pt"?"Adaptativo: o sistema escolhe ritmos conforme seus pontos fracos":"Adaptativo: el sistema elige ritmos según tus puntos débiles"}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-all ${adaptiveMode?'bg-violet-900/40 border-violet-700/60 text-violet-200':'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'}`}>
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-all ${adaptiveMode?'bg-violet-900/40 border-violet-700/60 text-violet-200':'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}>
                     <span>🧠</span>
                     <span className="hidden sm:inline">{lang==='en'?'Adapt.':lang==='pt'?'Adapt.':'Adapt.'}</span>
-                    {adaptiveMode?<span className="font-bold text-violet-300">ON</span>:<span className="text-stone-600">OFF</span>}
+                    {adaptiveMode?<span className="font-bold text-violet-300">ON</span>:<span className="text-slate-600">OFF</span>}
                   </button>
                 </div>
               </div>
@@ -11278,8 +11278,8 @@ export default function App() {
                     {lang==='en'?'Comparing with':lang==='pt'?'Comparando com':'Comparando con'}: {t.rhythms[refCompare]}
                   </span>
                   <button onClick={()=>setRefCompare(null)}
-                    className="ml-auto p-1 rounded hover:bg-stone-800 transition-colors">
-                    <X className="w-3.5 h-3.5 text-stone-500"/>
+                    className="ml-auto p-1 rounded hover:bg-slate-800 transition-colors">
+                    <X className="w-3.5 h-3.5 text-slate-500"/>
                   </button>
                 </div>
                 <ECGMonitor rhythmKey={refCompare} running={refRunning} label={t.rhythms[refCompare]} realism={true} audio={null}/>
@@ -11289,34 +11289,34 @@ export default function App() {
             {/* Barra de control: play/pausa + FC + navegación */}
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={()=>setRefRunning(r=>!r)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-sm font-medium transition-colors">
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition-colors">
                 {refRunning?<><Pause className="w-4 h-4"/>{t.stop}</>:<><Play className="w-4 h-4"/>{t.start}</>}
               </button>
 
               {RHYTHM_RATE[refKey]!==null&&RHYTHM_RATE[refKey]>0&&(
-                <div className="px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800">
-                  <span className="font-mono text-[9px] text-stone-600 uppercase tracking-wider mr-1.5">FC</span>
-                  <span className="font-mono text-base font-bold text-emerald-300">{RHYTHM_RATE[refKey]}</span>
-                  <span className="font-mono text-[9px] text-stone-600 ml-1">lpm</span>
+                <div className="px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                  <span className="font-mono text-[9px] text-slate-600 uppercase tracking-wider mr-1.5">FC</span>
+                  <span className="font-mono text-base font-bold text-indigo-300">{RHYTHM_RATE[refKey]}</span>
+                  <span className="font-mono text-[9px] text-slate-600 ml-1">lpm</span>
                 </div>
               )}
 
-              <div className="px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800">
+              <div className="px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800">
                 <DifficultyDots tier={RHYTHM_DIFF[refKey]||1} lang={lang}/>
               </div>
 
               <div className="flex gap-1 ml-auto">
                 <button onClick={()=>{const i=RHYTHM_KEYS.indexOf(refKey);setRefKey(RHYTHM_KEYS[(i-1+RHYTHM_KEYS.length)%RHYTHM_KEYS.length]);}}
-                  className="px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700 transition-colors text-sm">←</button>
+                  className="px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-colors text-sm">←</button>
                 <button onClick={()=>{const i=RHYTHM_KEYS.indexOf(refKey);setRefKey(RHYTHM_KEYS[(i+1)%RHYTHM_KEYS.length]);}}
-                  className="px-3 py-2 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700 transition-colors text-sm">→</button>
+                  className="px-3 py-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-colors text-sm">→</button>
               </div>
             </div>
 
             {/* Descripción */}
-            <div className="p-4 rounded-xl bg-stone-900/40 border border-stone-800/80">
-              <p className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-1.5">{t.rhythms[refKey]}</p>
-              <p className="text-stone-300 leading-relaxed text-[15px]">{t.desc[refKey]}</p>
+            <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80">
+              <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-1.5">{t.rhythms[refKey]}</p>
+              <p className="text-slate-300 leading-relaxed text-[15px]">{t.desc[refKey]}</p>
             </div>
 
             {/* Anatomía del ritmo — mismo diagrama del quiz */}
@@ -11325,12 +11325,12 @@ export default function App() {
             {/* Comparar con otro ritmo */}
             {!refCompare&&(
               <div className="flex items-center gap-2 flex-wrap px-1">
-                <span className="font-mono text-[10px] text-stone-600 uppercase tracking-widest">
+                <span className="font-mono text-[10px] text-slate-600 uppercase tracking-widest">
                   {lang==='en'?'Compare with':lang==='pt'?'Comparar com':'Comparar con'}:
                 </span>
                 {RHYTHM_KEYS.filter(k=>k!==refKey&&RHYTHM_CAT[k]===RHYTHM_CAT[refKey]).slice(0,3).map(k=>(
                   <button key={k} onClick={()=>setRefCompare(k)}
-                    className="px-2.5 py-1 rounded-full bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-sky-300 hover:border-sky-800/50 transition-colors text-[11px]">
+                    className="px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-sky-300 hover:border-sky-800/50 transition-colors text-[11px]">
                     {t.rhythms[k]}
                   </button>
                 ))}
@@ -11341,11 +11341,11 @@ export default function App() {
             <div className="relative">
               <input type="text" value={refSearch} onChange={e=>setRefSearch(e.target.value)}
                 placeholder={lang==='en'?'Search rhythm...':lang==='pt'?'Buscar ritmo...':'Buscar ritmo...'}
-                className="w-full px-4 py-2.5 rounded-xl bg-stone-900/60 border border-stone-800 text-stone-200 placeholder-stone-600 text-sm outline-none focus:border-emerald-700/50 transition-colors"/>
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-200 placeholder-slate-600 text-sm outline-none focus:border-indigo-700/50 transition-colors"/>
               {refSearch&&(
                 <button onClick={()=>setRefSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-stone-800 transition-colors">
-                  <X className="w-3.5 h-3.5 text-stone-500"/>
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-800 transition-colors">
+                  <X className="w-3.5 h-3.5 text-slate-500"/>
                 </button>
               )}
             </div>
@@ -11358,14 +11358,14 @@ export default function App() {
                 if(visible.length===0) return null;
                 return(
                   <div key={cat}>
-                    <p className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-2">{t.cats[cat]}</p>
+                    <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-2">{t.cats[cat]}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                       {visible.map(k=>{
                         const m=getMastery(k);
-                        const dot=m==='mastered'?'bg-emerald-400':m==='learning'?'bg-amber-400':m==='weak'?'bg-rose-400':'bg-stone-700';
+                        const dot=m==='mastered'?'bg-indigo-400':m==='learning'?'bg-amber-400':m==='weak'?'bg-rose-400':'bg-slate-700';
                         return(
                           <button key={k} onClick={()=>setRefKey(k)}
-                            className={`text-left px-3 py-2.5 rounded-lg border transition-all text-xs sm:text-sm flex items-start gap-2 ${refKey===k?'bg-emerald-500/15 border-emerald-500/50 text-emerald-200':'bg-stone-900/30 border-stone-800 text-stone-300 hover:border-stone-700 hover:bg-stone-800/50'}`}>
+                            className={`text-left px-3 py-2.5 rounded-lg border transition-all text-xs sm:text-sm flex items-start gap-2 ${refKey===k?'bg-indigo-500/15 border-indigo-500/50 text-indigo-200':'bg-slate-900/30 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/50'}`}>
                             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dot}`}/>
                             <span className="flex-1 leading-snug">{t.rhythms[k]}</span>
                           </button>
@@ -11376,7 +11376,7 @@ export default function App() {
                 );
               })}
               {refSearch.trim()&&RHYTHM_KEYS.filter(k=>t.rhythms[k].toLowerCase().includes(refSearch.trim().toLowerCase())).length===0&&(
-                <p className="text-stone-600 text-sm text-center py-6">
+                <p className="text-slate-600 text-sm text-center py-6">
                   {lang==='en'?'No rhythm matches that search.':lang==='pt'?'Nenhum ritmo corresponde a essa busca.':'Ningún ritmo coincide con esa búsqueda.'}
                 </p>
               )}
@@ -11384,13 +11384,13 @@ export default function App() {
 
             {/* Leyenda del estado de dominio */}
             <div className="flex flex-wrap gap-3 px-1 pt-1">
-              {[['bg-emerald-400',{es:'Dominado',en:'Mastered',pt:'Dominado'}],
+              {[['bg-indigo-400',{es:'Dominado',en:'Mastered',pt:'Dominado'}],
                 ['bg-amber-400',{es:'Aprendiendo',en:'Learning',pt:'Aprendendo'}],
                 ['bg-rose-400',{es:'Débil',en:'Weak',pt:'Fraco'}],
-                ['bg-stone-700',{es:'Sin practicar',en:'Not practiced',pt:'Sem praticar'}]].map(([c,lbl])=>(
+                ['bg-slate-700',{es:'Sin practicar',en:'Not practiced',pt:'Sem praticar'}]].map(([c,lbl])=>(
                 <div key={c} className="flex items-center gap-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full ${c}`}/>
-                  <span className="text-stone-600 text-[10px] font-mono">{lbl[lang]}</span>
+                  <span className="text-slate-600 text-[10px] font-mono">{lbl[lang]}</span>
                 </div>
               ))}
             </div>
@@ -11429,38 +11429,38 @@ export default function App() {
                 {Object.keys(CATEGORIES).map(cat=>{const count=CASES.filter(c=>RHYTHM_CAT[c.rhythm]===cat).length;if(!count)return null;return(<CaseFilterChip key={cat} active={caseFilter===cat} onClick={()=>setCaseFilter(cat)}>{t.cats[cat]} · {count}</CaseFilterChip>);})}
               </div>
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="font-mono text-[11px] text-stone-500 uppercase tracking-widest">{t.caseIndex(caseIdx+1,filteredCases.length)}</div>
+                <div className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">{t.caseIndex(caseIdx+1,filteredCases.length)}</div>
                 <div className="flex items-center gap-2">
-                  <div className="font-mono text-[11px] text-stone-500"><span className="text-emerald-400">{caseStats.correct}</span><span className="opacity-40"> / </span><span>{caseStats.total}</span></div>
-                  <button onClick={randomCase} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700 transition-colors text-xs font-mono"><Shuffle className="w-3 h-3"/>{t.random}</button>
-                  <button onClick={()=>setShowCaseList(s=>!s)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors text-xs font-mono ${showCaseList?'bg-emerald-500/15 border-emerald-500/40 text-emerald-300':'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'}`}><List className="w-3 h-3"/>{t.caseList}</button>
+                  <div className="font-mono text-[11px] text-slate-500"><span className="text-indigo-400">{caseStats.correct}</span><span className="opacity-40"> / </span><span>{caseStats.total}</span></div>
+                  <button onClick={randomCase} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition-colors text-xs font-mono"><Shuffle className="w-3 h-3"/>{t.random}</button>
+                  <button onClick={()=>setShowCaseList(s=>!s)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors text-xs font-mono ${showCaseList?'bg-indigo-500/15 border-indigo-500/40 text-indigo-300':'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}><List className="w-3 h-3"/>{t.caseList}</button>
                 </div>
               </div>
             </div>
             {showCaseList&&(
-              <div className="p-3 rounded-xl bg-stone-900/60 border border-stone-800 max-h-80 overflow-y-auto space-y-1">
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 max-h-80 overflow-y-auto space-y-1">
                 {filteredCases.map((c,i)=>(
-                  <button key={c.id} onClick={()=>goToCase(i)} className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center justify-between gap-2 ${i===caseIdx?'bg-emerald-500/15 text-emerald-200':c.id===todayCaseId?'bg-amber-900/20 text-amber-200 hover:bg-amber-900/30':'hover:bg-stone-800/60 text-stone-300'}`}>
+                  <button key={c.id} onClick={()=>goToCase(i)} className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center justify-between gap-2 ${i===caseIdx?'bg-indigo-500/15 text-indigo-200':c.id===todayCaseId?'bg-amber-900/20 text-amber-200 hover:bg-amber-900/30':'hover:bg-slate-800/60 text-slate-300'}`}>
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate flex items-center gap-1">
                         {c.id===todayCaseId&&<span className="text-xs">⭐</span>}
                         {c.patient[lang]}
                       </div>
-                      <div className="text-xs text-stone-500 truncate">{t.rhythms[c.rhythm]}</div>
+                      <div className="text-xs text-slate-500 truncate">{t.rhythms[c.rhythm]}</div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-stone-600 flex-shrink-0"/>
+                    <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0"/>
                   </button>
                 ))}
               </div>
             )}
-            <div className={`rounded-xl border p-5 ${currentCase.id===todayCaseId?'bg-amber-900/10 border-amber-700/30':'bg-stone-900/40 border-stone-800/80'}`}>
+            <div className={`rounded-xl border p-5 ${currentCase.id===todayCaseId?'bg-amber-900/10 border-amber-700/30':'bg-slate-900/40 border-slate-800/80'}`}>
               <div className="flex items-center gap-2 mb-3">
-                <User className="w-4 h-4 text-stone-500"/>
-                <span className="font-mono text-[11px] uppercase tracking-widest text-stone-500">{t.patient}</span>
+                <User className="w-4 h-4 text-slate-500"/>
+                <span className="font-mono text-[11px] uppercase tracking-widest text-slate-500">{t.patient}</span>
                 {currentCase.id===todayCaseId&&<span className="ml-auto font-mono text-[10px] text-amber-400 uppercase tracking-wider">⭐ {lang==='en'?'+50% XP today':lang==='pt'?'+50% XP hoje':'+50% XP hoy'}</span>}
               </div>
-              <h3 className="font-display text-2xl text-stone-100 mb-2">{currentCase.patient[lang]}</h3>
-              <p className="text-stone-300 leading-relaxed text-[15px] mb-4">{currentCase.history[lang]}</p>
+              <h3 className="font-display text-2xl text-slate-100 mb-2">{currentCase.patient[lang]}</h3>
+              <p className="text-slate-300 leading-relaxed text-[15px] mb-4">{currentCase.history[lang]}</p>
               <div className="flex gap-2 flex-wrap">
                 <VitalChip label="FC" value={currentCase.vitals.hr} unit="lpm" accent={currentCase.vitals.hr===0||currentCase.vitals.hr==='—'?'rose':currentCase.vitals.hr>120||currentCase.vitals.hr<50?'amber':null}/>
                 <VitalChip label="TA" value={currentCase.vitals.bp} unit="mmHg" accent={typeof currentCase.vitals.bp==='string'&&currentCase.vitals.bp.startsWith('—')?'rose':typeof currentCase.vitals.bp==='string'&&parseInt(currentCase.vitals.bp)<90?'amber':null}/>
@@ -11470,14 +11470,14 @@ export default function App() {
             <ECGMonitor rhythmKey={currentCase.rhythm} running={true} rateHint={currentCase.vitals&&currentCase.vitals.hr} label={null} audio={audio}/>
             {caseAnswer===null?(
               <div>
-                <p className="font-mono text-xs text-stone-500 uppercase tracking-widest mb-3 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5"/>{t.decision}</p>
+                <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5"/>{t.decision}</p>
                 <div className="grid grid-cols-1 gap-2">
                   {currentCase.options.map((opt,i)=>(
                     <button key={i} onClick={()=>pickCaseOption(i)}
-                      className="group text-left px-5 py-4 rounded-xl border border-stone-800 bg-stone-900/40 hover:bg-stone-800/60 hover:border-emerald-900/60 transition-all active:scale-[0.99]">
+                      className="group text-left px-5 py-4 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 hover:border-indigo-900/60 transition-all active:scale-[0.99]">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-stone-200 font-medium text-sm sm:text-base leading-snug">{opt.text[lang]}</span>
-                        <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-emerald-400 transition-colors flex-shrink-0"/>
+                        <span className="text-slate-200 font-medium text-sm sm:text-base leading-snug">{opt.text[lang]}</span>
+                        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors flex-shrink-0"/>
                       </div>
                     </button>
                   ))}
@@ -11497,9 +11497,14 @@ export default function App() {
               if(!ok) logError({rhythm:rk, source:'sim', ...(meta||{})}); }}/>
         )}
 
-        <footer className="mt-16 pt-6 border-t border-stone-900/80 text-center">
-          <p className="font-mono text-[10px] text-stone-600 uppercase tracking-widest">
+        <footer className="mt-16 pt-6 border-t border-slate-900/80 text-center space-y-2">
+          <p className="font-mono text-[10px] text-slate-600 uppercase tracking-widest">
             Prototipo · Uso educativo únicamente · No para diagnóstico clínico
+          </p>
+          <p className="font-mono text-[10px] text-slate-700">
+            {lang==='en'?'Developed by ':lang==='pt'?'Desenvolvido por ':'Desarrollado por '}
+            <a href="https://cmdtech.uy" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-indigo-400 transition-colors underline decoration-slate-700 underline-offset-2">CMD Tech</a>
+            {lang==='en'?', the technology unit of Integra Medical Group':lang==='pt'?', a unidade de tecnologia da Integra Medical Group':', la unidad tecnológica de Integra Medical Group'}
           </p>
         </footer>
       </div>
@@ -11520,10 +11525,10 @@ export default function App() {
 // ═══════════════════════════════════════════════════════════════
 function LangToggle({lang,setLang}){
   return(
-    <div className="flex items-center gap-1 p-1 bg-stone-900/60 border border-stone-800 rounded-lg">
+    <div className="flex items-center gap-1 p-1 bg-slate-900/60 border border-slate-800 rounded-lg">
       {['es','en','pt'].map(l=>(
         <button key={l} onClick={()=>setLang(l)}
-          className={`px-2.5 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${lang===l?'bg-stone-800 text-emerald-300':'text-stone-500 hover:text-stone-300'}`}>
+          className={`px-2.5 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${lang===l?'bg-slate-800 text-indigo-300':'text-slate-500 hover:text-slate-300'}`}>
           {l}
         </button>
       ))}
@@ -11534,18 +11539,18 @@ function LangToggle({lang,setLang}){
 function TabButton({active,onClick,icon:Icon,children}){
   return(
     <button onClick={onClick}
-      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${active?'bg-stone-800 text-emerald-300 shadow-sm':'text-stone-500 hover:text-stone-300'}`}>
+      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${active?'bg-slate-800 text-indigo-300 shadow-sm':'text-slate-500 hover:text-slate-300'}`}>
       <Icon className="w-4 h-4"/>{children}
     </button>
   );
 }
 
 function Stat({label,value,accent}){
-  const colors={emerald:'text-emerald-300',amber:'text-amber-300',rose:'text-rose-300'};
+  const colors={indigo:'text-indigo-300',amber:'text-amber-300',rose:'text-rose-300'};
   return(
-    <div className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-stone-900/40 border border-stone-800/80">
-      <div className="font-mono text-[9px] sm:text-[10px] text-stone-500 uppercase tracking-widest mb-1 truncate">{label}</div>
-      <div className={`font-mono text-lg sm:text-xl font-semibold ${colors[accent]||'text-stone-100'}`}>{value}</div>
+    <div className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-slate-900/40 border border-slate-800/80">
+      <div className="font-mono text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-widest mb-1 truncate">{label}</div>
+      <div className={`font-mono text-lg sm:text-xl font-semibold ${colors[accent]||'text-slate-100'}`}>{value}</div>
     </div>
   );
 }
@@ -11553,7 +11558,7 @@ function Stat({label,value,accent}){
 function VitalChip({label,value,unit,accent}){
   const colors={amber:'border-amber-500/40 bg-amber-500/10 text-amber-200',rose:'border-rose-500/40 bg-rose-500/10 text-rose-200'};
   return(
-    <div className={`px-3 py-2 rounded-lg border ${accent?colors[accent]:'border-stone-800 bg-stone-900/40 text-stone-300'}`}>
+    <div className={`px-3 py-2 rounded-lg border ${accent?colors[accent]:'border-slate-800 bg-slate-900/40 text-slate-300'}`}>
       <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 mr-2">{label}</span>
       <span className="font-mono font-semibold">{value}</span>
       {value!=='—'&&unit&&<span className="font-mono text-[10px] ml-1 opacity-60">{unit}</span>}
@@ -11564,7 +11569,7 @@ function VitalChip({label,value,unit,accent}){
 function CaseFilterChip({active,onClick,children}){
   return(
     <button onClick={onClick}
-      className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-xs font-mono uppercase tracking-wider transition-colors ${active?'bg-emerald-500/15 border-emerald-500/50 text-emerald-200':'bg-stone-900/50 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'}`}>
+      className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-xs font-mono uppercase tracking-wider transition-colors ${active?'bg-indigo-500/15 border-indigo-500/50 text-indigo-200':'bg-slate-900/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}>
       {children}
     </button>
   );
@@ -11573,22 +11578,22 @@ function CaseFilterChip({active,onClick,children}){
 function FeedbackCard({isRight,correctKey,t,lang,srInterval,isReviewQ,timedOut,timerBonus,onNext}){
   return(
     <div className="space-y-3">
-    <div className={`p-5 rounded-xl border ${isRight?'bg-emerald-500/10 border-emerald-500/40':'bg-rose-500/10 border-rose-500/40'}`}>
+    <div className={`p-5 rounded-xl border ${isRight?'bg-indigo-500/10 border-indigo-500/40':'bg-rose-500/10 border-rose-500/40'}`}>
       <div className="flex items-start gap-3 mb-3">
-        <div className={`p-2 rounded-full ${isRight?'bg-emerald-500/20':'bg-rose-500/20'}`}>
-          {isRight?<Check className="w-5 h-5 text-emerald-300"/>:<X className="w-5 h-5 text-rose-300"/>}
+        <div className={`p-2 rounded-full ${isRight?'bg-indigo-500/20':'bg-rose-500/20'}`}>
+          {isRight?<Check className="w-5 h-5 text-indigo-300"/>:<X className="w-5 h-5 text-rose-300"/>}
         </div>
         <div className="flex-1">
-          <div className={`font-display text-2xl mb-1 ${isRight?'text-emerald-200':'text-rose-200'}`}>{isRight?t.correct:t.incorrect}</div>
-          {!isRight&&<div className="text-stone-300 text-sm"><span className="text-stone-500">{t.rightAnswer}:</span>{' '}<span className="font-medium">{t.rhythms[correctKey]}</span></div>}
+          <div className={`font-display text-2xl mb-1 ${isRight?'text-indigo-200':'text-rose-200'}`}>{isRight?t.correct:t.incorrect}</div>
+          {!isRight&&<div className="text-slate-300 text-sm"><span className="text-slate-500">{t.rightAnswer}:</span>{' '}<span className="font-medium">{t.rhythms[correctKey]}</span></div>}
         </div>
       </div>
-      <p className="text-stone-400 text-sm leading-relaxed mb-4">{t.desc[correctKey]}</p>
+      <p className="text-slate-400 text-sm leading-relaxed mb-4">{t.desc[correctKey]}</p>
       {timerBonus!==null&&timerBonus!==undefined&&(
-        <div className="mt-3 pt-3 border-t border-stone-800/40 flex items-center justify-between gap-2">
+        <div className="mt-3 pt-3 border-t border-slate-800/40 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-amber-400 text-sm flex-shrink-0">⏱</span>
-            <span className="font-mono text-[11px] text-stone-400">
+            <span className="font-mono text-[11px] text-slate-400">
               {timerBonus<5?'🏎️ Flash (<5s)':timerBonus<15?'⚡ Rápido (<15s)':timerBonus<30?'✓ Ágil (<30s)':`${timerBonus}s`}
             </span>
           </div>
@@ -11600,9 +11605,9 @@ function FeedbackCard({isRight,correctKey,t,lang,srInterval,isReviewQ,timedOut,t
         </div>
       )}
       {srInterval!==null&&(
-        <div className="mt-3 pt-3 border-t border-stone-800/40 flex items-center gap-2">
+        <div className="mt-3 pt-3 border-t border-slate-800/40 flex items-center gap-2">
           <span className="text-sky-400 text-sm flex-shrink-0">🔁</span>
-          <span className="font-mono text-[11px] text-stone-500 leading-snug">
+          <span className="font-mono text-[11px] text-slate-500 leading-snug">
             {isRight
               ? srInterval>=30
                 ? (lang==='en'?`Well learned — next review in ${srInterval} days 🎓`:lang==='pt'?`Bem aprendido — próxima revisão em ${srInterval} dias 🎓`:`Bien aprendido — próxima revisión en ${srInterval} días 🎓`)
@@ -11612,7 +11617,7 @@ function FeedbackCard({isRight,correctKey,t,lang,srInterval,isReviewQ,timedOut,t
           </span>
         </div>
       )}
-      <button onClick={onNext} className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-stone-100 text-stone-900 hover:bg-white transition-colors font-medium">
+      <button onClick={onNext} className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-slate-100 text-slate-900 hover:bg-white transition-colors font-medium">
         {t.next}<ChevronRight className="w-4 h-4"/>
       </button>
     </div>
@@ -11624,27 +11629,27 @@ function FeedbackCard({isRight,correctKey,t,lang,srInterval,isReviewQ,timedOut,t
 function CaseFeedback({correct,selectedOption,correctOption,lang,t,onNext,rhythmKey}){
   return(
     <div className="space-y-3">
-    <div className={`p-5 rounded-xl border ${correct?'bg-emerald-500/10 border-emerald-500/40':'bg-rose-500/10 border-rose-500/40'}`}>
+    <div className={`p-5 rounded-xl border ${correct?'bg-indigo-500/10 border-indigo-500/40':'bg-rose-500/10 border-rose-500/40'}`}>
       <div className="flex items-start gap-3 mb-4">
-        <div className={`p-2 rounded-full ${correct?'bg-emerald-500/20':'bg-rose-500/20'}`}>
-          {correct?<Check className="w-5 h-5 text-emerald-300"/>:<X className="w-5 h-5 text-rose-300"/>}
+        <div className={`p-2 rounded-full ${correct?'bg-indigo-500/20':'bg-rose-500/20'}`}>
+          {correct?<Check className="w-5 h-5 text-indigo-300"/>:<X className="w-5 h-5 text-rose-300"/>}
         </div>
         <div className="flex-1">
-          <div className={`font-display text-2xl ${correct?'text-emerald-200':'text-rose-200'}`}>{correct?t.correct:t.incorrect}</div>
+          <div className={`font-display text-2xl ${correct?'text-indigo-200':'text-rose-200'}`}>{correct?t.correct:t.incorrect}</div>
         </div>
       </div>
       <div className="mb-4">
-        <p className="font-mono text-[11px] text-stone-500 uppercase tracking-widest mb-2">{t.explanation}</p>
-        <p className="text-stone-300 text-sm leading-relaxed mb-3">{selectedOption.feedback[lang]}</p>
+        <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest mb-2">{t.explanation}</p>
+        <p className="text-slate-300 text-sm leading-relaxed mb-3">{selectedOption.feedback[lang]}</p>
         {!correct&&(
-          <div className="mt-4 pt-4 border-t border-stone-800/60">
-            <p className="font-mono text-[11px] text-emerald-400/70 uppercase tracking-widest mb-2">{t.rightAnswer}</p>
-            <p className="text-emerald-200 text-sm font-medium mb-2">{correctOption.text[lang]}</p>
-            <p className="text-stone-400 text-sm leading-relaxed">{correctOption.feedback[lang]}</p>
+          <div className="mt-4 pt-4 border-t border-slate-800/60">
+            <p className="font-mono text-[11px] text-indigo-400/70 uppercase tracking-widest mb-2">{t.rightAnswer}</p>
+            <p className="text-indigo-200 text-sm font-medium mb-2">{correctOption.text[lang]}</p>
+            <p className="text-slate-400 text-sm leading-relaxed">{correctOption.feedback[lang]}</p>
           </div>
         )}
       </div>
-      <button onClick={onNext} className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-stone-100 text-stone-900 hover:bg-white transition-colors font-medium">
+      <button onClick={onNext} className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-slate-100 text-slate-900 hover:bg-white transition-colors font-medium">
         {t.nextCase}<ChevronRight className="w-4 h-4"/>
       </button>
     </div>
