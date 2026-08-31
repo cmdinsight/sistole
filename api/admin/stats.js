@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const [{ count }] = await sql`SELECT COUNT(*)::int AS count FROM users`;
 
   const users = await sql`
-    SELECT id, name, email, role, created_at
+    SELECT id, name, email, role, country, created_at
     FROM users
     ORDER BY created_at DESC
     LIMIT 500
@@ -28,6 +28,22 @@ export default async function handler(req, res) {
     SELECT role, COUNT(*)::int AS count
     FROM users
     GROUP BY role
+    ORDER BY count DESC
+  `;
+
+  const countryBreakdown = await sql`
+    SELECT COALESCE(country, '??') AS country, COUNT(*)::int AS count
+    FROM users
+    GROUP BY country
+    ORDER BY count DESC
+  `;
+
+  // Países de los usuarios que estuvieron activos (sincronizaron progreso) en los últimos 7 días.
+  const activeCountriesRecent = await sql`
+    SELECT COALESCE(u.country, '??') AS country, COUNT(*)::int AS count
+    FROM progress p JOIN users u ON u.id = p.user_id
+    WHERE p.updated_at > now() - interval '7 days'
+    GROUP BY country
     ORDER BY count DESC
   `;
 
@@ -66,6 +82,8 @@ export default async function handler(req, res) {
     users,
     signupsByDay,
     roleBreakdown,
+    countryBreakdown,
+    activeCountriesRecent,
     activity: {
       active24h: activity.active_24h,
       active7d: activity.active_7d,

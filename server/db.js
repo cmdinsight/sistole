@@ -16,6 +16,9 @@ export function ensureSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
+      // Columna agregada después del lanzamiento: país detectado por Vercel al registrarse/iniciar sesión.
+      // No se guarda la IP, solo el código de país que Vercel ya resuelve en el header de cada request.
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT`;
       await sql`
         CREATE TABLE IF NOT EXISTS sessions (
           token TEXT PRIMARY KEY,

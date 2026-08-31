@@ -12,6 +12,15 @@ async function apiJson(url, opts) {
 const ROLE_LABEL = { medico: 'Médico', estudiante: 'Estudiante', otro: 'Otro' };
 const pct = (n, d) => (d > 0 ? Math.round((n / d) * 100) : 0);
 
+// Código ISO de 2 letras -> emoji de bandera (regional indicator symbols, sin librerías).
+function flagEmoji(code) {
+  if (!code || code === '??' || code.length !== 2) return '🌐';
+  const A = 0x1f1e6;
+  const chars = code.toUpperCase().split('').map((c) => A + (c.charCodeAt(0) - 65));
+  if (chars.some((c) => c < A || c > A + 25)) return '🌐';
+  return String.fromCodePoint(...chars);
+}
+
 function StatCard({ label, value, sub }) {
   return (
     <div style={s.statCard}>
@@ -42,15 +51,15 @@ function GrowthChart({ data }) {
   );
 }
 
-function RoleBreakdown({ data, total }) {
+function BreakdownList({ title, data, total, labelFor }) {
   return (
     <div style={s.sectionCard}>
-      <div style={s.sectionTitle}>Perfil de audiencia</div>
+      <div style={s.sectionTitle}>{title}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {data.map((r) => (
-          <div key={r.role}>
+          <div key={r.key}>
             <div style={s.roleRowLabel}>
-              <span>{ROLE_LABEL[r.role] || r.role}</span>
+              <span>{labelFor(r.key)}</span>
               <span style={s.dim}>{r.count} ({pct(r.count, total)}%)</span>
             </div>
             <div style={s.roleBarBg}>
@@ -117,9 +126,11 @@ function AdminApp() {
     );
   }
 
-  const { count, users, signupsByDay, roleBreakdown, activity, activation, depth } = data;
+  const { count, users, signupsByDay, roleBreakdown, countryBreakdown, activeCountriesRecent, activity, activation, depth } = data;
   const accuracy = pct(depth.totalCorrect, depth.totalAnswered);
   const activatedPct = pct(activation.activated, activation.totalUsers);
+  const activeCountryTotal = activeCountriesRecent.reduce((a, r) => a + r.count, 0);
+  const countryLabel = (code) => `${flagEmoji(code)} ${code === '??' ? 'Desconocido' : code}`;
 
   return (
     <div style={s.page}>
@@ -140,7 +151,28 @@ function AdminApp() {
       </div>
 
       <GrowthChart data={signupsByDay} />
-      <RoleBreakdown data={roleBreakdown} total={count} />
+
+      <div style={s.twoCol}>
+        <BreakdownList
+          title="Países — todos los registrados"
+          data={countryBreakdown.map((r) => ({ key: r.country, count: r.count }))}
+          total={count}
+          labelFor={countryLabel}
+        />
+        <BreakdownList
+          title="Países — activos últimos 7 días"
+          data={activeCountriesRecent.map((r) => ({ key: r.country, count: r.count }))}
+          total={activeCountryTotal}
+          labelFor={countryLabel}
+        />
+      </div>
+
+      <BreakdownList
+        title="Perfil de audiencia"
+        data={roleBreakdown.map((r) => ({ key: r.role, count: r.count }))}
+        total={count}
+        labelFor={(k) => ROLE_LABEL[k] || k}
+      />
 
       <div style={s.tableWrap}>
         <div style={s.sectionTitle}>Usuarios ({users.length}{users.length === 500 ? '+' : ''})</div>
@@ -150,6 +182,7 @@ function AdminApp() {
               <th style={s.th}>Nombre</th>
               <th style={s.th}>Email</th>
               <th style={s.th}>Rol</th>
+              <th style={s.th}>País</th>
               <th style={s.th}>Creado</th>
             </tr>
           </thead>
@@ -159,6 +192,7 @@ function AdminApp() {
                 <td style={s.td}>{u.name}</td>
                 <td style={s.td}>{u.email}</td>
                 <td style={s.td}>{ROLE_LABEL[u.role] || u.role}</td>
+                <td style={s.td}>{flagEmoji(u.country)} {u.country || '—'}</td>
                 <td style={s.td}>{new Date(u.created_at).toLocaleString('es-AR')}</td>
               </tr>
             ))}
@@ -171,34 +205,35 @@ function AdminApp() {
 }
 
 const s = {
-  center: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#030605', fontFamily: "'IBM Plex Sans', system-ui, sans-serif" },
-  page: { minHeight: '100vh', background: '#030605', color: '#e7e5e4', fontFamily: "'IBM Plex Sans', system-ui, sans-serif", padding: '32px 20px', maxWidth: 1000, margin: '0 auto', boxSizing: 'border-box' },
+  center: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050912', fontFamily: "'IBM Plex Sans', system-ui, sans-serif" },
+  page: { minHeight: '100vh', background: '#050912', color: '#e7e5e4', fontFamily: "'IBM Plex Sans', system-ui, sans-serif", padding: '32px 20px', maxWidth: 1000, margin: '0 auto', boxSizing: 'border-box' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
   title: { fontSize: 22, fontWeight: 700, color: '#f5f5f4', margin: 0 },
-  card: { background: '#0c0f0d', border: '1px solid #292524', borderRadius: 16, padding: 32, width: 320, textAlign: 'center', boxSizing: 'border-box' },
-  input: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid #44403c', background: '#1c1917', color: '#f5f5f4', marginTop: 16, marginBottom: 8, boxSizing: 'border-box', fontSize: 14 },
-  button: { width: '100%', padding: '10px 14px', borderRadius: 10, border: 'none', background: '#047857', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14 },
-  linkButton: { background: 'none', border: '1px solid #44403c', color: '#a8a29e', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
+  card: { background: '#0d1117', border: '1px solid #1f2937', borderRadius: 16, padding: 32, width: 320, textAlign: 'center', boxSizing: 'border-box' },
+  input: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid #33415580', background: '#161b24', color: '#f5f5f4', marginTop: 16, marginBottom: 8, boxSizing: 'border-box', fontSize: 14 },
+  button: { width: '100%', padding: '10px 14px', borderRadius: 10, border: 'none', background: '#4F5BD5', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14 },
+  linkButton: { background: 'none', border: '1px solid #33415580', color: '#a8a29e', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
   error: { color: '#fb7185', fontSize: 13, margin: '4px 0' },
   dim: { color: '#78716c', fontSize: 14 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 24 },
-  statCard: { background: '#0c0f0d', border: '1px solid #292524', borderRadius: 16, padding: '16px 18px', boxSizing: 'border-box' },
+  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 },
+  statCard: { background: '#0d1117', border: '1px solid #1f2937', borderRadius: 16, padding: '16px 18px', boxSizing: 'border-box' },
   statLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: '#78716c', marginBottom: 6 },
-  statValue: { fontSize: 28, fontWeight: 700, color: '#34d399', lineHeight: 1 },
+  statValue: { fontSize: 28, fontWeight: 700, color: '#818cf8', lineHeight: 1 },
   statSub: { fontSize: 11, color: '#78716c', marginTop: 6 },
   sectionTitle: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, color: '#a8a29e', marginBottom: 14, fontWeight: 600 },
-  sectionCard: { background: '#0c0f0d', border: '1px solid #292524', borderRadius: 16, padding: 20, marginBottom: 24, boxSizing: 'border-box' },
-  tableWrap: { overflowX: 'auto', background: '#0c0f0d', border: '1px solid #292524', borderRadius: 16, padding: 20, boxSizing: 'border-box' },
+  sectionCard: { background: '#0d1117', border: '1px solid #1f2937', borderRadius: 16, padding: 20, marginBottom: 24, boxSizing: 'border-box' },
+  tableWrap: { overflowX: 'auto', background: '#0d1117', border: '1px solid #1f2937', borderRadius: 16, padding: 20, boxSizing: 'border-box' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  th: { textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid #292524', color: '#a8a29e', fontWeight: 600 },
-  td: { padding: '8px 12px', borderBottom: '1px solid #1c1917', color: '#d6d3d1' },
+  th: { textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid #1f2937', color: '#a8a29e', fontWeight: 600 },
+  td: { padding: '8px 12px', borderBottom: '1px solid #161b24', color: '#d6d3d1' },
   chartRow: { display: 'flex', alignItems: 'flex-end', gap: 6, minHeight: 100, overflowX: 'auto', paddingBottom: 4 },
   barWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 0 auto', width: 24 },
-  bar: { width: 14, background: 'linear-gradient(180deg,#34d399,#047857)', borderRadius: 3 },
+  bar: { width: 14, background: 'linear-gradient(180deg,#818cf8,#4F5BD5)', borderRadius: 3 },
   barCount: { fontSize: 9, color: '#78716c', marginTop: 4 },
   roleRowLabel: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#e7e5e4', marginBottom: 4 },
-  roleBarBg: { height: 8, background: '#1c1917', borderRadius: 4, overflow: 'hidden' },
-  roleBarFill: { height: '100%', background: 'linear-gradient(90deg,#047857,#34d399)' },
+  roleBarBg: { height: 8, background: '#161b24', borderRadius: 4, overflow: 'hidden' },
+  roleBarFill: { height: '100%', background: 'linear-gradient(90deg,#4F5BD5,#818cf8)' },
 };
 
 ReactDOM.createRoot(document.getElementById('admin-root')).render(<AdminApp />);

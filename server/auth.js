@@ -4,6 +4,13 @@ import { sql, ensureSchema } from './db.js';
 
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
 
+// Vercel resuelve esto solo (edge geo-IP) en cada request — no hace falta guardar ni consultar la IP.
+// Código ISO de 2 letras (ej. 'UY', 'AR') o null si no está disponible (ej. en desarrollo local).
+export function getCountryFromReq(req) {
+  const c = req.headers['x-vercel-ip-country'];
+  return c ? String(c).toUpperCase() : null;
+}
+
 export async function hashPassword(pw) {
   return bcrypt.hash(pw, 10);
 }

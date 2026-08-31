@@ -1,5 +1,5 @@
 import { sql, ensureSchema } from '../../server/db.js';
-import { normEmail, hashPassword, createSession, setSessionCookie } from '../../server/auth.js';
+import { normEmail, hashPassword, createSession, setSessionCookie, getCountryFromReq } from '../../server/auth.js';
 
 const ROLES = ['medico', 'estudiante', 'otro'];
 
@@ -23,10 +23,11 @@ export default async function handler(req, res) {
 
   const hash = await hashPassword(cleanPassword);
   const cleanRole = ROLES.includes(role) ? role : 'estudiante';
+  const country = getCountryFromReq(req);
 
   const [user] = await sql`
-    INSERT INTO users (email, password_hash, name, role)
-    VALUES (${cleanEmail}, ${hash}, ${cleanName}, ${cleanRole})
+    INSERT INTO users (email, password_hash, name, role, country)
+    VALUES (${cleanEmail}, ${hash}, ${cleanName}, ${cleanRole}, ${country})
     RETURNING id, email, name, role
   `;
 

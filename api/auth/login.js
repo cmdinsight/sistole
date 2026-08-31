@@ -1,5 +1,5 @@
 import { sql, ensureSchema } from '../../server/db.js';
-import { normEmail, verifyPassword, createSession, setSessionCookie } from '../../server/auth.js';
+import { normEmail, verifyPassword, createSession, setSessionCookie, getCountryFromReq } from '../../server/auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -17,6 +17,11 @@ export default async function handler(req, res) {
 
   const { token, expiresAt } = await createSession(user.id);
   setSessionCookie(res, token, expiresAt);
+
+  // Refresca el país en cada login (si Vercel lo resolvió) — así las cuentas creadas antes de esta
+  // función también quedan geolocalizadas, y se actualiza si el usuario inició sesión desde otro país.
+  const country = getCountryFromReq(req);
+  if (country) await sql`UPDATE users SET country = ${country} WHERE id = ${user.id}`;
 
   const progRows = await sql`SELECT data FROM progress WHERE user_id = ${user.id}`;
   res.status(200).json({
