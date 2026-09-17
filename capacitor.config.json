@@ -1,0 +1,24 @@
+{
+  "appId": "uy.cmdtech.sistole",
+  "appName": "Sístole",
+  "webDir": "dist",
+  "server": {
+    "url": "https://sistole.cmdtech.uy",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#03060c"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#03060c",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#03060c"
+    }
+  }
+}

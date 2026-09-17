@@ -2,3 +2,12 @@ node_modules
 dist
 .vercel
 *.log
+
+# iOS (Xcode)
+ios/App/Pods
+ios/App/build
+ios/App/DerivedData
+ios/App/**/xcuserdata
+ios/App/**/*.xcuserstate
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata
+ios-appicon-1024.png
