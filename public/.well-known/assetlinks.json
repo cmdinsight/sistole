@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "uy.cmdtech.sistole.twa",
+        "sha256_cert_fingerprints": ["71:3D:3D:7B:22:CF:F6:7C:88:C7:76:05:2F:F0:74:EC:DB:05:72:42:FA:14:73:9D:AB:6A:50:BB:85:7D:73:34"]
+      }
+    }]
