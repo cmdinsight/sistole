@@ -1,0 +1,60 @@
+workflows:
+  ios-sistole:
+    name: Sístole — iOS App Store
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: sistole_app_store_connect
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: uy.cmdtech.sistole
+      vars:
+        BUNDLE_ID: "uy.cmdtech.sistole"
+        XCODE_PROJECT: "App.xcodeproj"
+        XCODE_SCHEME: "App"
+      node: 20
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Instalar dependencias de Node
+        script: npm ci
+
+      - name: Compilar la app web (Vite)
+        script: npm run build
+
+      - name: Sincronizar Capacitor con iOS
+        script: npx cap sync ios
+
+      - name: Preparar el keychain y los certificados
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: Compilar el .ipa
+        script: |
+          cd ios/App
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # Cambiar a true cuando la ficha de App Store Connect esté lista
+        # para mandar directo a revisión de Apple:
+        # submit_to_app_store: false
