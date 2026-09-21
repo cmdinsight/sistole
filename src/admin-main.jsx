@@ -73,6 +73,28 @@ function BreakdownList({ title, data, total, labelFor }) {
   );
 }
 
+const FEEDBACK_TYPE_LABEL = { error: '🐞 Error', sugerencia: '💡 Sugerencia' };
+
+function FeedbackList({ items }) {
+  return (
+    <div style={s.sectionCard}>
+      <div style={s.sectionTitle}>Feedback de usuarios ({items.length}{items.length === 300 ? '+' : ''})</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map((f) => (
+          <div key={f.id} style={s.feedbackRow}>
+            <div style={s.feedbackHead}>
+              <span>{FEEDBACK_TYPE_LABEL[f.type] || f.type}</span>
+              <span style={s.dim}>{f.name} · {f.email} · {new Date(f.created_at).toLocaleString('es-AR')}</span>
+            </div>
+            <p style={s.feedbackMsg}>{f.message}</p>
+          </div>
+        ))}
+        {items.length === 0 && <p style={s.dim}>Todavía no llegó ningún mensaje.</p>}
+      </div>
+    </div>
+  );
+}
+
 function AdminApp() {
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
@@ -80,12 +102,18 @@ function AdminApp() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [data, setData] = useState(null);
+  const [feedback, setFeedback] = useState([]);
 
   const loadStats = useCallback(() => {
     return apiJson('/api/admin/stats')
       .then((res) => { setData(res); setAuthed(true); })
       .catch(() => { setAuthed(false); });
   }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    apiJson('/api/admin/feedback').then((res) => setFeedback(res.items)).catch(() => {});
+  }, [authed]);
 
   useEffect(() => { loadStats().finally(() => setReady(true)); }, [loadStats]);
 
@@ -174,6 +202,8 @@ function AdminApp() {
         labelFor={(k) => ROLE_LABEL[k] || k}
       />
 
+      <FeedbackList items={feedback} />
+
       <div style={s.tableWrap}>
         <div style={s.sectionTitle}>Usuarios ({users.length}{users.length === 500 ? '+' : ''})</div>
         <table style={s.table}>
@@ -234,6 +264,9 @@ const s = {
   roleRowLabel: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#e7e5e4', marginBottom: 4 },
   roleBarBg: { height: 8, background: '#161b24', borderRadius: 4, overflow: 'hidden' },
   roleBarFill: { height: '100%', background: 'linear-gradient(90deg,#4F5BD5,#818cf8)' },
+  feedbackRow: { padding: '10px 0', borderBottom: '1px solid #161b24' },
+  feedbackHead: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline', fontSize: 12, color: '#e7e5e4', marginBottom: 4 },
+  feedbackMsg: { fontSize: 13, color: '#d6d3d1', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.5 },
 };
 
 ReactDOM.createRoot(document.getElementById('admin-root')).render(<AdminApp />);

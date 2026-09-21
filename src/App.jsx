@@ -2899,7 +2899,7 @@ function SimStatsPanel({stats,lang}){
   );
 }
 
-function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose}){
+function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose,onOpenFeedback}){
   const cur=getLevelInfo(progress.xp);
   const nxt=getNextLevel(progress.xp);
   const pct=nxt?Math.round(((progress.xp-cur.min)/(nxt.min-cur.min))*100):100;
@@ -3098,6 +3098,11 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 text-sm transition-colors">
               {copied?'✅ '+(lang==='en'?'Copied!':lang==='pt'?'Copiado!':'¡Copiado!'):'📋 '+(lang==='en'?'Share progress':lang==='pt'?'Compartilhar progresso':'Compartir progreso')}
             </button>
+            {/* Reportar error o sugerencia */}
+            <button onClick={onOpenFeedback}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-900/30 border border-indigo-700/50 hover:bg-indigo-800/40 text-indigo-200 text-sm transition-colors">
+              💬 {lang==='en'?'Report a bug or suggestion':lang==='pt'?'Reportar erro ou sugestão':'Reportar un error o sugerencia'}
+            </button>
             {/* Cerrar perfil — vuelve a la pantalla de registro */}
             {!confirmLogout?(
               <button onClick={()=>{setConfirmLogout(true);setConfirmReset(false);}}
@@ -3153,7 +3158,89 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
   );
 }
 
+// ── Feedback: reportar errores o sugerencias, guardado en la nube y visible en /admin ──
+function FeedbackModal({lang,onClose,onSubmit}){
+  const [type,setType]=useState('sugerencia');
+  const [message,setMessage]=useState('');
+  const [status,setStatus]=useState('idle'); // idle | sending | sent | error
+  const MAX_LEN=2000;
 
+  const send=async()=>{
+    if(!message.trim()||status==='sending') return;
+    setStatus('sending');
+    try{
+      await onSubmit({type,message:message.trim()});
+      setStatus('sent');
+      setTimeout(onClose,1400);
+    }catch(e){
+      setStatus('error');
+    }
+  };
+
+  return(
+    <div className="fixed inset-0 z-[210] flex items-stretch sm:items-center justify-center sm:p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose}/>
+      <div className="relative w-full sm:max-w-md sm:rounded-2xl bg-slate-950 border border-slate-800 p-5 sm:p-6 space-y-4 mt-auto sm:mt-0 rounded-t-2xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="font-display text-2xl text-slate-100">
+              💬 {lang==='en'?'Feedback':lang==='pt'?'Feedback':'Tu opinión'}
+            </div>
+            <p className="text-sm text-slate-500 mt-1">
+              {lang==='en'?'Found a bug, or have an idea to improve Sístole? Tell us.'
+               :lang==='pt'?'Encontrou um erro ou tem uma ideia para melhorar o Sístole? Conte pra gente.'
+               :'¿Encontraste un error o tenés una idea para mejorar Sístole? Contanos.'}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-300 p-1"><X className="w-5 h-5"/></button>
+        </div>
+
+        {status==='sent'?(
+          <div className="py-8 text-center">
+            <div className="text-3xl mb-2">✅</div>
+            <p className="text-slate-300 text-sm">{lang==='en'?'Thanks, we got it!':lang==='pt'?'Obrigado, recebemos!':'¡Gracias, lo recibimos!'}</p>
+          </div>
+        ):(
+          <>
+            <div className="flex gap-2">
+              <button onClick={()=>setType('error')}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${type==='error'?'bg-rose-900/30 border-rose-700/60 text-rose-200':'bg-slate-900/40 border-slate-800 text-slate-400 hover:text-slate-200'}`}>
+                🐞 {lang==='en'?'Bug':lang==='pt'?'Erro':'Error'}
+              </button>
+              <button onClick={()=>setType('sugerencia')}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${type==='sugerencia'?'bg-indigo-900/30 border-indigo-700/60 text-indigo-200':'bg-slate-900/40 border-slate-800 text-slate-400 hover:text-slate-200'}`}>
+                💡 {lang==='en'?'Suggestion':lang==='pt'?'Sugestão':'Sugerencia'}
+              </button>
+            </div>
+
+            <textarea
+              value={message}
+              onChange={(e)=>setMessage(e.target.value.slice(0,MAX_LEN))}
+              rows={5}
+              autoFocus
+              placeholder={type==='error'
+                ?(lang==='en'?'What happened, and where in the app?':lang==='pt'?'O que aconteceu, e onde no app?':'Qué pasó, y en qué parte de la app')
+                :(lang==='en'?'What would make Sístole better?':lang==='pt'?'O que tornaria o Sístole melhor?':'Qué mejorarías de Sístole')}
+              className="w-full rounded-xl bg-slate-900/60 border border-slate-800 focus:border-indigo-600 outline-none px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none"
+            />
+            <div className="text-right text-[10px] font-mono text-slate-600">{message.length}/{MAX_LEN}</div>
+
+            {status==='error'&&(
+              <p className="text-xs text-rose-400 text-center">
+                {lang==='en'?'Could not send. Try again.':lang==='pt'?'Não foi possível enviar. Tente de novo.':'No se pudo enviar. Probá de nuevo.'}
+              </p>
+            )}
+
+            <button onClick={send} disabled={!message.trim()||status==='sending'}
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-medium text-sm transition-colors">
+              {status==='sending'?(lang==='en'?'Sending…':lang==='pt'?'Enviando…':'Enviando…'):(lang==='en'?'Send':lang==='pt'?'Enviar':'Enviar')}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -10904,6 +10991,10 @@ export default function App() {
   const adaptiveModeRef=useRef(false);
   useEffect(()=>{adaptiveModeRef.current=adaptiveMode;},[adaptiveMode]);
   const [showProfile,setShowProfile]=useState(false);
+  const [showFeedback,setShowFeedback]=useState(false);
+  const sendFeedback=useCallback(async({type,message})=>{
+    await apiJson('/api/feedback',{method:'POST',body:JSON.stringify({type,message,page:mode})});
+  },[mode]);
 
   // SR state
   const [isReviewQ,setIsReviewQ]=useState(false);
@@ -11544,7 +11635,8 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
+        {showFeedback&&<FeedbackModal lang={lang} onClose={()=>setShowFeedback(false)} onSubmit={sendFeedback}/>}
     </div>
   );
 }

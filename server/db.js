@@ -34,6 +34,16 @@ export function ensureSchema() {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS feedback (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          type TEXT NOT NULL DEFAULT 'sugerencia',
+          message TEXT NOT NULL,
+          page TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
     })();
   }
   return schemaReady;
