@@ -1139,7 +1139,15 @@ const saveProgressData=(p)=>{try{localStorage.setItem(nk(PROGRESS_KEY),JSON.stri
 // ─── useProgress hook ───
 function useProgress(accountKey){
   const [progress,setProgress]=useState(loadProgress);
-  useEffect(()=>{setProgress(loadProgress());},[accountKey]);
+  // Recalcular DURANTE el render (no en un efecto) cuando cambia de cuenta: si se hiciera en un
+  // efecto, hay un instante entre el cambio de cuenta y el próximo render donde `progress` todavía
+  // tiene los datos de la cuenta anterior (o vacíos), y si en ese instante se dispara un guardado en
+  // la nube (cada 20s o al perder foco la app), se sobrescribe el progreso real del usuario con eso.
+  const progressKeyRef=useRef(accountKey);
+  if(progressKeyRef.current!==accountKey){
+    progressKeyRef.current=accountKey;
+    setProgress(loadProgress());
+  }
   const [toasts,setToasts]=useState([]); // [{ach, id}]
 
   const earnXP=useCallback((amount,context={})=>{
@@ -1259,7 +1267,11 @@ const saveSR=(d)=>{try{localStorage.setItem(nk(SR_KEY),JSON.stringify(d));}catch
 
 function useSR(accountKey){
   const [srData,setSrData]=useState(loadSR);
-  useEffect(()=>{setSrData(loadSR());},[accountKey]);
+  const srKeyRef=useRef(accountKey);
+  if(srKeyRef.current!==accountKey){
+    srKeyRef.current=accountKey;
+    setSrData(loadSR());
+  }
   const srDataRef=useRef(srData);
   srDataRef.current=srData;
 
@@ -1301,7 +1313,11 @@ const saveErrors=(d)=>{try{localStorage.setItem(nk(ERRORS_KEY),JSON.stringify(d)
 
 function useErrors(accountKey){
   const [errors,setErrors]=useState(loadErrors);
-  useEffect(()=>{setErrors(loadErrors());},[accountKey]);
+  const errorsKeyRef=useRef(accountKey);
+  if(errorsKeyRef.current!==accountKey){
+    errorsKeyRef.current=accountKey;
+    setErrors(loadErrors());
+  }
 
   // source: 'quiz' | 'case' | 'sim' | 'arrest'
   const logError=useCallback(({rhythm,source,...detail})=>{
@@ -1357,7 +1373,11 @@ const saveAdapt=(d)=>{try{localStorage.setItem(nk(ADAPT_KEY),JSON.stringify(d));
 
 function useAdaptive(accountKey){
   const [adaptData,setAdaptData]=useState(loadAdapt);
-  useEffect(()=>{setAdaptData(loadAdapt());},[accountKey]);
+  const adaptKeyRef=useRef(accountKey);
+  if(adaptKeyRef.current!==accountKey){
+    adaptKeyRef.current=accountKey;
+    setAdaptData(loadAdapt());
+  }
   const adaptRef=useRef(adaptData);
   adaptRef.current=adaptData;
 
@@ -10058,7 +10078,11 @@ const saveErrs=(d)=>{try{localStorage.setItem(nk(ERR_KEY),JSON.stringify(d));}ca
 
 function useMistakes(accountKey){
   const [mistakes,setMistakes]=useState(loadErrs);
-  useEffect(()=>{setMistakes(loadErrs());},[accountKey]);
+  const mistakesKeyRef=useRef(accountKey);
+  if(mistakesKeyRef.current!==accountKey){
+    mistakesKeyRef.current=accountKey;
+    setMistakes(loadErrs());
+  }
 
   // Un error se agrupa por su firma: mismo origen, mismo ritmo, misma opción elegida
   const logMistake=useCallback((m)=>{
@@ -11117,13 +11141,17 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex gap-1 mb-6 p-1 bg-slate-900/60 border border-slate-800/80 rounded-xl w-full overflow-x-auto">
-          <TabButton active={mode==='quiz'} onClick={()=>setMode('quiz')} icon={Brain}>{t.quiz}</TabButton>
-          <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
-          <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
+        {/* Grilla 2x2 en mobile (los 4 quedan visibles sin scroll horizontal — antes el */}
+        {/* contenedor scrolleaba y "Simulador", al ir último, quedaba oculto). Desde sm: */}
+        {/* vuelve a ser una fila, que ya entra cómoda en pantallas más anchas. Simulador */}
+        {/* va primero: es la sección más valorada y la que menos se descubría. */}
+        <div className="grid grid-cols-2 sm:flex gap-1 mb-6 p-1 bg-slate-900/60 border border-slate-800/80 rounded-xl w-full">
           <TabButton active={mode==='simulator'} onClick={()=>setMode('simulator')} icon={Zap}>
             <span className="flex items-center gap-1.5">{t.simulator}<span className="hidden sm:inline text-[10px] font-mono opacity-50 uppercase">ACLS</span></span>
           </TabButton>
+          <TabButton active={mode==='quiz'} onClick={()=>setMode('quiz')} icon={Brain}>{t.quiz}</TabButton>
+          <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
+          <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
         </div>
 
         {/* ══ QUIZ ══ */}
