@@ -252,6 +252,67 @@ function tEndTangent(beat, base, tFrom, tTo, fs) {
 // promedio y separados al menos 25 ms para no confundir una muesca del ruido con
 // una onda. Devuelve la altura de la SEGUNDA, que es el hallazgo; cero si hay
 // una sola, que es lo normal.
+// ── LA MUESCA DEL PUNTO J ─────────────────────────────────────────────────
+// El hallazgo que define la repolarización precoz no es el supradesnivel —eso
+// lo tiene también un infarto— sino CÓMO empieza: el QRS no termina bajando
+// limpio hasta la línea del ST, sino que se frena y hace una joroba justo en el
+// punto J. Es la onda J, y es lo único de todo el cuadro que un infarto agudo
+// no imita.
+//
+// Se mide sobre el latido promedio y se pide que el pico de la joroba sea un
+// máximo LOCAL de verdad: que suba desde un mínimo previo y que DESPUÉS VUELVA
+// A BAJAR. La segunda mitad de esa condición es la que hace que la medición
+// mida algo. Sin ella, el primer intento tomaba la subida del final de la S
+// hasta el pico de la onda T como si fuera una muesca, y devolvía 24 mm de onda
+// J en trazados donde no había ninguna; y lo peor es que también la devolvía en
+// los normales, así que el número no separaba nada y encima parecía razonable.
+//
+// Los tres recaudos:
+//
+//   · sube al menos 0,04 mV (0,4 mm) desde el mínimo previo, y ese mínimo está
+//     a menos de 50 ms. Por debajo de eso cualquier temblor del promedio
+//     inventa una muesca.
+//   · baja al menos 0,03 mV en los 60 ms siguientes. Esto es lo que separa la
+//     joroba de la rampa que sube hacia la T.
+//   · el pico cae en la zona del punto J —entre 40 ms antes y 30 ms después del
+//     final del QRS medido—, no en el medio del complejo. Sin esta condición la
+//     R bífida de un bloqueo de rama cuenta como onda J, y no lo es.
+function muescaJ(beat, base, rIdx, onset, offset, fs) {
+  const desde = rIdx + onset;
+  const jIdx = rIdx + offset;
+  const zona0 = jIdx - Math.round(0.040 * fs);
+  const zona1 = jIdx + Math.round(0.030 * fs);
+  const subida = Math.round(0.050 * fs);
+  const bajada = Math.round(0.060 * fs);
+
+  let muesca = 0;
+  // La altura del punto J: el punto más alto de esa misma zona. Cuando hay
+  // muesca es la cima de la joroba, que es lo que el consenso de 2015 llama Jp
+  // y sobre lo que pone el umbral de 1 mm; cuando no la hay, es el punto J a
+  // secas. Se devuelve siempre, haya muesca o no, porque las dos mitades del
+  // hallazgo —cuánto sube y con qué forma— son preguntas distintas.
+  let alto = -Infinity;
+  for (let k = Math.max(zona0, desde + 1); k <= Math.min(zona1, beat.length - 2); k++) {
+    alto = Math.max(alto, beat[k] - base);
+    if (beat[k] < beat[k - 1] || beat[k] < beat[k + 1]) continue;   // máximo local
+    if (beat[k] - base <= 0) continue;
+    // El mínimo de donde arranca la joroba es el que está INMEDIATAMENTE antes:
+    // se camina hacia atrás mientras el trazado siga bajando. Tomar el mínimo de
+    // toda la ventana en cambio llegaría hasta el fondo de la S en las
+    // derivaciones que la tienen profunda, y entonces la "muesca" sería toda la
+    // subida de la S al punto J, que es lo que hace cualquier QRS normal.
+    let minPrevio = k;
+    while (minPrevio > Math.max(desde, k - subida) && beat[minPrevio - 1] <= beat[minPrevio]) minPrevio--;
+    minPrevio = beat[minPrevio];
+    let minPosterior = beat[k];
+    for (let j = k; j <= Math.min(beat.length - 1, k + bajada); j++) minPosterior = Math.min(minPosterior, beat[j]);
+    const sube = beat[k] - minPrevio;
+    const baja = beat[k] - minPosterior;
+    if (sube >= 0.04 && baja >= 0.03) muesca = Math.max(muesca, Math.min(sube, baja));
+  }
+  return { muesca, alto: Number.isFinite(alto) ? alto : 0 };
+}
+
 function segundaR(beat, base, desde, hasta, fs) {
   const sep = Math.max(2, Math.round(0.025 * fs));
   const picos = [];
@@ -591,6 +652,8 @@ export function measure(signal) {
   const qt = {};
   const rPrime = {};   // altura de la segunda R del QRS, 0 si hay una sola
   const sag = {};   // hundimiento del ST bajo la cuerda J→pico de la T
+  const jNotch = {};// altura de la muesca del punto J, 0 si el QRS baja limpio
+  const jAmp = {};  // altura del punto J sobre la línea de base
   const r = {};   // altura de la onda R (positiva)
   const sw = {};  // profundidad de la onda S (negativa)
   const span = {};// excursión máxima respecto de la línea de base, para el dibujo
@@ -679,11 +742,16 @@ export function measure(signal) {
       base /= (dB1 - dB0);
 
       rPrime[lead] = segundaR(tpl, base, rIdx + onset, rIdx + offset, fs);
+      const j = muescaJ(tpl, base, rIdx, onset, offset, fs);
+      jNotch[lead] = j.muesca;
+      jAmp[lead] = j.alto;
       const fin = tEndTangent(tpl, base, rIdx + dT0, Math.min(tpl.length - 2, rIdx + dT1), fs);
       qt[lead] = fin === null ? null : ((fin - (rIdx + onset)) / fs) * 1000;
     } else {
       qt[lead] = null;
       rPrime[lead] = 0;
+      jNotch[lead] = 0;
+      jAmp[lead] = 0;
     }
     r[lead] = median(rVals);
     sw[lead] = median(sVals);
@@ -748,6 +816,8 @@ export function measure(signal) {
     axisDeg: ejeFrontal(areaQRS),
     sag,
     rPrime,
+    jNotch,
+    jAmp,
     qt,
     // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
     // puede medir, no el promedio. Es la convención clínica y tiene su razón: la

@@ -143,6 +143,14 @@ const L = {
     en: 'The sag is how far the ST dips below the J point before rising again. A flat or straight-sloping ST gives zero; only the concave shape raises it.',
     pt: 'A cubeta é o quanto o ST afunda abaixo do ponto J antes de voltar a subir. Um ST plano ou que desce reto dá zero; só a forma côncava o eleva.',
   },
+  jLabel: { es: 'punto J', en: 'J point', pt: 'ponto J' },
+  jNotchLabel: { es: 'muesca', en: 'notch', pt: 'entalhe' },
+  jStLabel: { es: 'ST a 60 ms', en: 'ST at 60 ms', pt: 'ST a 60 ms' },
+  jNote: {
+    es: 'Tres cifras por derivación, y el caso está en compararlas. La altura del punto J, la altura de la muesca —cuánto sube la joroba y vuelve a bajar antes del segmento ST— y el ST medido 60 ms más adelante. Cuando el punto J está muy alto y el ST 60 ms después ya volvió cerca de la línea, lo que hubo fue una onda J. En un infarto agudo el ST sale del punto J y se QUEDA arriba: las dos cifras se parecen. Una muesca de cero no significa ST normal, significa que el QRS terminó bajando limpio.',
+    en: 'Three figures per lead, and the case lies in comparing them. The height of the J point, the height of the notch — how far the hump rises and comes back down before the ST segment — and the ST measured 60 ms later. When the J point is high and the ST 60 ms afterwards has already returned close to the line, what there was is a J wave. In an acute infarct the ST leaves the J point and STAYS up: the two figures look alike. A notch of zero does not mean a normal ST, it means the QRS ended by descending cleanly.',
+    pt: 'Três valores por derivação, e o caso está em compará-los. A altura do ponto J, a altura do entalhe — quanto sobe a corcova e volta a descer antes do segmento ST — e o ST medido 60 ms adiante. Quando o ponto J está muito alto e o ST 60 ms depois já voltou perto da linha, o que houve foi uma onda J. Num enfarte agudo o ST sai do ponto J e FICA em cima: os dois valores parecem-se. Um entalhe de zero não significa ST normal, significa que o QRS terminou a descer limpo.',
+  },
   qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
   qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
   qtcF: { es: 'QTc Fridericia', en: 'QTc Fridericia', pt: 'QTc Fridericia' },
@@ -292,6 +300,32 @@ function Measured({ q, metrics, lang, gain }) {
            'text-sky-300 border-sky-900/60 bg-sky-950/30')),
     ];
     note = L.qrsNote[lang];
+  } else if (metrics.kind === 'jwave') {
+    // Tres cifras por derivación y no una, porque el hallazgo ESTÁ en la
+    // diferencia entre ellas: un punto J de 8 mm con el ST de vuelta en 1,2 mm
+    // sesenta milisegundos más tarde es una onda J, y los mismos 8 mm que se
+    // sostienen son un infarto. Mostrar sólo el punto J sería mostrar el número
+    // que las dos cosas comparten.
+    chips = metrics.leads.flatMap((l) => [
+      chip(`j-${l}`, `${L.jLabel[lang]} ${l}`, mm(q.jAmp[l], lang),
+           q.jAmp[l] >= 0.2 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                            : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip(`n-${l}`, L.jNotchLabel[lang], mmAbs(q.jNotch[l], lang),
+           q.jNotch[l] >= 0.1 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                              : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip(`s-${l}`, L.jStLabel[lang], mm(q.st[l], lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ]);
+    // La misma advertencia que en el panel del ST, y acá hace más falta: este
+    // caso se juega en un punto J de 8 mm y las precordiales de este registro se
+    // dibujan a media ganancia, así que sobre el papel se ven 4. Sin el aviso,
+    // el alumno que mida con la regla encuentra la mitad de lo que dice el panel
+    // y no sabe cuál de los dos está mal.
+    const bajoLimbJ = gain.limb !== MM_PER_MV;
+    const bajoChestJ = gain.chest !== MM_PER_MV;
+    const grupoJ = bajoLimbJ && bajoChestJ ? L.groupBoth[lang]
+                 : bajoChestJ ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.jNote[lang] + (bajoLimbJ || bajoChestJ ? ` ${L.halfGainNote[lang](grupoJ)}` : '');
   } else if (metrics.kind === 'voltage') {
     // Un grupo por umbral: 5 mm en los miembros, 10 mm en las precordiales. Se
     // marca la derivación que está POR DEBAJO, que es la anormal — al revés que

@@ -81,6 +81,36 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
   }),
 
+  // ── LA ONDA J ────────────────────────────────────────────────────────────
+  // Dos reglas separadas para las dos mitades del hallazgo, porque son
+  // preguntas distintas y conviene que fallen por separado:
+  //
+  //   · jPoint  — CUÁNTO sube el punto J sobre la línea de base.
+  //   · jNotch  — si esa subida tiene FORMA de onda J: una joroba que sube y
+  //     vuelve a bajar antes del segmento ST.
+  //
+  // Es la segunda la que hace el diagnóstico. Un punto J elevado lo tiene
+  // también un infarto agudo, y ahí el ST sale del J hacia arriba y se queda
+  // arriba; en la repolarización precoz el trazado hace la joroba y desciende.
+  // Pedir sólo la altura sería enseñar a confundirlos.
+  //
+  // El consenso de 2015 pone el umbral en 1 mm sobre dos derivaciones contiguas
+  // inferiores o laterales. Contra los grupos etiquetados de PTB-XL y del CinC
+  // 2021: exigir además 2 mm y una muesca de 1 mm deja 4 de 25 registros
+  // etiquetados como repolarización precoz y NINGUNO de 32 normales.
+  jPoint: ({ leads, min }, q) => ({
+    label: `punto J elevado al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.jAmp[l] < min).map((l) => `${l}=${uv(q.jAmp[l])}`),
+    margen: Math.min(...leads.map((l) => q.jAmp[l] - min)),
+  }),
+
+  jNotch: ({ leads, min }, q) => ({
+    label: `muesca de al menos ${mmStr(min)} en el punto J de ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.jNotch[l] < min)
+                 .map((l) => (q.jNotch[l] ? `${l}=${uv(q.jNotch[l])}` : `${l}=sin muesca`)),
+    margen: Math.min(...leads.map((l) => q.jNotch[l] - min)),
+  }),
+
   // Altura mínima de la onda R. Sirve para exigir que la R INICIAL exista, que
   // es lo que separa un hemibloqueo de un infarto inferior antiguo: los dos dan
   // desviación izquierda del eje y complejos negativos en II, III y aVF, pero en

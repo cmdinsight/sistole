@@ -192,6 +192,21 @@ export const RECORDS = {
     source: 'cinc2021', age: 61, sex: 'M', scp: ['54016002', '426177001'],
     report: 'mobitz type i wenckebach atrioventricular block; sinus bradycardia (SNOMED-CT)',
   },
+  // Del CinC 2021, base de Ningbo. PTB-XL no tiene un solo registro etiquetado
+  // con repolarización precoz.
+  //
+  // La base le pone además dos etiquetas que el trazado no sostiene, y conviene
+  // dejarlo dicho: 6374002 (bloqueo de rama) sobre un QRS de 96 ms y sin R' en
+  // V1, y 55827005 (hipertrofia ventricular izquierda) sobre un Sokolow de
+  // 36,5 mm en un varón de 24 años, que es voltaje alto de gente joven y
+  // delgada, no hipertrofia. Las dos son el mismo malentendido que este caso
+  // enseña a no cometer.
+  JS22294: {
+    source: 'cinc2021', age: 24, sex: 'M',
+    scp: ['428417006', '426177001', '427393009', '164930006', '55827005', '6374002'],
+    report: 'early repolarization; sinus bradycardia; sinus arrhythmia; st interval abnormal; '
+      + 'left ventricular high voltage; bundle branch block (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -199,4 +214,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', '595'];
