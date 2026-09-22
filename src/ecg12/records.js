@@ -128,6 +128,11 @@ export const RECORDS = {
     age: 66, sex: 'M', scp: ['NORM', 'SBRAD'],
     report: 'sinusbradykardie lagetyp normal sonst normales ekg 4.46 unbestÄtigter bericht',
   },
+  3957: {
+    age: 77, sex: 'M', scp: ['NDT', 'LOWT', 'STD_'],
+    report: 'sinus rhythm. st segments are depressed in i, ii, avl, v4,5,6. t waves are low or flat '
+      + 'in limb leads and v4,5,6. this may be due to ischaemia.',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -135,4 +140,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '595'];
