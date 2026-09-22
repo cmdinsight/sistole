@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Check, X, AlertTriangle, Activity, Stethoscope, Maximize2, Ruler } from 'lucide-react';
 import TwelveLead from './TwelveLead.jsx';
 import { sheetSize, suggestGain, MM_PER_MV } from './draw.js';
@@ -26,6 +26,12 @@ const L = {
   action: { es: 'Conducta', en: 'Management', pt: 'Conduta' },
   next: { es: 'Siguiente caso →', en: 'Next case →', pt: 'Próximo caso →' },
   restart: { es: 'Empezar de nuevo', en: 'Start over', pt: 'Começar de novo' },
+  review: { es: 'repaso', en: 'review', pt: 'revisão' },
+  reviewTip: {
+    es: 'Este caso vuelve porque tocaba repasarlo. Los que se fallan vuelven al día siguiente; los que se aciertan, cada vez más tarde.',
+    en: 'This case is back because it was due for review. Missed ones return the next day; correct ones come back later each time.',
+    pt: 'Este caso volta porque estava na hora de revisá-lo. Os errados voltam no dia seguinte; os acertados, cada vez mais tarde.',
+  },
   paper: { es: 'Papel', en: 'Paper', pt: 'Papel' },
   dark: { es: 'Oscuro', en: 'Dark', pt: 'Escuro' },
   tapLead: { es: 'Tocá una derivación para ampliarla', en: 'Tap a lead to enlarge it', pt: 'Toque numa derivação para ampliá-la' },
@@ -374,19 +380,87 @@ function LeadZoom({ signal, lead, theme, lang, onClose, gain }) {
   );
 }
 
-export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
-  const [idx, setIdx] = useState(0);
+// ═══════════════════════════════════════════════════════════════
+// EN QUÉ ORDEN SALEN LOS CASOS
+// ═══════════════════════════════════════════════════════════════
+// Dos reglas, en este orden:
+//
+//   1. Si hay un caso VENCIDO en el repaso espaciado, sale ése. El SM-2 dice
+//      cuándo toca volver a ver cada uno, y lo fallado vuelve al día siguiente.
+//   2. Si no hay ninguno vencido, se saca uno de la BOLSA: el mazo barajado
+//      que no repite hasta agotarse.
+//
+// La bolsa es lo que distingue esto de un Math.random() suelto. Con random, en
+// 19 casos es normal que uno salga dos veces seguidas y que otro no aparezca en
+// toda la sesión; con la bolsa, cada vuelta pasa por los 19 exactamente una vez.
+const ORDEN = {
+  vencidos(srData) {
+    if (!srData) return [];
+    const ahora = Date.now();
+    return CASES
+      .filter((c) => { const d = srData[c.id]; return d && d.nextReview && d.nextReview <= ahora; })
+      // El más atrasado primero.
+      .sort((a, b) => srData[a.id].nextReview - srData[b.id].nextReview)
+      .map((c) => c.id);
+  },
+  // Un caso se considera dominado cuando el SM-2 lo mandó a más de 30 días.
+  dominados(srData) {
+    if (!srData) return 0;
+    return CASES.filter((c) => (srData[c.id]?.interval || 0) > 30).length;
+  },
+};
+
+// La bolsa y su clave viven en App.jsx, junto al resto del almacenamiento por
+// cuenta. Se reciben como props en vez de importarlas: Section.jsx se carga en
+// diferido DESDE App.jsx, así que importar de vuelta cerraría el ciclo.
+export default function TwelveLeadSection({
+  lang = 'es', onAnswer, onRound, srData,
+  pickFromBag, bagLeft, clearBag,
+}) {
   const [picked, setPicked] = useState(null);
   const [theme, setTheme] = useState('paper');
   const [zoomLead, setZoomLead] = useState(null);
   const [score, setScore] = useState(0);
+  const [seen, setSeen] = useState(0);
+  const [streak, setStreak] = useState(0);
   const [finished, setFinished] = useState(false);
 
   const [signal, setSignal] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
-  const c = CASES[idx];
+  // srData sólo se lee al ELEGIR caso, nunca durante uno: si se leyera en cada
+  // render, responder cambiaría el SM-2 y el caso saltaría bajo el dedo del
+  // usuario antes de que termine de leer la explicación.
+  const srRef = useRef(srData);
+  srRef.current = srData;
+
+  const TODOS = useMemo(() => CASES.map((x) => x.id), []);
+
+  // Devuelve también de dónde salió: un repaso NO consume bolsa, y por lo tanto
+  // no avanza la posición en la vuelta.
+  const elegir = useCallback(() => {
+    const vencidos = ORDEN.vencidos(srRef.current);
+    if (vencidos.length) return { id: vencidos[0], repaso: true };
+    // Sin bolsa (por ejemplo si la sección se monta suelta en una prueba) se
+    // recorre en orden: vale más un orden previsible que un crash.
+    const id = pickFromBag ? pickFromBag(TODOS) : TODOS[0];
+    return { id, repaso: false, pos: CASES.length - (bagLeft ? bagLeft(TODOS) : 0) };
+  }, [pickFromBag, bagLeft, TODOS]);
+
+  const [actual, setActual] = useState(elegir);
+  const caseId = actual.id;
+  const esRepaso = actual.repaso;
+  const c = CASES.find((x) => x.id === caseId) || CASES[0];
+
+  // La posición se queda en la del último caso sacado de la bolsa: los repasos
+  // se intercalan sin mover el contador de la vuelta.
+  const [posicion, setPosicion] = useState(() => actual.pos ?? 0);
+  const avanzar = useCallback(() => {
+    const sig = elegir();
+    setActual(sig);
+    if (sig.pos) setPosicion(sig.pos);
+  }, [elegir]);
 
   // El trazado se pide al entrar al caso. Mientras tanto se muestra un hueco del
   // tamaño exacto del electro: si el bloque creciera al llegar los datos, la
@@ -398,11 +472,19 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
     loadRecord(c.record)
       .then((s) => { if (vivo) setSignal(s); })
       .catch(() => { if (vivo) setLoadError(true); });
-    // El caso siguiente se va pidiendo de fondo, así el paso es instantáneo.
-    const next = CASES[idx + 1];
-    if (next) prefetchRecord(next.record);
     return () => { vivo = false; };
   }, [c, attempt]);
+
+  // El caso siguiente se va pidiendo de fondo, así el paso es instantáneo. Con
+  // el orden barajado no se sabe cuál viene, así que se precarga el que el
+  // repaso espaciado tiene más atrasado —el candidato más probable—; si no hay
+  // ninguno vencido, cualquier otro sirve para tener algo en caché.
+  useEffect(() => {
+    const vencidos = ORDEN.vencidos(srRef.current).filter((id) => id !== c.id);
+    const cand = vencidos[0] ?? CASES.find((x) => x.id !== c.id)?.id;
+    const caso = CASES.find((x) => x.id === cand);
+    if (caso) prefetchRecord(caso.record);
+  }, [c]);
 
   // Se mide una vez por trazado. Son 2.500 muestras por derivación: medirlo en
   // cada render se notaría al tocar cualquier botón.
@@ -420,24 +502,54 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
   const answered = picked !== null;
   const isRight = answered && picked === c.answer;
 
+
   const pick = useCallback((id) => {
     if (answered) return;
     setPicked(id);
     const right = id === c.answer;
     if (right) setScore((s) => s + 1);
-    if (onAnswer) onAnswer(right, c.id);
-  }, [answered, c, onAnswer]);
+    setSeen((n) => n + 1);
+    const racha = right ? streak + 1 : 0;
+    setStreak(racha);
+    if (onAnswer) {
+      // El SM-2 se actualiza del lado de App con esta misma llamada, así que
+      // "dominados" se calcula ANTES: contarlo después incluiría esta respuesta
+      // y el logro saltaría un caso antes de tiempo.
+      const yaDominados = ORDEN.dominados(srRef.current);
+      onAnswer(right, {
+        caseId: c.id,
+        answer: c.answer,
+        streak: racha,
+        caseCount: CASES.length,
+        allMastered: right && yaDominados >= CASES.length - 1,
+      });
+    }
+  }, [answered, c, onAnswer, streak]);
 
   const next = useCallback(() => {
-    if (idx + 1 >= CASES.length) { setFinished(true); return; }
-    setIdx(idx + 1);
+    // La vuelta termina cuando la bolsa queda vacía: ahí se pasó por todos los
+    // casos exactamente una vez. Los vencidos del repaso no cuentan para eso,
+    // porque son repeticiones dentro de la misma vuelta.
+    const quedan = bagLeft ? bagLeft(TODOS) : 0;
+    const pendientes = ORDEN.vencidos(srRef.current).filter((id) => id !== c.id);
+    if (quedan === 0 && pendientes.length === 0) {
+      setFinished(true);
+      if (onRound) onRound();
+      return;
+    }
+    avanzar();
     setPicked(null);
     setZoomLead(null);
-  }, [idx]);
+  }, [bagLeft, TODOS, c, avanzar, onRound]);
 
   const restart = useCallback(() => {
-    setIdx(0); setPicked(null); setScore(0); setFinished(false); setZoomLead(null);
-  }, []);
+    if (clearBag) clearBag();
+    const sig = elegir();
+    setActual(sig);
+    setPosicion(sig.pos ?? 0);
+    setPicked(null); setScore(0); setSeen(0); setStreak(0);
+    setFinished(false); setZoomLead(null);
+  }, [clearBag, elegir]);
 
   if (finished) {
     return (
@@ -480,11 +592,19 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
       {/* Cabecera: progreso, aciertos y tema del papel */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
-            {L.caseOf[lang](idx + 1, CASES.length)}
-          </span>
+          {posicion > 0 && (
+            <span className="font-mono text-[11px] text-slate-500 uppercase tracking-widest">
+              {L.caseOf[lang](Math.min(posicion, CASES.length), CASES.length)}
+            </span>
+          )}
+          {esRepaso && (
+            <span title={L.reviewTip[lang]}
+              className="font-mono text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-amber-900/60 bg-amber-950/30 text-amber-300">
+              {L.review[lang]}
+            </span>
+          )}
           <span className="font-mono text-[11px] text-slate-600">
-            {L.score[lang]} {score}/{idx + (answered ? 1 : 0)}
+            {L.score[lang]} {score}/{seen}
           </span>
         </div>
         <div className="flex gap-1 p-0.5 bg-slate-900/70 border border-slate-800 rounded-lg">
