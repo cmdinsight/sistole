@@ -151,6 +151,15 @@ const L = {
     en: 'Three figures per lead, and the case lies in comparing them. The height of the J point, the height of the notch — how far the hump rises and comes back down before the ST segment — and the ST measured 60 ms later. When the J point is high and the ST 60 ms afterwards has already returned close to the line, what there was is a J wave. In an acute infarct the ST leaves the J point and STAYS up: the two figures look alike. A notch of zero does not mean a normal ST, it means the QRS ended by descending cleanly.',
     pt: 'Três valores por derivação, e o caso está em compará-los. A altura do ponto J, a altura do entalhe — quanto sobe a corcova e volta a descer antes do segmento ST — e o ST medido 60 ms adiante. Quando o ponto J está muito alto e o ST 60 ms depois já voltou perto da linha, o que houve foi uma onda J. Num enfarte agudo o ST sai do ponto J e FICA em cima: os dois valores parecem-se. Um entalhe de zero não significa ST normal, significa que o QRS terminou a descer limpo.',
   },
+  uLabel: { es: 'onda U', en: 'U wave', pt: 'onda U' },
+  uTLabel: { es: 'U/T', en: 'U/T', pt: 'U/T' },
+  uTWave: { es: 'onda T', en: 'T wave', pt: 'onda T' },
+  uNone: { es: 'no se separa', en: 'not separable', pt: 'não se separa' },
+  uNote: {
+    es: 'La T y la U son dos jorobas seguidas, y se separan buscando el valle que queda entre ellas: la primera es la T, la segunda la U. Se mide sobre el latido promedio, que es lo que hace visible una onda de dos décimas de milivoltio. La razón U/T es el número del hallazgo, porque con el potasio bajo pasan las dos cosas a la vez —la U crece y la T se aplana— y una sola cifra no las recoge. Cuando dice «no se separa» es que no hay valle entre las dos: puede ser que no haya onda U o que esté fundida con la T, y en cualquiera de los dos casos no hay medición, no hay un cero.',
+    en: 'The T and the U are two humps in a row, told apart by finding the trough between them: the first is the T, the second the U. It is measured on an averaged beat, which is what makes a wave of two tenths of a millivolt visible. The U/T ratio is the figure that carries the finding, because with low potassium two things happen at once — the U grows and the T flattens — and a single number does not capture both. When it says "not separable" there is no trough between them: there may be no U wave, or it may be fused with the T, and in either case there is no measurement, not a zero.',
+    pt: 'A T e a U são duas corcovas seguidas, e separam-se procurando o vale que fica entre elas: a primeira é a T, a segunda a U. Mede-se sobre o batimento médio, que é o que torna visível uma onda de duas décimas de milivolt. A razão U/T é o número do achado, porque com o potássio baixo acontecem as duas coisas ao mesmo tempo — a U cresce e a T aplana-se — e um só valor não as recolhe. Quando diz «não se separa» é que não há vale entre as duas: pode não haver onda U ou estar fundida com a T, e em qualquer dos casos não há medição, não há um zero.',
+  },
   qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
   qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
   qtcF: { es: 'QTc Fridericia', en: 'QTc Fridericia', pt: 'QTc Fridericia' },
@@ -326,6 +335,30 @@ function Measured({ q, metrics, lang, gain }) {
     const grupoJ = bajoLimbJ && bajoChestJ ? L.groupBoth[lang]
                  : bajoChestJ ? L.groupChest[lang] : L.groupLimb[lang];
     note = L.jNote[lang] + (bajoLimbJ || bajoChestJ ? ` ${L.halfGainNote[lang](grupoJ)}` : '');
+  } else if (metrics.kind === 'uwave') {
+    // Se muestran las tres: la T que separó la medición, la U, y la razón. La T
+    // va con su propia cifra y no con la de t[lead] a propósito — cuando la U
+    // supera a la T, t[lead] se queda con la U y la llama T, y entonces el panel
+    // diría que la razón es 1 justo donde el hallazgo es que pasa de 1.
+    chips = metrics.leads.flatMap((l) => {
+      const hay = q.uAmp[l] !== null;
+      const tPropia = hay && q.uOverT[l] ? q.uAmp[l] / q.uOverT[l] : null;
+      return [
+        chip(`t-${l}`, `${L.uTWave[lang]} ${l}`, tPropia === null ? L.uNone[lang] : mmAbs(tPropia, lang),
+             'text-slate-400 border-slate-800 bg-slate-950/60'),
+        chip(`u-${l}`, L.uLabel[lang], hay ? mmAbs(q.uAmp[l], lang) : L.uNone[lang],
+             hay && q.uAmp[l] >= 0.15 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                                      : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+        chip(`r-${l}`, L.uTLabel[lang], q.uOverT[l] === null ? L.uNone[lang] : `${num(q.uOverT[l], 2, lang)}×`,
+             (q.uOverT[l] ?? 0) >= 1 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                                     : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ];
+    });
+    const bajoLimbU = gain.limb !== MM_PER_MV;
+    const bajoChestU = gain.chest !== MM_PER_MV;
+    const grupoU = bajoLimbU && bajoChestU ? L.groupBoth[lang]
+                 : bajoChestU ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.uNote[lang] + (bajoLimbU || bajoChestU ? ` ${L.halfGainNote[lang](grupoU)}` : '');
   } else if (metrics.kind === 'voltage') {
     // Un grupo por umbral: 5 mm en los miembros, 10 mm en las precordiales. Se
     // marca la derivación que está POR DEBAJO, que es la anormal — al revés que

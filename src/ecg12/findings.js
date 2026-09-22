@@ -111,6 +111,34 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.jNotch[l] - min)),
   }),
 
+  // ── LA ONDA U ────────────────────────────────────────────────────────────
+  // Otra vez dos reglas, y otra vez porque son dos preguntas. Cuánto mide la
+  // onda U, y cuánto mide COMPARADA con la T.
+  //
+  // La segunda es la que importa. Una U de 2 mm al lado de una T de 10 mm es
+  // normal; la misma U de 2 mm al lado de una T de 1,3 mm es el electro de una
+  // hipopotasemia. Lo que cambia con el potasio no es sólo que la U crece: es
+  // que la T se aplana al mismo tiempo, y la razón entre las dos recoge las dos
+  // mitades del cambio en un solo número.
+  //
+  // Calibrado contra los grupos etiquetados: pedir U ≥ 1,5 mm Y U/T ≥ 1 deja 3
+  // de 17 registros etiquetados con onda U anormal en el CinC 2021, y 0 de 32
+  // normales de PTB-XL. La mediana de la U en los normales es 0,00 mm: en un
+  // electro normal esta medición directamente no encuentra una segunda onda.
+  uWave: ({ leads, min }, q) => ({
+    label: `onda U de al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => (q.uAmp[l] ?? 0) < min)
+                 .map((l) => (q.uAmp[l] === null ? `${l}=sin onda U separable` : `${l}=${uv(q.uAmp[l])}`)),
+    margen: Math.min(...leads.map((l) => (q.uAmp[l] ?? 0) - min)),
+  }),
+
+  uToT: ({ leads, min }, q) => ({
+    label: `onda U de al menos ${min} veces la T en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => (q.uOverT[l] ?? 0) < min)
+                 .map((l) => (q.uOverT[l] === null ? `${l}=sin onda U separable` : `${l}=${q.uOverT[l].toFixed(2)}×`)),
+    margen: Math.min(...leads.map((l) => (q.uOverT[l] ?? 0) - min)),
+  }),
+
   // Altura mínima de la onda R. Sirve para exigir que la R INICIAL exista, que
   // es lo que separa un hemibloqueo de un infarto inferior antiguo: los dos dan
   // desviación izquierda del eje y complejos negativos en II, III y aVF, pero en

@@ -73,6 +73,35 @@ export async function fetchRecord(fuente, g, id) {
   return hea;
 }
 
+// ── QUÉ QUIERE DECIR CADA CÓDIGO ─────────────────────────────────────────
+// Los diagnósticos viajan como números de SNOMED-CT y no hay forma de adivinar
+// qué significan. El desafío publica la tabla completa —133 diagnósticos, con
+// su nombre y cuántos registros tiene cada base—, y se baja una vez y se
+// guarda. Importa que sea la tabla y no una traducción escrita a mano: el
+// informe de cada registro sale de acá y termina en la app, debajo del trazado,
+// como la fuente de lo que el caso afirma.
+const TABLAS = [
+  'https://raw.githubusercontent.com/physionetchallenges/evaluation-2021/main/dx_mapping_scored.csv',
+  'https://raw.githubusercontent.com/physionetchallenges/evaluation-2021/main/dx_mapping_unscored.csv',
+];
+
+export async function diccionarioDx() {
+  const cache = join(CACHE, 'dx.json');
+  if (existsSync(cache)) return JSON.parse(readFileSync(cache, 'utf8'));
+  const out = {};
+  for (const url of TABLAS) {
+    const txt = await (await bajar(url)).text();
+    const filas = txt.split('\n').slice(1).filter(Boolean);
+    for (const f of filas) {
+      const [nombre, codigo] = f.split(',');
+      if (codigo) out[codigo.trim()] = nombre.trim();
+    }
+  }
+  mkdirSync(CACHE, { recursive: true });
+  writeFileSync(cache, JSON.stringify(out, null, 1));
+  return out;
+}
+
 export function metadatos(heaPath) {
   const h = parseHeader(readFileSync(heaPath, 'utf8'));
   const c = h.comentarios || {};

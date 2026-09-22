@@ -207,6 +207,18 @@ export const RECORDS = {
     report: 'early repolarization; sinus bradycardia; sinus arrhythmia; st interval abnormal; '
       + 'left ventricular high voltage; bundle branch block (SNOMED-CT)',
   },
+  // Del CinC 2021, base de Ningbo. Los nombres de los códigos salen de la tabla
+  // oficial del desafío, que scripts/cinc.mjs baja y guarda.
+  //
+  // La base lo etiqueta también como ritmo de la unión (29320008), y el trazado
+  // no lo sostiene: hay una P de 0,5 mm en II antes de cada QRS, con un PR de
+  // 292 ms. Eso es un PR largo, que forma parte del mismo cuadro, no un ritmo
+  // nacido en el nodo AV. Es una P chica y se entiende que se pase por alto.
+  JS22392: {
+    source: 'cinc2021', age: 45, sex: 'M',
+    scp: ['164937009', '29320008'],
+    report: 'u wave abnormal; atrioventricular junctional rhythm (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -214,4 +226,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', '595'];

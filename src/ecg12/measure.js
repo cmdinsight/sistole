@@ -313,6 +313,85 @@ function muescaJ(beat, base, rIdx, onset, offset, fs) {
   return { muesca, alto: Number.isFinite(alto) ? alto : 0 };
 }
 
+// ── LA ONDA U ────────────────────────────────────────────────────────────
+// La deflexión chica que sigue a la onda T. Normalmente mide menos de la cuarta
+// parte de la T y pasa desapercibida; cuando baja el potasio crece, la T se
+// aplana, y llega a ser tan alta como la T o más alta. Ahí es el hallazgo.
+//
+// Se mide sobre el latido promedio, y ese promedio es lo que la hace medible:
+// una onda de 0,2 mV no se distingue del ruido en un latido suelto y sí se
+// distingue cuando ocho latidos la repiten en el mismo lugar.
+//
+// Esta función hace su propia separación entre T y U en vez de partir del pico
+// de la T que mide el resto del módulo, y la razón es concreta. La amplitud de
+// la T se toma como la deflexión MÁS GRANDE de la ventana de la T. Cuando la U
+// crece hasta superar a la T —que es justamente lo que pasa en la
+// hipopotasemia—, esa regla se queda con la U y la llama T. En V4 de JS22392 la
+// T mide 1,5 mm y la U 2,3 mm, y el módulo informa "T 2,1 mm": está midiendo la
+// U. Por eso acá se buscan las DOS jorobas por orden de aparición y no por
+// tamaño: la primera es la T, la segunda es la U, y así la razón U/T significa
+// lo que dice.
+//
+// Para que cuenten como dos ondas y no como una sola con ruido encima, se pide
+// que el valle que las separa esté al menos 0,02 mV por debajo de las dos
+// cimas. Sin esa condición, cualquier ondulación de la rama descendente de la T
+// sale informada como onda U.
+//
+// Dos topes de ventana, y los dos hacen falta. El 85 % del RR la mantiene antes
+// de la P del latido siguiente: confundir una P con una U sería informar
+// hipopotasemia en un electro normal. Y 350 ms desde el pico de la T la
+// mantienen dentro de lo que una U puede ser; sin ese segundo tope, en un
+// trazado lento el máximo de toda la ventana caía a 700 ms de la R, sobre la
+// línea de base, y salía informado como onda U de 0 mm.
+function ondaU(beat, base, rIdx, dT0, dT1, fs, rrMuestras) {
+  const finT = Math.min(beat.length - 2, rIdx + dT1);
+  if (rIdx + dT0 >= finT) return null;
+
+  // Primera joroba: el máximo hasta que el trazado empiece a bajar de verdad.
+  // Se pide que la bajada dure 40 ms para no cortar en cualquier temblor.
+  let tIdx = rIdx + dT0;
+  for (let k = rIdx + dT0; k <= finT; k++) {
+    if (beat[k] > beat[tIdx]) tIdx = k;
+    else if (k - tIdx > Math.round(0.040 * fs)) break;
+  }
+
+  const hasta = Math.min(
+    beat.length - 2,
+    rIdx + Math.round(0.85 * rrMuestras),
+    tIdx + Math.round(0.350 * fs),
+  );
+  if (tIdx + Math.round(0.040 * fs) >= hasta) return null;
+
+  // El valle entre las dos.
+  let valle = tIdx;
+  for (let k = tIdx + 1; k <= hasta; k++) {
+    if (beat[k] < beat[valle]) valle = k;
+    else if (k - valle > Math.round(0.040 * fs)) break;
+  }
+  if (valle >= hasta) return null;
+
+  let pico = valle;
+  for (let k = valle; k <= hasta; k++) if (beat[k] > beat[pico]) pico = k;
+  if (pico === valle) return null;
+
+  const tAlto = beat[tIdx] - base;
+  const uAlto = beat[pico] - base;
+  const vAlto = beat[valle] - base;
+  if (tAlto - vAlto < 0.02 || uAlto - vAlto < 0.02) return null;   // una sola onda
+  // Y la U tiene que ser una onda POSITIVA de verdad, no un rizo sobre la línea
+  // de base. Sin esto, en V5 y V6 de JS22392 —donde la T y la U están fundidas
+  // en una sola meseta y no hay onda U separable— la función devolvía un pico de
+  // 0,0 mm a 700 ms de la R: el valle y la cima eran dos temblores del promedio
+  // separados por los 0,02 mV justos. Un hallazgo de amplitud cero no es un
+  // hallazgo, y devolver null es la respuesta correcta.
+  //
+  // Queda dicho lo que esto NO mide: la onda U INVERTIDA, que es un signo de
+  // isquemia. Medirla pide otra separación —una T positiva seguida de una
+  // deflexión negativa— y no se intentó acá.
+  if (uAlto < 0.02) return null;
+  return { amp: uAlto, ms: ((pico - rIdx) / fs) * 1000, tAmp: tAlto };
+}
+
 function segundaR(beat, base, desde, hasta, fs) {
   const sep = Math.max(2, Math.round(0.025 * fs));
   const picos = [];
@@ -654,6 +733,9 @@ export function measure(signal) {
   const sag = {};   // hundimiento del ST bajo la cuerda J→pico de la T
   const jNotch = {};// altura de la muesca del punto J, 0 si el QRS baja limpio
   const jAmp = {};  // altura del punto J sobre la línea de base
+  const uAmp = {};  // altura de la onda U, null si no se distingue de la T
+  const uMs = {};   // dónde cae su pico respecto de la R, en ms
+  const uOverT = {};// la U dividida por la T, con la T que separó ondaU
   const r = {};   // altura de la onda R (positiva)
   const sw = {};  // profundidad de la onda S (negativa)
   const span = {};// excursión máxima respecto de la línea de base, para el dibujo
@@ -747,11 +829,22 @@ export function measure(signal) {
       jAmp[lead] = j.alto;
       const fin = tEndTangent(tpl, base, rIdx + dT0, Math.min(tpl.length - 2, rIdx + dT1), fs);
       qt[lead] = fin === null ? null : ((fin - (rIdx + onset)) / fs) * 1000;
+
+      const u = ondaU(tpl, base, rIdx, dT0, dT1, fs, rrMed * fs);
+      uAmp[lead] = u ? u.amp : null;
+      uMs[lead] = u ? u.ms : null;
+      // La razón U/T se calcula con la T que separó ondaU, no con t[lead]: son
+      // dos cosas distintas en cuanto la U supera a la T, y mezclarlas daría una
+      // razón de 1 justo en los casos en que el hallazgo es que pasa de 1.
+      uOverT[lead] = u && u.tAmp > 0.02 ? u.amp / u.tAmp : null;
     } else {
       qt[lead] = null;
       rPrime[lead] = 0;
       jNotch[lead] = 0;
       jAmp[lead] = 0;
+      uAmp[lead] = null;
+      uMs[lead] = null;
+      uOverT[lead] = null;
     }
     r[lead] = median(rVals);
     sw[lead] = median(sVals);
@@ -818,6 +911,9 @@ export function measure(signal) {
     rPrime,
     jNotch,
     jAmp,
+    uAmp,
+    uMs,
+    uOverT,
     qt,
     // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
     // puede medir, no el promedio. Es la convención clínica y tiene su razón: la
