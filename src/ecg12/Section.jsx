@@ -108,6 +108,14 @@ const L = {
     en: 'The PR runs from the start of the P wave to the start of the QRS: the time the impulse takes to cross the atrium and the AV node. It is measured on an averaged beat, which is what makes a P of one or two tenths of a millivolt visible. Normal between 120 and 200 ms; above 200, first degree AV block.',
     pt: 'O PR vai do começo da onda P ao começo do QRS: o que o estímulo demora a atravessar o átrio e o nó AV. Mede-se sobre um batimento médio, que é o que permite ver uma P de um ou dois décimos de milivolt. Normal entre 120 e 200 ms; acima de 200, bloqueio AV de primeiro grau.',
   },
+  pauseLabel: { es: 'pausa', en: 'pause', pt: 'pausa' },
+  shortestLabel: { es: 'RR más corto', en: 'shortest RR', pt: 'RR mais curto' },
+  ratioLabel: { es: 'razón', en: 'ratio', pt: 'razão' },
+  pauseNote: {
+    es: 'Cuántas veces el RR más corto entra en la pausa. Por debajo de 2 hubo decremento antes de que fallara la conducción (Wenckebach); alrededor de 2, una P prematura encontró el nodo refractario y el nodo sinusal siguió su marcha; por encima y sin relación con el ciclo, el que falló fue el nodo sinusal.',
+    en: 'How many times the shortest RR fits into the pause. Below 2 there was decrement before conduction failed (Wenckebach); around 2, a premature P found the node refractory while the sinus node marched on; above that and unrelated to the cycle, it was the sinus node that failed.',
+    pt: 'Quantas vezes o RR mais curto cabe na pausa. Abaixo de 2 houve decremento antes de a condução falhar (Wenckebach); à volta de 2, uma P prematura encontrou o nó refratário e o nó sinusal seguiu a sua marcha; acima disso e sem relação com o ciclo, quem falhou foi o nó sinusal.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -291,6 +299,21 @@ function Measured({ q, metrics, lang, gain }) {
                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
     ];
     note = L.prNote[lang];
+  } else if (metrics.kind === 'pause') {
+    const rr = q.rr || [];
+    if (rr.length < 4) return null;
+    const largo = Math.max(...rr), corto = Math.min(...rr);
+    const razon = largo / corto;
+    chips = [
+      chip('p', L.pauseLabel[lang], `${Math.round(largo * 1000)} ms`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('c', L.shortestLabel[lang], `${Math.round(corto * 1000)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // El 2 es la frontera: por eso se marca distinto a cada lado.
+      chip('r', L.ratioLabel[lang], num(razon, 2, lang),
+           razon >= 2 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                      : 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.pauseNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);

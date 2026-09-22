@@ -157,6 +157,36 @@ const REGLAS = {
     margen: q.prMs === null ? -1 : Math.min(q.prMs - lo, hi - q.prMs) / 100,
   }),
 
+  // La PAUSA, medida como cuántas veces el RR más corto entra en el más largo.
+  // Es el número que separa las tres causas de un latido que falta, y no
+  // necesita ver una sola onda P:
+  //
+  //   · por debajo de 2 → hubo decremento antes de la pausa. El PR se fue
+  //     alargando latido a latido hasta que una P no condujo: Wenckebach.
+  //   · alrededor de 2 → una P llegó demasiado pronto y encontró el nodo AV
+  //     todavía refractario. La pausa dura casi exactamente dos ciclos porque
+  //     el nodo sinusal ni se enteró.
+  //   · por encima de 2 y sin relación con el ciclo → el nodo sinusal dejó de
+  //     disparar, y la pausa dura lo que se le antojó.
+  //
+  // Comprobado contra las etiquetas escritas a mano en PTB-XL: los dos
+  // Wenckebach confirmados dan 1,66 y 1,82, y los dos imitadores que la propia
+  // base nombra —extrasístole auricular bloqueada y falla del nodo sinusal—
+  // dan 2,21 y 2,08. Está en scripts/ejemplos/mobitz.mjs.
+  pauseRatio: ([lo, hi], q) => {
+    const rr = q.rr || [];
+    if (rr.length < 4) {
+      return { label: `pausa de ${lo} a ${hi} veces el RR más corto`, fallos: ['latidos insuficientes'], margen: -1 };
+    }
+    const largo = Math.max(...rr), corto = Math.min(...rr);
+    const razon = largo / corto;
+    return {
+      label: `pausa de ${lo} a ${hi} veces el RR más corto`,
+      fallos: razon >= lo && razon <= hi ? [] : [`razón=${razon.toFixed(2)}`],
+      margen: Math.min(razon - lo, hi - razon),
+    };
+  },
+
   rProgression: ([a, b], q) => ({
     label: `la onda R crece de ${a} a ${b}`,
     fallos: q.r[b] > q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
