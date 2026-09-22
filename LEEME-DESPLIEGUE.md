@@ -97,6 +97,7 @@ sistole/
 ├── api/                  ← funciones serverless (Vercel)
 ├── server/               ← código compartido: db.js, auth.js, adminAuth.js
 ├── public/               ← manifest PWA, iconos, privacidad.html, assetlinks.json
+│   └── ecg12/            ← los 8 electros reales de PTB-XL (~420 KB, versionados)
 ├── ios/                  ← proyecto Xcode (Capacitor)
 ├── codemagic.yaml        ← compilación y publicación de iOS en la nube
 └── vercel.json
@@ -108,7 +109,24 @@ sistole/
 npm install
 npm run build      # genera dist/
 npm run dev        # servidor local de desarrollo
+npm test           # pruebas del módulo de 12 derivaciones
 ```
+
+**Trazados de 12 derivaciones:** los electrocardiogramas de esa sección son
+registros reales de [PTB-XL](https://physionet.org/content/ptb-xl/1.0.3/)
+(PhysioNet, licencia ODC-BY 1.0). Ya están en `public/ecg12/` y versionados, así
+que el build no baja nada. Sólo hace falta volver a bajarlos si se agrega o
+cambia un caso:
+
+```bash
+npm run fetch:ptbxl          # baja los que falten
+npm run fetch:ptbxl -- --force   # rehace todos
+```
+
+Qué registro usa cada caso se declara en `src/ecg12/records.js`, y
+`npm test` verifica —midiendo la señal— que cada caso enseñe lo que su trazado
+realmente muestra. Si una prueba de `test-cases.mjs` falla, el caso no se
+publica: el texto y el electro dejaron de coincidir.
 
 **Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 
@@ -122,7 +140,7 @@ npm run dev        # servidor local de desarrollo
 | `EMAIL_FROM` | Remitente verificado, ej. `Sístole <no-reply@cmdtech.uy>` |
 | `APP_URL` | Base de los enlaces del correo (por defecto `https://sistole.cmdtech.uy`) |
 
-**Rutas:** `vercel.json` manda `/admin` a `admin.html` y todo lo demás a `index.html`, dejando afuera `api/`, `assets/`, `manifest.json`, `privacidad.html`, `icons/` y `.well-known/`. En Nginx o Apache hay que escribir la regla equivalente.
+**Rutas:** `vercel.json` manda `/admin` a `admin.html` y todo lo demás a `index.html`, dejando afuera `api/`, `assets/`, `ecg12/`, `manifest.json`, `privacidad.html`, `icons/` y `.well-known/`. La exclusión de `ecg12/` es necesaria: sin ella los trazados se responderían con el HTML de la app. En Nginx o Apache hay que escribir la regla equivalente.
 
 ---
 
