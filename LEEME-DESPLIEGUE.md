@@ -193,6 +193,17 @@ como una línea recta. El buscador avisa qué candidatos van a caer en ese caso.
 necesaria para enseñarlos. El infarto lateral aislado, por ejemplo, da cero
 candidatos. No es un límite de la herramienta; es el material.
 
+**El QT es un caso aparte.** El final de la onda T es el punto más discutible de
+un electro, y por eso `findings.js` trae `qtSpreadMs`, que no es un hallazgo
+clínico sino una condición para poder afirmar el hallazgo: si las derivaciones no
+coinciden entre sí, el QT del registro depende de cuál se mire. Sirvió. De los
+278 registros de la base cuyo informe menciona QT prolongado, sólo un puñado
+sostiene una medición defendible; entre los descartados hubo uno donde la mediana
+daba 434 ms —normal— y el máximo 502 —prolongado—, y otro donde la onda T y la U
+estaban fundidas y el número medido era en realidad un QU. El medidor devuelve
+`null` en las derivaciones donde la T mide menos de 1 mm, que es la forma honesta
+de decir que ahí no se puede medir.
+
 **Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 
 **Variables de entorno requeridas:**

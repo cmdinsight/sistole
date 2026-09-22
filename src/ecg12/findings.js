@@ -131,6 +131,35 @@ const REGLAS = {
     fallos: q.qrsMs >= lo && q.qrsMs <= hi ? [] : [`${q.qrsMs.toFixed(0)} ms`],
     margen: Math.min(q.qrsMs - lo, hi - q.qrsMs) / 400,
   }),
+  // QT corregido por frecuencia, en milisegundos. El umbral habitual de
+  // prolongación son 450 ms en hombres y 460 en mujeres; por encima de 500 el
+  // riesgo de torsades de pointes deja de ser teórico.
+  qtcMs: ([lo, hi], q) => ({
+    label: `QTc entre ${lo} y ${hi} ms`,
+    fallos: q.qtcBazett !== null && q.qtcBazett >= lo && q.qtcBazett <= hi
+      ? [] : [q.qtcBazett === null ? 'no medible' : `${q.qtcBazett.toFixed(0)} ms`],
+    margen: q.qtcBazett === null ? -1 : Math.min(q.qtcBazett - lo, hi - q.qtcBazett) / 400,
+  }),
+
+  // Cuánto se parecen entre sí los QT medidos en cada derivación. No es un
+  // hallazgo clínico: es una condición para que el hallazgo se pueda afirmar.
+  //
+  // El final de la onda T es lo más difícil de ubicar de un electro, y cuando
+  // las derivaciones no coinciden, el QT del registro depende de cuál se mire.
+  // Se encontró un candidato donde la mediana daba un QTc de 434 ms —normal— y
+  // el máximo daba 502 —prolongado—: el diagnóstico cambiaba según la elección,
+  // y un caso así no se puede enseñar por mucho que la etiqueta diga QT largo.
+  qtSpreadMs: ({ max }, q) => {
+    const medidos = Object.values(q.qt).filter((v) => v !== null);
+    const rango = medidos.length ? Math.max(...medidos) - Math.min(...medidos) : Infinity;
+    return {
+      label: `las derivaciones coinciden en el QT dentro de ${max} ms`,
+      fallos: medidos.length >= 6 && rango <= max ? []
+        : [medidos.length < 6 ? `sólo ${medidos.length} derivaciones medibles` : `${rango.toFixed(0)} ms de diferencia`],
+      margen: (max - rango) / 400,
+    };
+  },
+
   rate: ([lo, hi], q) => ({
     label: `frecuencia entre ${lo} y ${hi} lpm`,
     fallos: q.hr >= lo && q.hr <= hi ? [] : [`${q.hr.toFixed(0)} lpm`],

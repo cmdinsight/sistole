@@ -65,6 +65,15 @@ const L = {
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
   regularRhythm: { es: 'ritmo regular', en: 'regular rhythm', pt: 'ritmo regular' },
   irregularRhythm: { es: 'irregularmente irregular', en: 'irregularly irregular', pt: 'irregularmente irregular' },
+  qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
+  qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
+  qtcF: { es: 'QTc Fridericia', en: 'QTc Fridericia', pt: 'QTc Fridericia' },
+  qtLeads: { es: (n) => `${n} derivaciones`, en: (n) => `${n} leads`, pt: (n) => `${n} derivações` },
+  qtNote: {
+    es: 'Del inicio del QRS al final de la T, por el método de la tangente, sobre un latido promedio. Se informa el QT más largo entre las derivaciones donde la T se puede medir. Prolongado por encima de 450 ms en hombres y 460 en mujeres.',
+    en: 'From QRS onset to the end of the T, by the tangent method, on an averaged beat. The longest QT among the leads where the T can be measured is reported. Prolonged above 450 ms in men and 460 in women.',
+    pt: 'Do início do QRS ao fim da T, pelo método da tangente, sobre um batimento médio. Informa-se o QT mais longo entre as derivações onde a T pode ser medida. Prolongado acima de 450 ms em homens e 460 em mulheres.',
+  },
   rhythmNote: {
     es: 'La variación del RR es la diferencia típica entre latidos, relativa al RR. Por debajo de 0,08 el ritmo es regular.',
     en: 'RR variation is the typical beat-to-beat difference, relative to the RR interval. Below 0.08 the rhythm is regular.',
@@ -154,7 +163,21 @@ function Measured({ q, metrics, lang, gain }) {
   let chips = [];
   let note = '';
 
-  if (metrics.kind === 'st') {
+  if (metrics.kind === 'qt') {
+    if (q.qtMs === null) return null;
+    const medibles = Object.values(q.qt).filter((v) => v !== null);
+    // El umbral depende del sexo, así que lo decide el caso y no este bloque.
+    const alto = q.qtcBazett > (metrics.threshold ?? 450);
+    const tono = alto ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                      : 'text-slate-400 border-slate-800 bg-slate-950/60';
+    chips = [
+      chip('qt', L.qtMs[lang], `${Math.round(q.qtMs)} ms`, 'text-slate-300 border-slate-800 bg-slate-950/60'),
+      chip('qtcb', L.qtcB[lang], `${Math.round(q.qtcBazett)} ms`, tono),
+      chip('qtcf', L.qtcF[lang], `${Math.round(q.qtcFridericia)} ms`, tono),
+      chip('n', '', L.qtLeads[lang](medibles.length), 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.qtNote[lang];
+  } else if (metrics.kind === 'st') {
     chips = metrics.leads.map((l) => {
       const v = q.st[l];
       // El umbral de 1 mm no es decorativo: por debajo de ese valor un desnivel

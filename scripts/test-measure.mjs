@@ -115,12 +115,65 @@ console.log('\n[7] Guardar y volver a leer no cambia la medición');
   check('el ST no se mueve más de 5 µV en ninguna derivación',
         Math.max(...diffs) < 0.005, `(${uv(Math.max(...diffs))} µV)`);
   check('la frecuencia es la misma', Math.abs(before.hr - after.hr) < 0.5);
+  check('el QT no se mueve más de 8 ms', Math.abs(before.qtMs - after.qtMs) < 8,
+        `(${before.qtMs.toFixed(0)} vs ${after.qtMs.toFixed(0)} ms)`);
   check('III, aVR, aVL y aVF reconstruidas coinciden con las originales',
         ['III','aVR','aVL','aVF'].every((l) => Math.abs(before.st[l] - after.st[l]) < 0.005),
         `(${['III','aVR','aVL','aVF'].map(l=>`${l}:${uv(Math.abs(before.st[l]-after.st[l]))}`).join(' ')})`);
 }
 
-console.log('\n[8] La ganancia del dibujo se elige sola y por grupo');
+console.log('\n[8] Intervalo QT');
+{
+  // El QT del generador no depende de la frecuencia: la T está donde está. Si el
+  // medidor lo hace variar con la frecuencia, está midiendo mal.
+  const porFc = [45, 60, 75, 90, 100].map((rate) => measure(synth12({ rate, fs: 250, duration: 10 })).qtMs);
+  check('el QT medido no cambia con la frecuencia si la T no se mueve',
+        Math.max(...porFc) - Math.min(...porFc) < 12, `(${porFc.map((x) => x.toFixed(0)).join(' ')} ms)`);
+
+  // Y tiene que responder a lo que sí lo alarga.
+  const estirados = [1, 1.2, 1.4, 1.6].map((k) =>
+    measure(synth12({ rate: 60, fs: 250, duration: 10, qtStretch: k })).qtMs);
+  check('alargar la T alarga el QT, de forma monótona',
+        estirados.every((v, i) => i === 0 || v > estirados[i - 1]),
+        `(${estirados.map((x) => x.toFixed(0)).join(' → ')} ms)`);
+  check('y lo hace en proporción: al 60% más de T, entre 40% y 70% más de QT',
+        estirados[3] / estirados[0] > 1.4 && estirados[3] / estirados[0] < 1.7,
+        `(×${(estirados[3] / estirados[0]).toFixed(2)})`);
+
+  // La corrección por frecuencia: a 60 lpm el RR es 1 s y la raíz de 1 es 1, así
+  // que QTc y QT tienen que coincidir. Es el punto donde la fórmula no corrige.
+  const a60 = measure(synth12({ rate: 60, fs: 250, duration: 10 }));
+  check('a 60 lpm el QTc es igual al QT', Math.abs(a60.qtcBazett - a60.qtMs) < 5,
+        `(QT ${a60.qtMs.toFixed(0)} vs QTc ${a60.qtcBazett.toFixed(0)})`);
+  const a100 = measure(synth12({ rate: 100, fs: 250, duration: 10 }));
+  check('por encima de 60 lpm el QTc supera al QT', a100.qtcBazett > a100.qtMs + 40,
+        `(QT ${a100.qtMs.toFixed(0)} vs QTc ${a100.qtcBazett.toFixed(0)})`);
+  check('Fridericia corrige menos que Bazett en taquicardia',
+        a100.qtcFridericia < a100.qtcBazett,
+        `(${a100.qtcFridericia.toFixed(0)} vs ${a100.qtcBazett.toFixed(0)})`);
+
+  // Regresión: la ventana donde se busca la T NO puede llegar al latido
+  // siguiente. Antes llegaba, y a 120 lpm medía el QRS que venía como si fuera
+  // la onda T — daba 1 mV donde había 0,25, y el número parecía plausible.
+  const tLenta = measure(synth12({ rate: 60, fs: 250, duration: 10 })).t.II;
+  const tRapida = measure(synth12({ rate: 140, fs: 250, duration: 10 })).t.II;
+  check('a 140 lpm la onda T sigue midiendo lo mismo que a 60',
+        Math.abs(tRapida - tLenta) < 0.06, `(${uv(tLenta)} vs ${uv(tRapida)} µV)`);
+
+  // Una derivación con la T plana no se puede medir, y decirlo es mejor que
+  // inventar un número: once derivaciones midiendo 259 ms y una midiendo 609
+  // fue exactamente el problema que hizo falta resolver.
+  const q = measure(synth12({ rate: 60, fs: 250, duration: 10 }));
+  const planas = Object.keys(q.qt).filter((l) => Math.abs(q.t[l]) < 0.10);
+  check('donde la T es menor a 1 mm, el QT queda sin medir',
+        planas.every((l) => q.qt[l] === null), `(${planas.join(', ')})`);
+  const medidos = Object.values(q.qt).filter((v) => v !== null);
+  check('las derivaciones medibles coinciden entre sí dentro de 20 ms',
+        Math.max(...medidos) - Math.min(...medidos) < 20,
+        `(${Math.min(...medidos).toFixed(0)}–${Math.max(...medidos).toFixed(0)} ms)`);
+}
+
+console.log('\n[9] La ganancia del dibujo se elige sola y por grupo');
 {
   // Ningún caso publicado hoy necesita media ganancia, así que sin esta prueba
   // el mecanismo quedaría sin cubrir hasta que alguien agregue un bloqueo de

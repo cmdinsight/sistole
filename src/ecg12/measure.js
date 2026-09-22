@@ -153,6 +153,54 @@ function qrsTemplate(det, beats, fs) {
   return { onset: on - rIdx, offset: off - rIdx };   // en muestras, relativo al pico R
 }
 
+// ── Final de la onda T, por el método de la tangente ──
+// El QT se mide desde el comienzo del QRS hasta que la T termina, y ahí está la
+// dificultad: la T no termina en un punto nítido, se va acostando sobre la línea
+// de base hasta confundirse con ella. Esperar a que "toque" la línea da valores
+// largos y caprichosos, y una onda U detrás lo arruina del todo.
+//
+// El método de la tangente es lo que se usa a mano y lo que se hace acá: se toma
+// la rama más empinada de la T —la de bajada si es positiva, la de subida si
+// está invertida— se prolonga esa pendiente como una recta, y el final es donde
+// esa recta cruza la línea de base. Al extrapolar desde la parte empinada, ni la
+// cola de la T ni una U detrás mueven el resultado.
+//
+// Se hace sobre un LATIDO PROMEDIO. La pendiente es una derivada, y una derivada
+// sobre señal cruda amplifica el ruido justo donde hay que medir con precisión.
+function tEndTangent(beat, base, tFrom, tTo, fs) {
+  // Pico de la T dentro de la ventana, con su signo.
+  let pico = tFrom, valorPico = 0;
+  for (let k = tFrom; k <= tTo; k++) {
+    const v = beat[k] - base;
+    if (Math.abs(v) > Math.abs(valorPico)) { valorPico = v; pico = k; }
+  }
+  // Una T de menos de 1 mm no permite trazar una tangente confiable: la
+  // pendiente de retorno es tan suave que un microvoltio de ruido mueve el cruce
+  // decenas de milisegundos. En la práctica tampoco se mide el QT en una
+  // derivación con la T plana; se busca otra.
+  if (Math.abs(valorPico) < 0.10) return null;
+
+  // Rama de retorno: desde el pico hacia adelante, el punto de máxima pendiente.
+  const paso = Math.max(1, Math.round(0.004 * fs));
+  let mejor = -1, pendienteMax = 0;
+  for (let k = pico + paso; k <= tTo - paso; k++) {
+    // Pendiente con signo contrario al pico: la T vuelve hacia la línea de base.
+    const m = (beat[k + paso] - beat[k - paso]) / (2 * paso);
+    const vuelve = valorPico > 0 ? -m : m;
+    if (vuelve > pendienteMax) { pendienteMax = vuelve; mejor = k; }
+  }
+  if (mejor < 0 || pendienteMax <= 0) return null;
+
+  // Dónde cruza la tangente la línea de base.
+  const m = (beat[mejor + paso] - beat[mejor - paso]) / (2 * paso);
+  const cruce = mejor + (base - beat[mejor]) / m;
+  if (!Number.isFinite(cruce) || cruce <= pico) return null;
+  // Tope: la tangente no puede terminar más allá de la ventana de búsqueda más
+  // un margen. Sin esto, una T casi plana da una pendiente mínima y el cruce se
+  // proyecta a varios segundos.
+  return Math.min(cruce, tTo + Math.round(0.08 * fs));
+}
+
 /**
  * Mide un registro de 12 derivaciones.
  *
@@ -189,10 +237,33 @@ export function measure(signal) {
   const dT1 = Math.min(
     Math.round(0.60 * fs),
     offset + Math.round(Math.max(0.16, 0.62 * Math.sqrt(rrMed)) * fs),
+    // Y nunca más allá del 72% del RR. Sin este tope, a frecuencias altas la
+    // ventana llegaba hasta el latido SIGUIENTE y medía su QRS como si fuera la
+    // onda T: a 120 lpm daba T de 1 mV donde había 0,2. Lo que se rompe así no
+    // avisa, porque el número que sale es plausible.
+    Math.round(0.72 * rrMed * fs),
   );
+
+  // Latido promedio por derivación: se superponen todos los complejos alineados
+  // por el pico R. Lo usa la medición del QT, que necesita derivadas limpias.
+  const promedio = (sig) => {
+    const antes = -onset + Math.round(0.06 * fs);
+    const despues = dT1 + Math.round(0.10 * fs);
+    const tpl = new Float64Array(antes + despues + 1);
+    let n = 0;
+    for (const r0 of usable) {
+      if (r0 - antes < 0 || r0 + despues >= sig.length) continue;
+      for (let k = 0; k <= antes + despues; k++) tpl[k] += sig[r0 - antes + k];
+      n++;
+    }
+    if (!n) return null;
+    for (let k = 0; k < tpl.length; k++) tpl[k] /= n;
+    return { tpl, rIdx: antes };
+  };
 
   const st = {};
   const t = {};
+  const qt = {};
   const r = {};   // altura de la onda R (positiva)
   const sw = {};  // profundidad de la onda S (negativa)
   const span = {};// excursión máxima respecto de la línea de base, para el dibujo
@@ -234,6 +305,19 @@ export function measure(signal) {
     }
     st[lead] = median(stVals);
     t[lead] = median(tVals);
+
+    // QT de esta derivación, sobre el latido promedio.
+    const prom = promedio(sig);
+    if (prom) {
+      const { tpl, rIdx } = prom;
+      let base = 0;
+      for (let k = rIdx + dB0; k < rIdx + dB1; k++) base += tpl[k];
+      base /= (dB1 - dB0);
+      const fin = tEndTangent(tpl, base, rIdx + dT0, Math.min(tpl.length - 2, rIdx + dT1), fs);
+      qt[lead] = fin === null ? null : ((fin - (rIdx + onset)) / fs) * 1000;
+    } else {
+      qt[lead] = null;
+    }
     r[lead] = median(rVals);
     sw[lead] = median(sVals);
     span[lead] = spanMax;
@@ -271,6 +355,20 @@ export function measure(signal) {
     }
   }
 
+  // Se descartan las derivaciones donde la T es tan chata que el final no se
+  // puede ubicar: un QT medido sobre una T invisible es un número inventado.
+  //
+  // Y después, entre las que quedan, se descartan las que se apartan demasiado
+  // del consenso. Quedarse con el máximo a secas es frágil: basta una sola
+  // derivación donde la tangente falle para estirar el QT del registro entero.
+  // Pasó — once derivaciones midiendo 259 ms y una midiendo 609. La dispersión
+  // real del QT entre derivaciones es de unas decenas de milisegundos, así que
+  // un 20% de diferencia contra la mediana ya no es dispersión: es un error.
+  const qtValidos = Object.values(qt).filter((v) => v !== null);
+  const qtMediana = median(qtValidos);
+  const qtCreibles = qtValidos.filter((v) => Math.abs(v - qtMediana) <= qtMediana * 0.20);
+  const qtMax = qtCreibles.length ? Math.max(...qtCreibles) : null;
+
   return {
     hr: 60 / rrMed,
     noise,
@@ -279,6 +377,19 @@ export function measure(signal) {
     beats,
     st,
     t,
+    qt,
+    // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
+    // puede medir, no el promedio. Es la convención clínica y tiene su razón: la
+    // repolarización no termina al mismo tiempo en todo el ventrículo, y el
+    // riesgo lo marca la última fibra en repolarizar, no la media.
+    qtMs: qtMax,
+    // QT corregido por frecuencia. A más taquicardia el QT se acorta solo, así
+    // que sin corregir no se puede comparar entre pacientes ni con un umbral.
+    // Bazett (QT/√RR) es la fórmula que se enseña y la que usan los equipos;
+    // exagera la corrección en los extremos, y por eso se acompaña de
+    // Fridericia (QT/∛RR), que se porta mejor en taquicardia.
+    qtcBazett: qtMax === null ? null : qtMax / Math.sqrt(rrMed),
+    qtcFridericia: qtMax === null ? null : qtMax / Math.cbrt(rrMed),
     r,
     s: sw,
     span,

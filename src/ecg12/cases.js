@@ -439,6 +439,54 @@ export const CASES = [
   },
 
   {
+    id: 'long-qt',
+    record: '8198',
+    age: 49, sex: 'F',
+    vitals: { bp: '112/70', spo2: 98, rr: 14 },
+    highlight: ['II', 'V3', 'V4', 'V5'],
+    answer: 'qtlargo',
+    metrics: { kind: 'qt', threshold: 460 },
+    // Medido: QT 458 ms a 65 lpm. QTc 475 por Bazett y 469 por Fridericia, que
+    // a esta frecuencia casi coinciden. Once derivaciones medibles, todas dentro
+    // de 46 ms. ST plano en las doce (máximo 42 µV en V2).
+    findings: {
+      qtcMs: [455, 500],
+      qtSpreadMs: { max: 60 },
+      qrsMs: [70, 110],
+      tUpright: { leads: ['II', 'V3', 'V4', 'V5'], min: 0.25 },
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'], max: 0.06 },
+      rate: [58, 75],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 49 años traída por un desmayo mientras hacía la cola en una farmacia. Se recuperó sola en menos de un minuto. Toma citalopram desde hace años; esta semana le agregaron azitromicina por una bronquitis y ondansetrón porque el antibiótico le daba náuseas.',
+      en: '49-year-old woman brought in after fainting while queuing at a pharmacy. She recovered on her own in under a minute. She has taken citalopram for years; this week azithromycin was added for bronchitis, and ondansetron because the antibiotic was making her nauseated.',
+      pt: 'Mulher de 49 anos trazida após um desmaio enquanto fazia fila numa farmácia. Recuperou-se sozinha em menos de um minuto. Toma citalopram há anos; esta semana acrescentaram azitromicina por uma bronquite e ondansetrona porque o antibiótico lhe dava náuseas.',
+    },
+    options: [
+      { id: 'qtlargo', label: { es: 'QT prolongado', en: 'Prolonged QT', pt: 'QT prolongado' } },
+      { id: 'normal', label: { es: 'Electrocardiograma normal', en: 'Normal electrocardiogram', pt: 'Eletrocardiograma normal' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica difusa', en: 'Diffuse subendocardial ischemia', pt: 'Isquemia subendocárdica difusa' } },
+      { id: 'qtcorto', label: { es: 'QT corto por hipercalcemia', en: 'Short QT from hypercalcemia', pt: 'QT curto por hipercalcemia' } },
+    ],
+    explain: {
+      es: 'A primera vista no hay nada: ritmo sinusal, QRS angosto, ST en la línea de base en las doce derivaciones. Lo anormal es un intervalo, y los intervalos no saltan a la vista, hay que medirlos. El QT va desde el comienzo del QRS hasta que termina la onda T, y acá mide 458 ms. Después hay que corregirlo por la frecuencia, porque el QT se acorta solo cuando el corazón se acelera: a 65 lpm la corrección de Bazett lo deja en 475 ms, y el umbral en una mujer son 460. La de Fridericia da 469, y que las dos coincidan no es casualidad — se separan en los extremos de frecuencia, y a 65 lpm ninguna está forzando nada.',
+      en: 'At first glance there is nothing: sinus rhythm, narrow QRS, ST on the baseline in all twelve leads. What is abnormal is an interval, and intervals do not jump out at you — they have to be measured. The QT runs from the start of the QRS to the end of the T wave, and here it is 458 ms. Then it must be corrected for rate, because the QT shortens on its own as the heart speeds up: at 65 bpm Bazett\u2019s correction gives 475 ms, and the threshold in a woman is 460. Fridericia gives 469, and the two agreeing is not a coincidence — they diverge at the extremes of rate, and at 65 bpm neither is straining.',
+      pt: 'À primeira vista não há nada: ritmo sinusal, QRS estreito, ST na linha de base nas doze derivações. O anormal é um intervalo, e intervalos não saltam à vista — é preciso medi-los. O QT vai do início do QRS até o fim da onda T, e aqui mede 458 ms. Depois há que corrigi-lo pela frequência, porque o QT encurta sozinho quando o coração acelera: a 65 bpm a correção de Bazett o deixa em 475 ms, e o limiar numa mulher é 460. A de Fridericia dá 469, e as duas coincidirem não é acaso — elas se separam nos extremos de frequência, e a 65 bpm nenhuma está forçando nada.',
+    },
+    pitfall: {
+      es: 'El error está en dónde se decide que la T terminó. La onda T no termina en un punto nítido: se va acostando sobre la línea de base. Si uno espera a que la toque, el QT sale largo siempre. Y si detrás hay una onda U —frecuente cuando el potasio está bajo— y se la incluye, lo que se midió es un QU y el número sobra decenas de milisegundos. Lo que se hace es prolongar con una regla la parte más empinada de la bajada de la T y marcar dónde esa recta cruza la línea de base. Acá la T es alta y vuelve limpia, así que el final es poco discutible; en un trazado con la T chata, el QT deja de ser un número confiable y conviene decirlo en vez de informarlo igual.',
+      en: 'The error is in deciding where the T ended. The T wave does not end at a sharp point: it lies down onto the baseline. If you wait for it to touch, the QT always comes out long. And if there is a U wave behind it — common when potassium is low — and you include it, what you measured is a QU and the number is tens of milliseconds too long. What you do is extend the steepest part of the T\u2019s downslope with a ruler and mark where that line crosses the baseline. Here the T is tall and returns cleanly, so the end is hard to argue with; on a tracing with a flat T, the QT stops being a reliable number and it is better to say so than to report it anyway.',
+      pt: 'O erro está em decidir onde a T terminou. A onda T não termina num ponto nítido: vai se deitando sobre a linha de base. Se você esperar que a toque, o QT sai sempre longo. E se atrás houver uma onda U — frequente quando o potássio está baixo — e você a incluir, o que mediu foi um QU e o número sobra dezenas de milissegundos. O que se faz é prolongar com uma régua a parte mais íngreme da descida da T e marcar onde essa reta cruza a linha de base. Aqui a T é alta e volta limpa, então o final é pouco discutível; num traçado com a T achatada, o QT deixa de ser um número confiável e convém dizê-lo em vez de informá-lo assim mesmo.',
+    },
+    action: {
+      es: 'Lo primero es la lista de medicamentos, y en este caso alcanza con leerla: citalopram, azitromicina y ondansetrón prolongan el QT los tres, y acá están los tres juntos. Suspender lo que se pueda —el ondansetrón y el antibiótico son los agregados recientes— y consultar por el citalopram antes de tocarlo. Pedir potasio, magnesio y calcio, porque un electrolito bajo multiplica el efecto de los fármacos. Y repetir el electro: lo que importa no es sólo el número de hoy sino si baja al sacar las drogas. Un desmayo con el QT prolongado no es un desmayo cualquiera; puede haber sido una torsades que cedió sola.',
+      en: 'The first step is the medication list, and in this case reading it is enough: citalopram, azithromycin and ondansetron all prolong the QT, and here all three are together. Stop what can be stopped — the ondansetron and the antibiotic are the recent additions — and consult before touching the citalopram. Check potassium, magnesium and calcium, because a low electrolyte multiplies the drugs\u2019 effect. And repeat the ECG: what matters is not only today\u2019s number but whether it falls once the drugs are removed. A faint with a prolonged QT is not an ordinary faint; it may have been a torsades that stopped on its own.',
+      pt: 'O primeiro passo é a lista de medicamentos, e neste caso basta lê-la: citalopram, azitromicina e ondansetrona prolongam o QT, e aqui estão os três juntos. Suspender o que for possível — a ondansetrona e o antibiótico são os acréscimos recentes — e consultar antes de mexer no citalopram. Pedir potássio, magnésio e cálcio, porque um eletrólito baixo multiplica o efeito dos fármacos. E repetir o ECG: o que importa não é só o número de hoje, mas se ele cai ao retirar as drogas. Um desmaio com QT prolongado não é um desmaio qualquer; pode ter sido uma torsades que cedeu sozinha.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',
