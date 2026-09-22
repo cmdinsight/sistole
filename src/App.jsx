@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
-import { Play, Pause, Heart, RotateCcw, BookOpen, Brain, Check, X, Activity, ChevronRight, Stethoscope, AlertTriangle, User, Shuffle, List, Volume2, VolumeX, Zap } from 'lucide-react';
+import { Play, Pause, Heart, RotateCcw, BookOpen, Brain, Check, X, Activity, ChevronRight, Stethoscope, AlertTriangle, User, Shuffle, List, Volume2, VolumeX, Zap, HeartPulse } from 'lucide-react';
+
+// La sección de 12 derivaciones se carga aparte: trae su propio renderizador y
+// el contenido clínico de los casos, y sólo hace falta si el usuario entra ahí.
+const TwelveLeadSection = React.lazy(() => import('./ecg12/Section.jsx'));
 
 // ═══════════════════════════════════════════════════════════════
 // CLINICAL CASES (inlined — 24 casos trilingüe)
@@ -301,7 +305,7 @@ for (const [cat,keys] of Object.entries(CATEGORIES)) for (const k of keys) RHYTH
 const T = {
   es:{
     appTitle:'Sístole',appSubtitle:'Simulador de ritmos cardíacos',
-    quiz:'Quiz',reference:'Referencia',cases:'Casos',simulator:'Simulador',
+    quiz:'Quiz',reference:'Referencia',cases:'Casos',simulator:'Simulador',twelve:'12 derivaciones',
     score:'Puntaje',streak:'Racha',accuracy:'Precisión',
     start:'Comenzar',stop:'Detener',next:'Siguiente',
     correct:'Correcto',incorrect:'Incorrecto',
@@ -357,7 +361,7 @@ const T = {
   },
   en:{
     appTitle:'Sístole',appSubtitle:'Cardiac rhythm simulator',
-    quiz:'Quiz',reference:'Reference',cases:'Cases',simulator:'Simulator',
+    quiz:'Quiz',reference:'Reference',cases:'Cases',simulator:'Simulator',twelve:'12-lead ECG',
     score:'Score',streak:'Streak',accuracy:'Accuracy',
     start:'Start',stop:'Stop',next:'Next',
     correct:'Correct',incorrect:'Incorrect',
@@ -414,7 +418,7 @@ const T = {
   },
   pt:{
     appTitle:'Sístole',appSubtitle:'Simulador de ritmos cardíacos',
-    quiz:'Quiz',reference:'Referência',cases:'Casos',simulator:'Simulador',
+    quiz:'Quiz',reference:'Referência',cases:'Casos',simulator:'Simulador',twelve:'12 derivações',
     score:'Pontuação',streak:'Sequência',accuracy:'Precisão',
     start:'Iniciar',stop:'Parar',next:'Próximo',
     correct:'Correto',incorrect:'Incorreto',
@@ -11411,6 +11415,11 @@ export default function App() {
         {/* vuelve a ser una fila, que ya entra cómoda en pantallas más anchas. Simulador */}
         {/* va primero: es la sección más valorada y la que menos se descubría. */}
         <div className="grid grid-cols-2 sm:flex gap-1 mb-6 p-1 bg-slate-900/60 border border-slate-800/80 rounded-xl w-full">
+          <div className="col-span-2 sm:contents">
+            <TabButton active={mode==='twelve'} onClick={()=>setMode('twelve')} icon={HeartPulse} full>
+              <span className="flex items-center gap-1.5">{t.twelve}<span className="text-[10px] font-mono opacity-50 uppercase">nuevo</span></span>
+            </TabButton>
+          </div>
           <TabButton active={mode==='simulator'} onClick={()=>setMode('simulator')} icon={Zap}>
             <span className="flex items-center gap-1.5">{t.simulator}<span className="hidden sm:inline text-[10px] font-mono opacity-50 uppercase">ACLS</span></span>
           </TabButton>
@@ -11418,6 +11427,13 @@ export default function App() {
           <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
           <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
         </div>
+
+        {/* ══ 12 DERIVACIONES ══ */}
+        {mode==='twelve'&&(
+          <React.Suspense fallback={<div className="py-16 text-center text-slate-500 text-sm">…</div>}>
+            <TwelveLeadSection lang={lang} onAnswer={(right)=>earnXP(right?12:3,{quizAnswer:true,...(right?{quizCorrect:true}:{})})}/>
+          </React.Suspense>
+        )}
 
         {/* ══ QUIZ ══ */}
         {mode==='quiz'&&quizQ&&(
@@ -11831,10 +11847,10 @@ function LangToggle({lang,setLang}){
   );
 }
 
-function TabButton({active,onClick,icon:Icon,children}){
+function TabButton({active,onClick,icon:Icon,children,full}){
   return(
     <button onClick={onClick}
-      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${active?'bg-slate-800 text-indigo-300 shadow-sm':'text-slate-500 hover:text-slate-300'}`}>
+      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${full?'w-full sm:w-auto':''} ${active?'bg-slate-800 text-indigo-300 shadow-sm':'text-slate-500 hover:text-slate-300'}`}>
       <Icon className="w-4 h-4"/>{children}
     </button>
   );

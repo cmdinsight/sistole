@@ -106,5 +106,83 @@ check('aVF = (II + III) / 2', e4);
 const amp=(sig)=>Math.max(...sig.map(Math.abs));
 check('aVR no es más profunda que la R de II', amp(L.aVR)<amp(L.II)*1.15, `aVR=${amp(L.aVR).toFixed(2)} II=${amp(L.II).toFixed(2)}`);
 
+console.log('\n[9] Fibrilación auricular: sin onda P, con ondas f');
+// La presencia o ausencia de onda P se evalúa a frecuencia controlada. A 130 lpm
+// la T del latido previo invade la ventana de la P — cosa que pasa de verdad en
+// la clínica, pero que impide medir limpio. La irregularidad del RR se prueba
+// aparte, con respuesta ventricular rápida.
+const fib=synth12({rate:75,fs,duration:10,irregular:1,atrial:'fib'}).leads;
+const sin2=synth12({rate:75,fs,duration:10,atrial:'sinus'}).leads;
+const fibFast=synth12({rate:130,fs,duration:10,irregular:1,atrial:'fib'}).leads;
+
+// Se localizan los QRS y se mira la ventana donde DEBERÍA estar la P: 0,21 s
+// antes del pico R (es el desfase P→R del modelo), con ±40 ms de margen.
+const rPeaks=(sig,thr=0.55)=>{const out=[];for(let i=1;i<sig.length-1;i++) if(sig[i]>thr&&sig[i]>=sig[i-1]&&sig[i]>sig[i+1]) out.push(i);return out;};
+const meanAbs=a=>a.reduce((x,y)=>x+Math.abs(y),0)/a.length;
+const pWindowEnergy=(sig)=>{
+  const peaks=rPeaks(sig).filter(i=>i>0.30*fs);
+  const vals=peaks.map(i=>meanAbs(sig.slice(Math.round(i-0.25*fs),Math.round(i-0.17*fs))));
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+};
+// Promediado de señal, la técnica real: se alinean las ventanas por el pico R y
+// se promedian. Lo que se repite (la onda P) sobrevive; lo que no (ondas f,
+// deriva de base, temblor) tiende a cero. Medir la amplitud cruda no sirve acá:
+// está dominada por la deriva respiratoria, no por la actividad auricular.
+const averagedP=(sig)=>{
+  const pk=rPeaks(sig).filter(i=>i>0.30*fs);
+  const len=Math.round(0.08*fs);
+  const acc=new Float64Array(len);
+  let used=0;
+  pk.forEach(i=>{
+    const a=sig.slice(Math.round(i-0.25*fs),Math.round(i-0.25*fs)+len);
+    if(a.length===len){for(let k=0;k<len;k++) acc[k]+=a[k];used++;}
+  });
+  const avg=Array.from(acc,v=>v/used);
+  const m=avg.reduce((a,b)=>a+b,0)/len;
+  return Math.max(...avg.map(v=>Math.abs(v-m)));   // amplitud pico de lo reproducible
+};
+const pSinus=averagedP(sin2.II), pFib=averagedP(fib.II);
+console.log(`     onda P tras promediar latidos — sinusal: ${pSinus.toFixed(3)} mV   fibrilación: ${pFib.toFixed(3)} mV`);
+check('la P sinusal sobrevive al promediado', pSinus>0.05, `(${pSinus.toFixed(3)})`);
+check('en fibrilación no queda actividad auricular reproducible', pFib<pSinus*0.35, `(${pFib.toFixed(3)} vs ${pSinus.toFixed(3)})`);
+check('con la ventana cruda queda ondulación, no línea plana', pWindowEnergy(fib.II)>0.008);
+
+// El criterio que de verdad define la fibrilación no es la amplitud: es que la
+// actividad auricular NO se repite igual latido a latido. En ritmo sinusal cada
+// P tiene la misma forma; en fibrilación la ondulación cae en fase distinta cada
+// vez. Se mide correlacionando la ventana de la P entre latidos consecutivos.
+const corr=(a,b)=>{
+  const ma=a.reduce((x,y)=>x+y,0)/a.length, mb=b.reduce((x,y)=>x+y,0)/b.length;
+  let num=0,da=0,db=0;
+  for(let i=0;i<a.length;i++){const x=a[i]-ma,y=b[i]-mb;num+=x*y;da+=x*x;db+=y*y;}
+  return num/Math.sqrt(da*db||1e-12);
+};
+const pShapeConsistency=(sig)=>{
+  const pk=rPeaks(sig).filter(i=>i>0.30*fs);
+  const wins=pk.map(i=>Array.from(sig.slice(Math.round(i-0.25*fs),Math.round(i-0.17*fs))));
+  const cs=[]; for(let i=1;i<wins.length;i++) if(wins[i].length===wins[0].length) cs.push(corr(wins[i-1],wins[i]));
+  return cs.reduce((a,b)=>a+b,0)/cs.length;
+};
+const cSin=pShapeConsistency(sin2.II), cFib=pShapeConsistency(fib.II);
+console.log(`     correlación de la onda P entre latidos — sinusal: ${cSin.toFixed(2)}   fibrilación: ${cFib.toFixed(2)}`);
+check('la P sinusal se repite idéntica latido a latido', cSin>0.85, `(r=${cSin.toFixed(2)})`);
+check('la actividad fibrilatoria NO se repite', cFib<0.5, `(r=${cFib.toFixed(2)})`);
+check('las ondas f se ven más en V1 que en aVL', meanAbs(fib.V1.slice(0,400))>meanAbs(fib.aVL.slice(0,400)));
+check('la respuesta ventricular rápida es realmente rápida', rPeaks(fibFast.II).length>=19, `(${rPeaks(fibFast.II).length} latidos en 10 s)`);
+
+// El RR tiene que ser irregularmente irregular, no solo rápido.
+const fibPeaks=rPeaks(fibFast.II), rrs=[];
+for(let i=1;i<fibPeaks.length;i++) rrs.push((fibPeaks[i]-fibPeaks[i-1])/fs);
+const rrMean=rrs.reduce((a,b)=>a+b,0)/rrs.length;
+const rrSd=Math.sqrt(rrs.reduce((a,b)=>a+(b-rrMean)**2,0)/rrs.length);
+check('el RR varía latido a latido (irregularmente irregular)', rrSd/rrMean>0.10, `(CV=${(rrSd/rrMean*100).toFixed(0)}%)`);
+
+const sinPeaks=rPeaks(sin2.II), sinRrs=[];
+for(let i=1;i<sinPeaks.length;i++) sinRrs.push((sinPeaks[i]-sinPeaks[i-1])/fs);
+const sinMean=sinRrs.reduce((a,b)=>a+b,0)/sinRrs.length;
+const sinSd=Math.sqrt(sinRrs.reduce((a,b)=>a+(b-sinMean)**2,0)/sinRrs.length);
+check('en cambio el sinusal es regular', sinSd/sinMean<0.02, `(CV=${(sinSd/sinMean*100).toFixed(1)}%)`);
+check('las identidades se mantienen en fibrilación', (()=>{for(let i=0;i<fib.II.length;i+=13){if(Math.abs(fib.II[i]-(fib.I[i]+fib.III[i]))>1e-5)return false;}return true;})());
+
 console.log(`\n${'─'.repeat(44)}\n${pass} pasaron, ${fail} fallaron\n`);
 process.exit(fail?1:0);

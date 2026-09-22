@@ -45,14 +45,19 @@ export default function TwelveLead({
   rhythmLead = 'II',
   highlight = [],
   onLeadClick,
+  // singleRow dibuja sólo la tira de ritmo, sin la grilla 3×4: se usa al ampliar
+  // una derivación para mirarle el ST de cerca.
+  singleRow = false,
   className = '',
 }) {
   const canvasRef = useRef(null);
   const boxesRef = useRef([]);   // zonas de clic por derivación, en píxeles CSS
 
+  const gridRows = singleRow ? 0 : LAYOUT_3x4.length;
+  const rowMm = singleRow ? ROW_MM * 1.7 : ROW_MM;   // más alto al ampliar una sola
   const totalMm = {
     w: PAD_MM.left + 4 * COL_SECONDS * MM_PER_SEC + PAD_MM.right,
-    h: PAD_MM.top + (LAYOUT_3x4.length + (rhythmLead ? 1 : 0)) * ROW_MM + PAD_MM.bottom,
+    h: PAD_MM.top + (gridRows + (rhythmLead ? 1 : 0)) * rowMm + PAD_MM.bottom,
   };
 
   const draw = useCallback(() => {
@@ -107,9 +112,9 @@ export default function TwelveLead({
       const isHot = highlight.includes(lead);
       if (isHot) {
         ctx.fillStyle = t.highlight;
-        ctx.fillRect(px(xStartMm), px(yBaseMm - ROW_MM / 2 + 2), px(widthMm), px(ROW_MM - 4));
+        ctx.fillRect(px(xStartMm), px(yBaseMm - rowMm / 2 + 2), px(widthMm), px(rowMm - 4));
         ctx.fillStyle = t.highlightBar;
-        ctx.fillRect(px(xStartMm), px(yBaseMm - ROW_MM / 2 + 2), Math.max(1.5, px(0.7)), px(ROW_MM - 4));
+        ctx.fillRect(px(xStartMm), px(yBaseMm - rowMm / 2 + 2), Math.max(1.5, px(0.7)), px(rowMm - 4));
       }
 
       ctx.beginPath();
@@ -127,9 +132,9 @@ export default function TwelveLead({
       ctx.fillStyle = isHot ? t.highlightLabel : t.label;
       ctx.font = `${isHot ? 700 : 600} ${px(3.4).toFixed(1)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText(lead, px(xStartMm + 2.0), px(yBaseMm - ROW_MM / 2 + 5.4));
+      ctx.fillText(lead, px(xStartMm + 2.0), px(yBaseMm - rowMm / 2 + 5.4));
 
-      boxes.push({ lead, x: px(xStartMm), y: px(yBaseMm - ROW_MM / 2), w: px(widthMm), h: px(ROW_MM) });
+      boxes.push({ lead, x: px(xStartMm), y: px(yBaseMm - rowMm / 2), w: px(widthMm), h: px(rowMm) });
     };
 
     // ── Pulso de calibración: 1 mV = 10 mm de alto, 0,2 s de ancho ──
@@ -147,18 +152,20 @@ export default function TwelveLead({
     };
 
     // ── Formato 3×4: cada columna es una ventana temporal distinta ──
-    LAYOUT_3x4.forEach((row, ri) => {
-      const yBase = PAD_MM.top + ri * ROW_MM + ROW_MM / 2;
-      calibration(yBase);
-      row.forEach((lead, ci) => {
-        plot(lead, PAD_MM.left + ci * COL_SECONDS * MM_PER_SEC, yBase,
-             ci * COL_SECONDS, (ci + 1) * COL_SECONDS, COL_SECONDS * MM_PER_SEC);
+    if (!singleRow) {
+      LAYOUT_3x4.forEach((row, ri) => {
+        const yBase = PAD_MM.top + ri * rowMm + rowMm / 2;
+        calibration(yBase);
+        row.forEach((lead, ci) => {
+          plot(lead, PAD_MM.left + ci * COL_SECONDS * MM_PER_SEC, yBase,
+               ci * COL_SECONDS, (ci + 1) * COL_SECONDS, COL_SECONDS * MM_PER_SEC);
+        });
       });
-    });
+    }
 
     // ── Tira de ritmo: la derivación elegida, los 10 s completos ──
     if (rhythmLead) {
-      const yBase = PAD_MM.top + LAYOUT_3x4.length * ROW_MM + ROW_MM / 2;
+      const yBase = PAD_MM.top + gridRows * rowMm + rowMm / 2;
       calibration(yBase);
       plot(rhythmLead, PAD_MM.left, yBase, 0, signal.duration || 10, 4 * COL_SECONDS * MM_PER_SEC);
     }
@@ -169,7 +176,7 @@ export default function TwelveLead({
     ctx.fillText('25 mm/s    10 mm/mV', px(PAD_MM.left), cssH - px(1.2));
 
     boxesRef.current = boxes;
-  }, [signal, theme, rhythmLead, highlight, totalMm.w, totalMm.h]);
+  }, [signal, theme, rhythmLead, highlight, singleRow, gridRows, rowMm, totalMm.w, totalMm.h]);
 
   useEffect(() => {
     draw();

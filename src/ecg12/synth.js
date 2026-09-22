@@ -53,13 +53,19 @@ const TAU = Math.PI * 2;
 
 // Vector cardíaco en el instante t dentro de un latido (t en segundos desde la P).
 function beatVector(t, opts) {
-  const { stVector = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0 } = opts;
+  const { stVector = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0, atrial = 'sinus' } = opts;
 
   const qrsW = 0.013 * (1 + wide * 1.6);   // el QRS se ensancha en bloqueos y ritmos ventriculares
   const rC = 0.41;
 
   let v = [0, 0, 0];
-  v = add(v, scale(DIR.p, g(t, 0.20, 0.028, 0.15)));
+  // Actividad auricular. En fibrilación NO hay onda P: la aurícula no se
+  // despolariza de forma organizada. Dibujar un ritmo irregular conservando las
+  // P daría un trazado imposible, así que la P se omite por completo y la
+  // ondulación fibrilatoria se agrega aparte, en generate().
+  if (atrial === 'sinus') {
+    v = add(v, scale(DIR.p, g(t, 0.20, 0.028, 0.15)));
+  }
   v = add(v, scale(DIR.septal, g(t, rC - 0.028, 0.009, 0.22)));
   v = add(v, scale(DIR.midAnterior, g(t, rC - 0.012, 0.010 * (1 + wide), 0.62)));
   v = add(v, scale(DIR.qrs, g(t, rC, qrsW, 1.45)));
@@ -106,6 +112,17 @@ const noiseVector = (t) => {
   return [n * 0.35, n * 0.90, n * 0.25];
 };
 
+// Ondulación fibrilatoria: varias frecuencias incommensurables entre 5 y 9 Hz,
+// que es el rango real de las ondas f. Van en la dirección auricular, así que
+// se ven sobre todo en V1 y II — igual que en un trazado de verdad.
+const fibVector = (t) => {
+  const f =
+    0.034 * Math.sin(TAU * 6.3 * t) +
+    0.025 * Math.sin(TAU * 8.1 * t + 1.9) +
+    0.018 * Math.sin(TAU * 5.2 * t + 0.6);
+  return [DIR.p[0] * f * 0.5, DIR.p[1] * f * 0.6, DIR.p[2] * f * 1.9];
+};
+
 /**
  * Genera 10 segundos de 12 derivaciones.
  *
@@ -119,15 +136,17 @@ const noiseVector = (t) => {
  * @param {number} o.tInvert    0 = T normal, 1 = T completamente invertida
  * @param {number} o.wide       0 = QRS angosto, 1 = ensanchado
  * @param {number} o.irregular  variabilidad del RR (0 = regular, 1 = fibrilación auricular)
+ * @param {string} o.atrial     'sinus' (con onda P) o 'fib' (sin P, con ondas f)
  * @returns {{fs:number, leads:Object<string, Float32Array>, labels:string[]}}
  */
 export function synth12({
   rate = 72, fs = 250, duration = 10,
   infarct = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0, irregular = 0,
+  atrial = 'sinus',
 } = {}) {
   const n = Math.round(fs * duration);
   const stVector = infarct ? INFARCT_VECTORS[infarct] : null;
-  const opts = { stVector, stAmp, qWave, tInvert, wide };
+  const opts = { stVector, stAmp, qWave, tInvert, wide, atrial };
 
   // Tiempos de inicio de cada latido. Con irregular > 0 el RR varía como en una
   // fibrilación auricular, con un generador determinista para que el mismo caso
@@ -151,7 +170,8 @@ export function synth12({
     while (bi + 1 < beats.length && beats[bi + 1] <= t) bi++;
     const tb = t - beats[bi] + 0.20;   // +0.20 alinea la P con el inicio del latido
 
-    const v = add(beatVector(tb, opts), noiseVector(t));
+    let v = add(beatVector(tb, opts), noiseVector(t));
+    if (atrial === 'fib') v = add(v, fibVector(t));
     for (let li = 0; li < LEAD_ORDER.length; li++) {
       leads[LEAD_ORDER[li]][i] = project(v, LEAD_ORDER[li]);
     }
