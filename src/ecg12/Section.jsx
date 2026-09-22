@@ -120,9 +120,9 @@ const L = {
   earlyLabel: { es: 'llegó al', en: 'arrived at', pt: 'chegou aos' },
   shapeLabel: { es: 'parecido', en: 'similarity', pt: 'semelhança' },
   pvcNote: {
-    es: 'Un latido cuenta como extrasístole ventricular cuando cumple las dos cosas: llega antes del 85 % del ciclo Y se parece menos del 80 % a la plantilla del latido típico. Ninguna alcanza sola — prematura también es una extrasístole auricular, que sale idéntica a las demás, y distinta también sale una deformada por el ruido.',
-    en: 'A beat counts as a ventricular premature beat when it meets both conditions: it arrives before 85 % of the cycle AND resembles the typical-beat template by less than 80 %. Neither is enough alone — an atrial premature beat is also early but comes out identical to the rest, and a noise-deformed beat is also different.',
-    pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 80 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
+    es: 'Un latido cuenta como extrasístole ventricular cuando cumple las dos cosas: llega antes del 85 % del ciclo Y se parece menos del 94 % a la plantilla del latido típico. Ninguna alcanza sola — prematura también es una extrasístole auricular, que sale idéntica a las demás, y distinta también sale una deformada por el ruido.',
+    en: 'A beat counts as a ventricular premature beat when it meets both conditions: it arrives before 85 % of the cycle AND resembles the typical-beat template by less than 94 %. Neither is enough alone — an atrial premature beat is also early but comes out identical to the rest, and a noise-deformed beat is also different.',
+    pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 94 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
   },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
