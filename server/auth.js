@@ -70,3 +70,69 @@ export async function deleteSessionByToken(token) {
   await ensureSchema();
   await sql`DELETE FROM sessions WHERE token = ${token}`;
 }
+
+// ── Recuperación de contraseña ──
+// El token viaja por correo en texto plano, pero en la base se guarda solo su hash:
+// si alguien llegara a leer la tabla, no puede usar los tokens pendientes.
+const RESET_MINUTES = 60;
+const RESET_MAX_PER_HOUR = 5;   // pedidos por cuenta
+const RESET_COOLDOWN_SEC = 60;  // espera mínima entre un pedido y el siguiente
+
+const hashToken = (t) => crypto.createHash('sha256').update(String(t)).digest('hex');
+
+// Devuelve el token en claro (para el enlace del correo) o null si el usuario pidió demasiados.
+export async function createPasswordReset(userId) {
+  await ensureSchema();
+
+  // Los cortes se calculan acá y viajan como timestamps: más simple y predecible
+  // que mandar un intervalo como parámetro y confiar en el casteo de Postgres.
+  const hourAgo = new Date(Date.now() - 3600000);
+  const cooldownAgo = new Date(Date.now() - RESET_COOLDOWN_SEC * 1000);
+
+  const [recent] = await sql`
+    SELECT
+      COUNT(*) FILTER (WHERE created_at > ${hourAgo})::int     AS last_hour,
+      COUNT(*) FILTER (WHERE created_at > ${cooldownAgo})::int AS in_cooldown
+    FROM password_resets
+    WHERE user_id = ${userId}
+  `;
+  if (recent.in_cooldown > 0 || recent.last_hour >= RESET_MAX_PER_HOUR) return null;
+
+  // Un pedido nuevo invalida los anteriores: solo el último enlace enviado funciona.
+  await sql`UPDATE password_resets SET used_at = now() WHERE user_id = ${userId} AND used_at IS NULL`;
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + RESET_MINUTES * 60000);
+  await sql`
+    INSERT INTO password_resets (token_hash, user_id, expires_at)
+    VALUES (${hashToken(token)}, ${userId}, ${expiresAt})
+  `;
+  return { token, expiresAt, minutes: RESET_MINUTES };
+}
+
+// Marca el token como usado y devuelve el id del usuario, en una sola operación atómica:
+// dos pedidos simultáneos con el mismo token no pueden pasar los dos.
+export async function consumePasswordReset(token) {
+  await ensureSchema();
+  if (!token) return null;
+  const rows = await sql`
+    UPDATE password_resets
+    SET used_at = now()
+    WHERE token_hash = ${hashToken(token)} AND used_at IS NULL AND expires_at > now()
+    RETURNING user_id
+  `;
+  return rows[0] ? rows[0].user_id : null;
+}
+
+// Tras cambiar la contraseña se cierran todas las sesiones abiertas de esa cuenta:
+// si alguien había entrado con la contraseña vieja, queda afuera.
+export async function deleteSessionsForUser(userId) {
+  await ensureSchema();
+  await sql`DELETE FROM sessions WHERE user_id = ${userId}`;
+}
+
+export async function updatePassword(userId, newPassword) {
+  await ensureSchema();
+  const hash = await hashPassword(newPassword);
+  await sql`UPDATE users SET password_hash = ${hash} WHERE id = ${userId}`;
+}

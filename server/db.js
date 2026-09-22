@@ -35,6 +35,17 @@ export function ensureSchema() {
         )
       `;
       await sql`
+        CREATE TABLE IF NOT EXISTS password_resets (
+          token_hash TEXT PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          expires_at TIMESTAMPTZ NOT NULL,
+          used_at TIMESTAMPTZ
+        )
+      `;
+      // Para el control de frecuencia: se consultan los pedidos recientes de un usuario.
+      await sql`CREATE INDEX IF NOT EXISTS password_resets_user_idx ON password_resets (user_id, created_at DESC)`;
+      await sql`
         CREATE TABLE IF NOT EXISTS feedback (
           id SERIAL PRIMARY KEY,
           user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

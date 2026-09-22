@@ -59,6 +59,7 @@ El esquema se crea y migra solo, con `CREATE TABLE IF NOT EXISTS` en `server/db.
 | `users` | id, email, `password_hash`, nombre, rol (`medico` / `estudiante` / `otro`), país, fecha de alta |
 | `sessions` | token, usuario, vencimiento (180 días) |
 | `progress` | una fila por usuario, con todo el progreso en una columna `JSONB` |
+| `password_resets` | tokens de recuperación de contraseña (guardados como hash, de un solo uso) |
 | `feedback` | reportes de error y sugerencias enviados desde la app |
 
 ### Endpoints
@@ -68,6 +69,8 @@ El esquema se crea y migra solo, con `CREATE TABLE IF NOT EXISTS` en `server/db.
 | `POST /api/auth/register` | Alta de cuenta (mínimo 8 caracteres de contraseña) |
 | `POST /api/auth/login` | Inicio de sesión; devuelve el progreso guardado |
 | `POST /api/auth/logout` | Cierra la sesión y borra el token |
+| `POST /api/auth/forgot` | Pide el correo de recuperación (responde igual exista o no la cuenta) |
+| `POST /api/auth/reset` | Cambia la contraseña con el token del correo y abre sesión |
 | `GET / PATCH /api/me` | Lee o actualiza nombre y rol del usuario |
 | `GET / PUT / POST /api/progress` | Lee y guarda el progreso (POST existe solo por `sendBeacon`) |
 | `POST /api/feedback` | Envía un reporte o sugerencia (máx. 2000 caracteres) |
@@ -115,8 +118,28 @@ npm run dev        # servidor local de desarrollo
 |---|---|
 | `DATABASE_URL` | Cadena de conexión de Neon |
 | `ADMIN_SECRET` | Clave de acceso al panel `/admin` |
+| `RESEND_API_KEY` | Clave de Resend, para los correos de recuperación |
+| `EMAIL_FROM` | Remitente verificado, ej. `Sístole <no-reply@cmdtech.uy>` |
+| `APP_URL` | Base de los enlaces del correo (por defecto `https://sistole.cmdtech.uy`) |
 
 **Rutas:** `vercel.json` manda `/admin` a `admin.html` y todo lo demás a `index.html`, dejando afuera `api/`, `assets/`, `manifest.json`, `privacidad.html`, `icons/` y `.well-known/`. En Nginx o Apache hay que escribir la regla equivalente.
+
+---
+
+## Recuperación de contraseña
+
+Flujo: el usuario pide el enlace desde la pantalla de inicio de sesión → `POST /api/auth/forgot` → le llega un correo con `https://sistole.cmdtech.uy/?reset=<token>` → la app detecta el parámetro, muestra la pantalla de contraseña nueva → `POST /api/auth/reset` → queda con la sesión abierta.
+
+Decisiones que conviene conocer antes de tocarlo:
+
+- **El token se guarda hasheado** (SHA-256). Leer la tabla `password_resets` no alcanza para secuestrar una cuenta.
+- **Un solo uso y una hora de vida.** El consumo es un `UPDATE ... WHERE used_at IS NULL RETURNING`, atómico: dos pedidos simultáneos con el mismo token no pasan los dos.
+- **Pedir uno nuevo invalida el anterior.** Solo sirve el último enlace enviado.
+- **Control de frecuencia:** 60 segundos entre pedidos y un máximo de 5 por hora y por cuenta, para que nadie use el formulario como ametralladora de correos.
+- **`/forgot` responde siempre lo mismo**, exista o no la cuenta, para no revelar qué correos están registrados. Los fallos de envío quedan en el log del servidor, no en la respuesta. La única excepción es el 503 cuando falta `RESEND_API_KEY`, que no depende de la cuenta y si no sería invisible.
+- **El enlace se arma con `APP_URL`, nunca con el header `Host`** de la request: si se confiara en el header, alguien podría falsificarlo para que el correo apunte a su propio dominio y quedarse con el token.
+- **Cambiar la contraseña cierra todas las sesiones** de esa cuenta y abre una nueva. Quien tuviera la contraseña vieja queda afuera.
+- **El proveedor de correo está aislado** en `sendEmail()` dentro de `server/email.js`. Cambiar Resend por SendGrid, Postmark o SMTP es reescribir esa función; el resto del código no se entera.
 
 ---
 
