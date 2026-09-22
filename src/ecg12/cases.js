@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // CASOS DE 12 DERIVACIONES
 // ═══════════════════════════════════════════════════════════════
-// Los ocho trazados son electrocardiogramas REALES, de PTB-XL. La procedencia de
+// Los trazados son electrocardiogramas REALES, de PTB-XL. La procedencia de
 // cada uno está en records.js; acá está lo que enseña.
 //
 // La regla es la misma de siempre, pero ahora es más exigente: cada caso declara
@@ -631,6 +631,66 @@ export const CASES = [
       es: 'Ninguna, y el apto se firma. Un hemibloqueo anterior izquierdo aislado, en alguien de 42 años sin síntomas, es un hallazgo frecuente y sin consecuencias por sí solo. Lo que cambia la lectura es la compañía: junto a un bloqueo de rama derecha es un bloqueo bifascicular, y si además aparecen síncopes, ahí sí hay que estudiar la conducción. Guardá el electro, que es lo que va a permitir saber si el eje se desvió más adelante.',
       en: 'None, and the clearance is signed. An isolated left anterior fascicular block in a 42-year-old without symptoms is a common finding with no consequences on its own. What changes the reading is its company: alongside a right bundle branch block it is bifascicular block, and if syncope appears as well, then conduction does need investigating. File the ECG — it is what will let you know whether the axis shifted later on.',
       pt: 'Nenhuma, e o atestado se assina. Um hemibloqueio anterior esquerdo isolado, em alguém de 42 anos sem sintomas, é um achado frequente e sem consequências por si só. O que muda a leitura é a companhia: junto a um bloqueio de ramo direito é um bloqueio bifascicular, e se ainda surgirem síncopes, aí sim há que investigar a condução. Guarde o ECG — é o que permitirá saber se o eixo se desviou mais adiante.',
+    },
+  },
+
+  {
+    id: 'bifascicular',
+    record: '16389',
+    age: 75, sex: 'F',
+    vitals: { bp: '142/80', spo2: 97, rr: 16 },
+    highlight: ['V1', 'I', 'aVL', 'II', 'III', 'aVF'],
+    answer: 'bifascicular',
+    // El panel muestra el eje Y la segunda R porque el caso son dos bloqueos a
+    // la vez: mostrar uno solo sería enseñar la mitad del trazado.
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'], secondR: ['V1'] },
+    // Medido: QRS 136 ms, eje −68°. En V1 el complejo es rsR' — r de 172 µV,
+    // s de 257 y segunda R de 637— y en V2 la segunda R llega a 702. En II, III
+    // y aVF hay rS, con r inicial de 115, 246 y 181 µV antes de una S de 744,
+    // 1624 y 1189. La S de V6 mide 438 µV. T invertida en V1 (−222) y V2 (−176),
+    // que es el cambio secundario del bloqueo de rama. FC 76, RR regular
+    // (cv 0,003), QTc 433 ms.
+    findings: {
+      qrsMs: [125, 165],
+      axisDeg: [-80, -55],
+      secondR: { leads: ['V1', 'V2'], min: 0.40 },
+      dominantR: ['V1'],
+      rsPattern: ['II', 'III', 'aVF'],
+      // La r inicial de II es chica —115 µV— pero existe, y es lo que separa el
+      // hemibloqueo de un infarto inferior antiguo. El umbral se pone por debajo
+      // de lo medido a propósito: la prueba vigila que la r NO desaparezca, no
+      // que mida exactamente esto.
+      rHeight: { leads: ['II', 'III', 'aVF'], min: 0.08 },
+      sDepth: { leads: ['V6'], min: 0.30 },
+      tInversion: { leads: ['V1', 'V2'], min: 0.15 },
+      rate: [65, 90],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 75 años en la guardia después de un síncope: estaba parada haciendo una cola, se desvaneció sin aviso ninguno y volvió en sí sola en menos de un minuto. No hubo convulsión ni confusión después. Ahora está lúcida, sin dolor y estable. Éste es el electro.',
+      en: '75-year-old woman in the emergency department after a syncope: she was standing in a queue, blacked out with no warning at all and came round on her own in under a minute. No convulsion, no confusion afterwards. She is now alert, pain-free and stable. This is the ECG.',
+      pt: 'Mulher de 75 anos no pronto-socorro após um síncope: estava de pé numa fila, desmaiou sem aviso nenhum e voltou a si sozinha em menos de um minuto. Não houve convulsão nem confusão depois. Agora está lúcida, sem dor e estável. Este é o ECG.',
+    },
+    options: [
+      { id: 'bifascicular', label: { es: 'Bloqueo bifascicular: rama derecha + hemibloqueo anterior izquierdo', en: 'Bifascicular block: right bundle + left anterior fascicle', pt: 'Bloqueio bifascicular: ramo direito + hemibloqueio anterior esquerdo' } },
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha aislado', en: 'Isolated complete right bundle branch block', pt: 'Bloqueio completo de ramo direito isolado' } },
+      { id: 'hemibloqueo', label: { es: 'Hemibloqueo anterior izquierdo aislado', en: 'Isolated left anterior fascicular block', pt: 'Hemibloqueio anterior esquerdo isolado' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+    ],
+    explain: {
+      es: 'Hay dos bloqueos acá, y hay que leer los dos. El primero salta en V1: el complejo es rsR’ —una r chiquita, una s, y después una segunda R de 6,4 mm— y el QRS mide 136 ms. Ésa es la rama derecha: el ventrículo derecho no recibe el estímulo por su camino, le llega tarde desde el izquierdo, y esa despolarización final ya sola apunta hacia adelante y a la derecha, justo contra V1. La misma fuerza tardía, vista desde la izquierda, cava la S de V6 y arrastra la S de I, que es poco profunda pero ancha. El segundo bloqueo está en el eje: −68°, arriba y a la izquierda, con I y aVL netos positivos y II, III y aVF netos negativos. Eso es el fascículo anterior izquierdo. Y acá está lo que importa: el haz de His se reparte en tres caminos —la rama derecha y los dos fascículos de la izquierda, el anterior y el posterior—. Dos de esos tres no conducen. Todo el corazón se está despolarizando por el fascículo posterior izquierdo, solo. Eso es un bloqueo bifascicular, y no es la suma de dos rarezas del trazado: es un sistema de conducción al que le queda una sola vía.',
+      en: 'There are two blocks here, and both have to be read. The first jumps out in V1: the complex is rsR’ — a small r, an s, then a second R of 6.4 mm — and the QRS measures 136 ms. That is the right bundle: the right ventricle does not get the impulse down its own path, it arrives late from the left, and that final depolarization, now travelling alone, points forward and to the right, straight at V1. The same late force, seen from the left, digs the S in V6 and drags out the S in I, which is shallow but wide. The second block is in the axis: −68°, up and to the left, with I and aVL net positive and II, III and aVF net negative. That is the left anterior fascicle. And here is what matters: the bundle of His splits into three paths — the right bundle and the two left fascicles, anterior and posterior. Two of those three are not conducting. The whole heart is depolarizing through the left posterior fascicle, alone. That is bifascicular block, and it is not the sum of two oddities on a tracing: it is a conduction system down to a single remaining route.',
+      pt: 'Há dois bloqueios aqui, e os dois têm de ser lidos. O primeiro salta em V1: o complexo é rsR’ — uma r pequenininha, uma s, e depois uma segunda R de 6,4 mm — e o QRS mede 136 ms. Esse é o ramo direito: o ventrículo direito não recebe o estímulo pelo seu caminho, chega-lhe tarde a partir do esquerdo, e essa despolarização final, já sozinha, aponta para a frente e para a direita, bem contra V1. A mesma força tardia, vista da esquerda, cava a S de V6 e arrasta a S de I, que é pouco profunda mas larga. O segundo bloqueio está no eixo: −68°, para cima e para a esquerda, com I e aVL líquidos positivos e II, III e aVF líquidos negativos. Esse é o fascículo anterior esquerdo. E aqui está o que importa: o feixe de His reparte-se em três caminhos — o ramo direito e os dois fascículos do esquerdo, o anterior e o posterior. Dois desses três não conduzem. Todo o coração está a despolarizar-se pelo fascículo posterior esquerdo, sozinho. Isso é um bloqueio bifascicular, e não é a soma de duas esquisitices do traçado: é um sistema de condução com uma única via restante.',
+    },
+    pitfall: {
+      es: 'La trampa es frenar en el primer bloqueo que se ve. El QRS ancho con rsR’ en V1 es tan llamativo que uno escribe «bloqueo de rama derecha» y pasa a otra cosa — y el eje, que es el hallazgo que cambia la conducta, queda sin mirar. Regla práctica: delante de un bloqueo de rama derecha, mirá siempre el eje antes de cerrar el informe. La segunda confusión es al revés: leer II, III y aVF negativos como un infarto inferior antiguo. No lo son, y se ve en cómo EMPIEZAN esos complejos: acá arrancan con una r —de 1 a 2,5 décimas de milivoltio en las tres— y recién después cae la S. En un infarto antiguo no hay nada positivo delante, empiezan con una Q. Y una tercera, que hace pedir estudios de más: las T invertidas de V1 y V2 no son isquemia. Son el cambio secundario obligado del bloqueo de rama: si el ventrículo se despolariza mal, se repolariza mal, y esas T negativas vienen con el paquete. También vas a escuchar llamar a esto «bloqueo trifascicular» cuando además el PR está largo. El nombre es malo —el PR largo puede estar en el nodo y no en el fascículo que queda— y no cambia lo que hay que hacer.',
+      en: 'The trap is stopping at the first block you see. The wide QRS with rsR’ in V1 is so striking that one writes "right bundle branch block" and moves on — and the axis, which is the finding that changes management, never gets looked at. Practical rule: in front of a right bundle branch block, always check the axis before closing the report. The second confusion runs the other way: reading II, III and aVF as an old inferior infarct. They are not, and it shows in how those complexes BEGIN: here they start with an r — one to two and a half tenths of a millivolt in all three — and only then does the S fall. In an old infarct there is nothing positive in front, they start with a Q. And a third one, which leads to unnecessary workups: the inverted T waves in V1 and V2 are not ischaemia. They are the obligatory secondary change of the bundle branch block: if the ventricle depolarizes abnormally it repolarizes abnormally, and those negative T waves come with the package. You will also hear this called "trifascicular block" when the PR is long as well. The name is a poor one — a long PR may sit in the node rather than in the surviving fascicle — and it does not change what has to be done.',
+      pt: 'A armadilha é parar no primeiro bloqueio que se vê. O QRS largo com rsR’ em V1 é tão chamativo que se escreve «bloqueio de ramo direito» e passa-se a outra coisa — e o eixo, que é o achado que muda a conduta, fica por olhar. Regra prática: diante de um bloqueio de ramo direito, veja sempre o eixo antes de fechar o laudo. A segunda confusão é ao contrário: ler II, III e aVF negativos como um infarto inferior antigo. Não são, e vê-se em como esses complexos COMEÇAM: aqui começam com uma r — de um a dois e meio décimos de milivolt nas três — e só depois cai a S. Num infarto antigo não há nada positivo antes, começam com uma Q. E uma terceira, que leva a pedir exames a mais: as T invertidas de V1 e V2 não são isquemia. São a alteração secundária obrigatória do bloqueio de ramo: se o ventrículo se despolariza mal, repolariza-se mal, e essas T negativas vêm no pacote. Também vai ouvir chamar a isto «bloqueio trifascicular» quando o PR está longo por cima. O nome é mau — um PR longo pode estar no nó e não no fascículo que resta — e não muda o que há para fazer.',
+    },
+    action: {
+      es: 'No se va a la casa. Un bloqueo bifascicular encontrado por casualidad, en alguien sin síntomas, se sigue de lejos y no necesita nada: progresa a bloqueo completo en menos del 2 % por año. Lo que cambia todo es el síncope que la trajo. Un desvanecimiento sin aviso, sin pródromos, estando de pie, en alguien a quien le queda un solo fascículo, se asume bloqueo AV paroxístico hasta demostrar lo contrario — y ese ritmo no se va a ver en un electro de diez segundos, porque el paciente no está bloqueado ahora. Entonces: internación con monitoreo, y de ahí a estudio electrofisiológico o a un registrador de eventos según qué se vea. Si el bloqueo AV se documenta, o el estudio muestra un His-ventrículo largo, es marcapasos. Mientras tanto, revisá la medicación: betabloqueantes, verapamilo, diltiazem, antiarrítmicos, cualquier cosa que frene la conducción tiene que salir.',
+      en: 'She does not go home. A bifascicular block found by chance in someone without symptoms is followed at a distance and needs nothing: it progresses to complete block in under 2 % per year. What changes everything is the syncope that brought her in. A blackout with no warning, no prodrome, while standing, in someone left with a single fascicle, is assumed to be paroxysmal AV block until proven otherwise — and that rhythm will not show up on a ten-second ECG, because the patient is not blocked right now. So: admission with monitoring, and from there an electrophysiological study or an event recorder depending on what turns up. If AV block is documented, or the study shows a long His-ventricle interval, it is a pacemaker. In the meantime, review the medication: beta blockers, verapamil, diltiazem, antiarrhythmics — anything that slows conduction has to go.',
+      pt: 'Não vai para casa. Um bloqueio bifascicular encontrado por acaso, em alguém sem sintomas, segue-se de longe e não precisa de nada: progride para bloqueio completo em menos de 2 % ao ano. O que muda tudo é o síncope que a trouxe. Um desmaio sem aviso, sem pródromos, estando de pé, em alguém a quem resta um único fascículo, assume-se bloqueio AV paroxístico até prova em contrário — e esse ritmo não vai aparecer num ECG de dez segundos, porque o paciente não está bloqueado agora. Então: internação com monitorização, e daí a estudo eletrofisiológico ou a um registrador de eventos conforme o que se veja. Se o bloqueio AV for documentado, ou o estudo mostrar um His-ventrículo longo, é marca-passo. Entretanto, reveja a medicação: betabloqueadores, verapamil, diltiazem, antiarrítmicos — tudo o que trave a condução tem de sair.',
     },
   },
 

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // LOS REGISTROS: DE DÓNDE SALE CADA TRAZADO
 // ═══════════════════════════════════════════════════════════════
-// Los ocho electrocardiogramas de la sección son reales. Salen de PTB-XL, una
+// Los electrocardiogramas de la sección son reales. Salen de PTB-XL, una
 // base de 21.799 registros de 12 derivaciones, de 10 segundos, anotados por
 // cardiólogos, que el Physikalisch-Technische Bundesanstalt publica en
 // PhysioNet. Se eligieron midiendo los 21.799 con el módulo measure.js y
@@ -95,6 +95,11 @@ export const RECORDS = {
     age: 42, sex: 'M', scp: ['LAFB'],
     report: 'sinusrhythmus ueberdrehter linkstyp linksanteriorer hemiblock',
   },
+  16389: {
+    age: 75, sex: 'F', scp: ['CRBBB', 'LAFB'],
+    report: 'sinus rhythm. left axis deviation. left anterior fascicular block. right bundle branch block. '
+      + 'bifascicular block. pr interval is normal.',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -102,4 +107,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '595'];

@@ -79,6 +79,13 @@ const L = {
     en: 'QRS width on an averaged beat. The second R is a second positive peak inside the same complex: a normal QRS has none, and its height is that of the ventricle that depolarized late and alone.',
     pt: 'Largura do QRS sobre um batimento médio. A segunda R é um segundo pico positivo dentro do mesmo complexo: num QRS normal não existe, e sua altura é a do ventrículo que se despolarizou tarde e sozinho.',
   },
+  // Cuando el eje y la segunda R aparecen juntos hay que decir por qué: son dos
+  // bloqueos distintos sobre el mismo trazado, no un hallazgo con dos números.
+  axisSecondRNote: {
+    es: 'La segunda R de V1 y la desviación del eje son dos bloqueos distintos leídos sobre el mismo latido: el QRS ancho con segunda R es la rama derecha, el eje más allá de −45° con rS en la cara inferior es el fascículo anterior izquierdo.',
+    en: 'The second R in V1 and the axis deviation are two separate blocks read on the same beat: the wide QRS with a second R is the right bundle, the axis beyond −45° with rS inferiorly is the left anterior fascicle.',
+    pt: 'A segunda R de V1 e o desvio do eixo são dois bloqueios distintos lidos sobre o mesmo batimento: o QRS largo com segunda R é o ramo direito, o eixo além de −45° com rS na face inferior é o fascículo anterior esquerdo.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -204,8 +211,13 @@ function Measured({ q, metrics, lang, gain }) {
       ...(metrics.leads ?? []).map((l) => chip(`a-${l}`, l, q.areaQRS[l] >= 0 ? '↑' : '↓',
            q.areaQRS[l] >= 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
                              : 'text-sky-300 border-sky-900/60 bg-sky-950/30')),
+      // Un bloqueo bifascicular se lee en el eje Y en la segunda R: son los dos
+      // fascículos caídos, y el panel tiene que mostrar los dos a la vez.
+      ...(metrics.secondR ?? []).map((l) => chip(`r2-${l}`, `${L.secondRLabel[lang]} ${l}`, mmAbs(q.rPrime[l], lang),
+           q.rPrime[l] > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60')),
     ];
-    note = L.axisNote[lang];
+    note = L.axisNote[lang] + (metrics.secondR ? ` ${L.axisSecondRNote[lang]}` : '');
   } else if (metrics.kind === 'qrs') {
     chips = [
       chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,

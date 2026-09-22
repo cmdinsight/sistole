@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // GENERADOR SINTÉTICO DE 12 DERIVACIONES — BANCO DE PRUEBAS
 // ═══════════════════════════════════════════════════════════════
-// OJO: esto ya NO produce los trazados de la sección. Los ocho casos usan
+// OJO: esto ya NO produce los trazados de la sección. Los casos usan
 // electrocardiogramas reales de PTB-XL (ver records.js). Lo que este módulo hace
 // ahora es generar señales de las que se conoce la respuesta de antemano, para
 // validar contra ellas el medidor de measure.js: si le pedimos 0,35 mV de
