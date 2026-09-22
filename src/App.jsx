@@ -782,6 +782,15 @@ const deleteAccount=(email)=>{
   }catch(e){}
 };
 
+// La recuperación de contraseña sólo se ofrece cuando el envío de correo está
+// configurado del lado del servidor. Se controla con una variable de build en
+// Vercel (VITE_PASSWORD_RESET_ENABLED=true), no tocando el código: así activarla
+// es cargar la variable y redesplegar, sin otro cambio.
+//
+// Apagada por defecto a propósito: ofrecer el enlace sin proveedor de correo
+// configurado hace que el usuario pida un enlace que nunca le va a llegar.
+const PASSWORD_RESET_ENABLED = String(import.meta.env.VITE_PASSWORD_RESET_ENABLED || '').trim().toLowerCase() === 'true';
+
 // El correo de recuperación apunta a /?reset=<token>. Se lee una sola vez al cargar
 // y se limpia de la barra de direcciones en cuanto se usa, para que el token no quede
 // en el historial ni se reenvíe como referer.
@@ -1088,10 +1097,12 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
                   onKeyDown={e=>e.key==='Enter'&&doLogin()}
                   placeholder="••••••••"
                   className={inputCls(errors.loginPassword)}/>
-                <button onClick={()=>{setTab('forgot');setForgotEmail(loginEmail);setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
-                  className="mt-2 text-xs text-slate-500 hover:text-indigo-300 transition-colors">
-                  {L.forgotLink[lang]}
-                </button>
+                {PASSWORD_RESET_ENABLED&&(
+                  <button onClick={()=>{setTab('forgot');setForgotEmail(loginEmail);setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
+                    className="mt-2 text-xs text-slate-500 hover:text-indigo-300 transition-colors">
+                    {L.forgotLink[lang]}
+                  </button>
+                )}
               </div>
 
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
@@ -11371,6 +11382,10 @@ export default function App() {
       <Activity className="w-8 h-8 text-indigo-500/60 animate-pulse"/>
     </div>
   );
+  // Esta pantalla NO se condiciona a PASSWORD_RESET_ENABLED a propósito: si la
+  // bandera se apagara después de haber enviado correos, los usuarios con un
+  // enlace válido en la bandeja quedarían sin poder usarlo. El interruptor
+  // decide si se OFRECE la recuperación, no si se honra un enlace ya emitido.
   if(resetToken) return <ResetPasswordScreen lang={lang} token={resetToken} onReset={resetPassword} onDone={()=>{clearResetTokenFromUrl();setResetToken('');setAuthError('');}} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
   if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} onForgot={requestPasswordReset} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
 
