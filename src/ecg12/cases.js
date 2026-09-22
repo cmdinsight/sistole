@@ -582,6 +582,59 @@ export const CASES = [
   },
 
   {
+    id: 'lafb',
+    record: '41',
+    age: 42, sex: 'M',
+    vitals: { bp: '124/78', spo2: 98, rr: 14 },
+    highlight: ['I', 'aVL', 'II', 'III', 'aVF'],
+    answer: 'hemibloqueo',
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'] },
+    // Medido: eje −70°, QRS de 96 ms. En I y aVL el complejo es neto positivo;
+    // en II, III y aVF, neto negativo, con una r inicial de 581, 430 y 466 µV
+    // —hay r, no una Q— y una S de 1299, 1526 y 1416.
+    findings: {
+      axisDeg: [-85, -55],
+      qrsMs: [80, 115],
+      dominantR: ['I', 'aVL'],
+      rsPattern: ['II', 'III', 'aVF'],
+      rHeight: { leads: ['II', 'III', 'aVF'], min: 0.30 },
+      // El ST plano se afirma sólo de las derivaciones de los miembros, que es
+      // donde vive el hallazgo. En V2 y V3 hay 2,2 y 1,8 mm de elevación, que en
+      // un hombre de 42 años están dentro de lo normal — y el texto lo dice, en
+      // vez de callarlo y dejar que el lector desconfíe.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.06 },
+      rate: [62, 85],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 42 años, sin síntomas, electro de control laboral. El informe automático del equipo dice «ueberdrehter Linkstyp» —eje desviado a la izquierda— y el resto, normal. Le preguntan si eso significa algo.',
+      en: '42-year-old man, asymptomatic, ECG for an occupational check-up. The machine\u2019s report reads "left axis deviation" and otherwise normal. He asks whether that means anything.',
+      pt: 'Homem de 42 anos, sem sintomas, ECG de controle ocupacional. O laudo automático do aparelho diz «desvio do eixo para a esquerda» e o resto, normal. Ele pergunta se isso significa algo.',
+    },
+    options: [
+      { id: 'hemibloqueo', label: { es: 'Hemibloqueo anterior izquierdo', en: 'Left anterior fascicular block', pt: 'Hemibloqueio anterior esquerdo' } },
+      { id: 'inferior', label: { es: 'IAM inferior antiguo', en: 'Old inferior infarct', pt: 'IAM inferior antigo' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'normal', label: { es: 'Variante normal sin significado', en: 'Normal variant of no significance', pt: 'Variante normal sem significado' } },
+    ],
+    explain: {
+      es: 'El eje es hacia dónde apunta, en promedio, la despolarización del ventrículo, y acá vale −70°: bien por encima de la horizontal, arriba y a la izquierda. Se lee sin calcular nada, mirando qué complejos son netos positivos y cuáles negativos: I y aVL hacia arriba, II, III y aVF hacia abajo. El vector va hacia donde apuntan las positivas. La explicación está en la anatomía: la rama izquierda se divide en dos fascículos, y si el anterior no conduce, el ventrículo izquierdo se activa desde el posterior, o sea desde abajo y atrás, y el frente de despolarización sale hacia arriba y a la izquierda. Fijate también en el ancho: 96 ms, angosto. Falló un fascículo, no la rama entera, y por eso el complejo no se ensancha.',
+      en: 'The axis is the average direction of ventricular depolarization, and here it is −70°: well above the horizontal, up and to the left. You read it without calculating anything, by looking at which complexes are net positive and which negative: I and aVL point up, II, III and aVF point down. The vector heads towards the positive ones. The explanation is anatomical: the left bundle splits into two fascicles, and if the anterior one does not conduct, the left ventricle is activated from the posterior one — from below and behind — and the depolarization front comes out up and to the left. Note the width too: 96 ms, narrow. One fascicle failed, not the whole branch, and that is why the complex does not widen.',
+      pt: 'O eixo é a direção média da despolarização do ventrículo, e aqui vale −70°: bem acima da horizontal, para cima e para a esquerda. Lê-se sem calcular nada, vendo quais complexos são líquidos positivos e quais negativos: I e aVL para cima, II, III e aVF para baixo. O vetor vai na direção das positivas. A explicação é anatômica: o ramo esquerdo se divide em dois fascículos, e se o anterior não conduz, o ventrículo esquerdo é ativado pelo posterior — de baixo e de trás — e a frente de despolarização sai para cima e para a esquerda. Repare também na largura: 96 ms, estreito. Falhou um fascículo, não o ramo inteiro, e por isso o complexo não se alarga.',
+    },
+    pitfall: {
+      es: 'Una desviación del eje a la izquierda no es por sí sola un hemibloqueo: también la dan un infarto inferior antiguo, una hipertrofia ventricular izquierda, un corazón horizontalizado. El que más se confunde es el infarto inferior, porque también deja complejos negativos en II, III y aVF. La diferencia está en cómo EMPIEZAN esos complejos: acá arrancan con una r pequeña —de 4 a 6 décimas de milivoltio en las tres— y después cae la S. En un infarto inferior antiguo no hay nada positivo delante: empiezan con una Q. Esa r chiquita es toda la diferencia entre «hallazgo sin importancia» y «tuvo un infarto y no lo sabe». Y un detalle que salta a la vista y no hay que sobreleer: en V2 y V3 hay 2,2 y 1,8 mm de elevación del ST. En un hombre de 42 años sin síntomas eso está dentro de lo normal —el límite superior en esas derivaciones es más alto en varones jóvenes— y no cambia nada de lo anterior.',
+      en: 'Left axis deviation is not by itself a fascicular block: an old inferior infarct, left ventricular hypertrophy or a horizontal heart all produce it too. The one most often confused is the inferior infarct, because it also leaves negative complexes in II, III and aVF. The difference is in how those complexes BEGIN: here they start with a small r — four to six tenths of a millivolt in all three — and the S follows. In an old inferior infarct there is nothing positive in front: they start with a Q. That tiny r is the whole difference between "a finding of no importance" and "he had an infarct and does not know it". And one detail that catches the eye and should not be over-read: V2 and V3 show 2.2 and 1.8 mm of ST elevation. In a 42-year-old man without symptoms that is within normal limits — the upper limit in those leads is higher in young men — and it changes nothing above.',
+      pt: 'Um desvio do eixo para a esquerda não é por si só um hemibloqueio: um infarto inferior antigo, uma hipertrofia ventricular esquerda ou um coração horizontalizado também o produzem. O que mais se confunde é o infarto inferior, porque também deixa complexos negativos em II, III e aVF. A diferença está em como esses complexos COMEÇAM: aqui começam com uma r pequena — de quatro a seis décimos de milivolt nas três — e depois cai a S. Num infarto inferior antigo não há nada positivo antes: começam com uma Q. Essa r pequenininha é toda a diferença entre «achado sem importância» e «teve um infarto e não sabe». E um detalhe que salta à vista e não deve ser sobrelido: em V2 e V3 há 2,2 e 1,8 mm de elevação do ST. Num homem de 42 anos sem sintomas isso está dentro do normal — o limite superior nessas derivações é maior em homens jovens — e não muda nada do anterior.',
+    },
+    action: {
+      es: 'Ninguna, y el apto se firma. Un hemibloqueo anterior izquierdo aislado, en alguien de 42 años sin síntomas, es un hallazgo frecuente y sin consecuencias por sí solo. Lo que cambia la lectura es la compañía: junto a un bloqueo de rama derecha es un bloqueo bifascicular, y si además aparecen síncopes, ahí sí hay que estudiar la conducción. Guardá el electro, que es lo que va a permitir saber si el eje se desvió más adelante.',
+      en: 'None, and the clearance is signed. An isolated left anterior fascicular block in a 42-year-old without symptoms is a common finding with no consequences on its own. What changes the reading is its company: alongside a right bundle branch block it is bifascicular block, and if syncope appears as well, then conduction does need investigating. File the ECG — it is what will let you know whether the axis shifted later on.',
+      pt: 'Nenhuma, e o atestado se assina. Um hemibloqueio anterior esquerdo isolado, em alguém de 42 anos sem sintomas, é um achado frequente e sem consequências por si só. O que muda a leitura é a companhia: junto a um bloqueio de ramo direito é um bloqueio bifascicular, e se ainda surgirem síncopes, aí sim há que investigar a condução. Guarde o ECG — é o que permitirá saber se o eixo se desviou mais adiante.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',

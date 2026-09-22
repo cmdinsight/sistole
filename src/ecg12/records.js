@@ -91,6 +91,10 @@ export const RECORDS = {
     report: 'sinusrhythmus ueberdrehter linkstyp rechtsschenkelblock qrs(t) abnormal '
       + 'supraventr. extrasystolen pathologisch',
   },
+  41: {
+    age: 42, sex: 'M', scp: ['LAFB'],
+    report: 'sinusrhythmus ueberdrehter linkstyp linksanteriorer hemiblock',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -98,4 +102,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '595'];

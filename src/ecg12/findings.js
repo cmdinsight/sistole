@@ -81,6 +81,17 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
   }),
 
+  // Altura mínima de la onda R. Sirve para exigir que la R INICIAL exista, que
+  // es lo que separa un hemibloqueo de un infarto inferior antiguo: los dos dan
+  // desviación izquierda del eje y complejos negativos en II, III y aVF, pero en
+  // el hemibloqueo el complejo empieza con una r pequeña y en el infarto empieza
+  // con una Q, sin nada positivo delante.
+  rHeight: ({ leads, min }, q) => ({
+    label: `onda R de al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.r[l] < min).map((l) => `${l}=${uv(q.r[l])}`),
+    margen: Math.min(...leads.map((l) => q.r[l] - min)),
+  }),
+
   // Profundidad mínima de la onda S. En el bloqueo de rama derecha el
   // ventrículo derecho se despolariza tarde y su vector apunta a la derecha y
   // adelante: eso levanta la R' de V1 y, al mismo tiempo y por lo mismo, cava
@@ -157,6 +168,20 @@ const REGLAS = {
     fallos: leads.filter((l) => Math.abs(q.st[l]) > Math.abs(q.s[l]) * max)
                  .map((l) => `${l}=${(Math.abs(q.st[l]) / Math.abs(q.s[l]) * 100).toFixed(0)}%`),
     margen: Math.min(...leads.map((l) => max - Math.abs(q.st[l]) / Math.abs(q.s[l]))),
+  }),
+
+  // Eje eléctrico del QRS en el plano frontal, en grados. Normal entre −30° y
+  // +90°; por debajo de −30° es desviación izquierda y por encima de +90°,
+  // derecha.
+  //
+  // Validado contra la columna heart_axis de PTB-XL: los registros que la base
+  // llama MID miden +54° de mediana, los LAD −34°, los ALAD −49° y los RAD
+  // +101°. El orden sale bien y las medianas no se solapan.
+  axisDeg: ([lo, hi], q) => ({
+    label: `eje entre ${lo}° y ${hi}°`,
+    fallos: q.axisDeg !== null && q.axisDeg >= lo && q.axisDeg <= hi
+      ? [] : [q.axisDeg === null ? 'no medible' : `${q.axisDeg.toFixed(0)}°`],
+    margen: q.axisDeg === null ? -1 : Math.min(q.axisDeg - lo, hi - q.axisDeg) / 90,
   }),
 
   // Ancho del QRS en milisegundos. Es EL hallazgo de los bloqueos de rama: por

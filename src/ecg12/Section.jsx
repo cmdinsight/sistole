@@ -65,6 +65,12 @@ const L = {
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
   regularRhythm: { es: 'ritmo regular', en: 'regular rhythm', pt: 'ritmo regular' },
   irregularRhythm: { es: 'irregularmente irregular', en: 'irregularly irregular', pt: 'irregularmente irregular' },
+  axisLabel: { es: 'eje', en: 'axis', pt: 'eixo' },
+  axisNote: {
+    es: 'El eje sale del área neta del QRS en las seis derivaciones de los miembros, resuelto con la geometría del plano frontal. Normal entre −30° y +90°: por debajo es desviación izquierda, por encima, derecha. Las flechas dicen si el complejo es neto positivo o negativo en cada derivación, que es como se lee el eje a ojo.',
+    en: 'The axis comes from the net QRS area in the six limb leads, solved with the geometry of the frontal plane. Normal between −30° and +90°: below that is left deviation, above it, right. The arrows say whether the complex is net positive or negative in each lead, which is how the axis is read by eye.',
+    pt: 'O eixo sai da área líquida do QRS nas seis derivações dos membros, resolvido com a geometria do plano frontal. Normal entre −30° e +90°: abaixo é desvio esquerdo, acima, direito. As setas dizem se o complexo é líquido positivo ou negativo em cada derivação, que é como se lê o eixo a olho.',
+  },
   qrsWidth: { es: 'QRS', en: 'QRS', pt: 'QRS' },
   secondRLabel: { es: '2ª R', en: '2nd R', pt: '2ª R' },
   sLabel: { es: 'S', en: 'S', pt: 'S' },
@@ -182,7 +188,25 @@ function Measured({ q, metrics, lang, gain }) {
   let chips = [];
   let note = '';
 
-  if (metrics.kind === 'qrs') {
+  if (metrics.kind === 'axis') {
+    if (q.axisDeg === null) return null;
+    const desviado = q.axisDeg < -30 || q.axisDeg > 90;
+    chips = [
+      chip('ax', L.axisLabel[lang], `${Math.round(q.axisDeg)}°`,
+           desviado ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                    : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // Así se lee el eje a ojo: qué derivaciones dan un complejo neto positivo
+      // y cuáles negativo. La flecha dice más que el área en milivoltios por
+      // segundo, que no significa nada para quien mira el electro.
+      ...(metrics.leads ?? []).map((l) => chip(`a-${l}`, l, q.areaQRS[l] >= 0 ? '↑' : '↓',
+           q.areaQRS[l] >= 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                             : 'text-sky-300 border-sky-900/60 bg-sky-950/30')),
+    ];
+    note = L.axisNote[lang];
+  } else if (metrics.kind === 'qrs') {
     chips = [
       chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
            q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'

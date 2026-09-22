@@ -193,6 +193,14 @@ como una línea recta. El buscador avisa qué candidatos van a caer en ese caso.
 necesaria para enseñarlos. El infarto lateral aislado, por ejemplo, da cero
 candidatos. No es un límite de la herramienta; es el material.
 
+**Una medición validada contra referencia.** El eje eléctrico es la única del
+módulo que se pudo contrastar con una etiqueta de la propia base, la columna
+`heart_axis`. Los registros que PTB-XL llama MID miden +54° de mediana, los LAD
+−34°, los ALAD −49° y los RAD +101°: el orden sale bien y las medianas no se
+solapan. Se calcula por mínimos cuadrados sobre las seis derivaciones de los
+miembros y no con la receta de mirar I y aVF, porque las aumentadas valen √3/2 de
+las bipolares y combinarlas sin corregir ese factor inclina el resultado.
+
 **Un hallazgo que mide forma, no causa.** `stSag` mide la «cubeta» del efecto
 digitálico: cuánto se hunde el ST por debajo del punto J antes de volver a subir.
 Se midió sobre toda la base y separa poco — 35 µV con digital contra 25 en la

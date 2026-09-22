@@ -20,6 +20,47 @@
 // Se usa la MEDIANA entre latidos, no el promedio: una extrasístole o un
 // artefacto aislado desplaza el promedio y no mueve la mediana.
 
+import { LEAD_VECTORS } from './leads.js';
+
+// ── Eje eléctrico en el plano frontal ──
+// Hacia dónde apunta, en promedio, la despolarización del ventrículo. Se calcula
+// como se define: cada derivación de los miembros mide la PROYECCIÓN del vector
+// sobre su propio eje, así que con varias proyecciones se reconstruye el vector.
+//
+// Se usa el ÁREA neta del QRS y no la altura de la R. El área es la integral del
+// complejo, o sea lo que el vector aportó durante todo el tiempo que duró; la
+// altura del pico es un solo instante. En un QRS con R y S grandes —donde el
+// vector va primero para un lado y después para el otro— mirar sólo el pico da
+// una respuesta que no representa al latido.
+//
+// Y se resuelve con las seis derivaciones a la vez, por mínimos cuadrados, en vez
+// de con la receta de mirar I y aVF. No es rebuscamiento: las aumentadas valen
+// √3/2 de las bipolares, y combinarlas sin corregir ese factor inclina el
+// resultado. La geometría exacta ya está en leads.js, que es de donde sale.
+const FRONTALES = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'];
+
+function ejeFrontal(areas) {
+  let Sxx = 0, Sxy = 0, Syy = 0, bx = 0, by = 0;
+  for (const l of FRONTALES) {
+    if (areas[l] === undefined) continue;
+    const [x, y] = LEAD_VECTORS[l];
+    const mag = Math.hypot(x, y);
+    if (!mag) continue;
+    const ux = x / mag, uy = y / mag;
+    const proyeccion = areas[l] / mag;
+    Sxx += ux * ux; Sxy += ux * uy; Syy += uy * uy;
+    bx += proyeccion * ux; by += proyeccion * uy;
+  }
+  const det = Sxx * Syy - Sxy * Sxy;
+  if (!det) return null;
+  const vx = (Syy * bx - Sxy * by) / det;
+  const vy = (Sxx * by - Sxy * bx) / det;
+  if (!Math.hypot(vx, vy)) return null;
+  // Y apunta a los pies, así que atan2(vy, vx) da directamente la convención
+  // habitual: 0° hacia la izquierda del paciente, +90° hacia abajo, −90° arriba.
+  return (Math.atan2(vy, vx) * 180) / Math.PI;
+}
+
 const median = (xs) => {
   if (!xs.length) return 0;
   const s = Array.from(xs).sort((a, b) => a - b);
@@ -286,6 +327,7 @@ export function measure(signal) {
     return { tpl, rIdx: antes };
   };
 
+  const areaQRS = {};   // área neta del complejo, para el eje
   const st = {};
   const t = {};
   const qt = {};
@@ -356,6 +398,18 @@ export function measure(signal) {
     }
     st[lead] = median(stVals);
     t[lead] = median(tVals);
+
+    // Área neta del QRS de esta derivación, sobre el latido promedio.
+    const promArea = promedio(sig);
+    if (promArea) {
+      const { tpl, rIdx } = promArea;
+      let base = 0;
+      for (let k = rIdx + dB0; k < rIdx + dB1; k++) base += tpl[k];
+      base /= (dB1 - dB0);
+      let area = 0;
+      for (let k = rIdx + onset; k <= rIdx + offset; k++) area += tpl[k] - base;
+      areaQRS[lead] = area / fs;
+    }
     sag[lead] = sagVals.length ? median(sagVals) : 0;
 
     // QT y segunda R de esta derivación, sobre el latido promedio.
@@ -432,6 +486,8 @@ export function measure(signal) {
     beats,
     st,
     t,
+    areaQRS,
+    axisDeg: ejeFrontal(areaQRS),
     sag,
     rPrime,
     qt,
