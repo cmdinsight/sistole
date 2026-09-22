@@ -92,6 +92,19 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.r[l] - min)),
   }),
 
+  // El reverso de rHeight: exigir que la R sea CHICA o no esté. Es el patrón
+  // QS —el complejo que baja sin nada positivo delante— y lo que queda cuando
+  // el músculo de esa pared murió: no hay quién genere el vector inicial.
+  //
+  // Se pide un techo, no cero, a propósito. Una R de 200 µV en V2 no es una R
+  // normal: la mediana de V2 en los registros normales es 476 µV y la de V3,
+  // 825. "R perdida" es un hallazgo cuantitativo, no una ausencia absoluta.
+  rLoss: ({ leads, max }, q) => ({
+    label: `onda R reducida o ausente (≤ ${mmStr(max)}) en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.r[l] > max).map((l) => `${l}=${uv(q.r[l])}`),
+    margen: Math.min(...leads.map((l) => max - q.r[l])),
+  }),
+
   // Profundidad mínima de la onda S. En el bloqueo de rama derecha el
   // ventrículo derecho se despolariza tarde y su vector apunta a la derecha y
   // adelante: eso levanta la R' de V1 y, al mismo tiempo y por lo mismo, cava

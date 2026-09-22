@@ -111,6 +111,14 @@ export const RECORDS = {
     age: 62, sex: 'M', scp: ['NORM', 'LVOLT'],
     report: 'sinusrhythmus lagetyp normal periphere niederspannung',
   },
+  // PTB-XL lo estadifica como Stadium III: un infarto ya evolucionado. Eso es
+  // parte del hallazgo, porque el ST que sigue arriba a esa altura es
+  // justamente lo que define el patrón.
+  7953: {
+    age: 76, sex: 'F', stage: 'Stadium III', scp: ['ASMI', 'ALMI', 'ANEUR'],
+    report: 'sinus rhythm. tiny r waves in v2,3. q waves in i, avl, v4,5,6. t waves are low or flat '
+      + 'in i, avl, v5,6. consistent with anterior and lateral myocardial infarction.',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -118,4 +126,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '595'];
