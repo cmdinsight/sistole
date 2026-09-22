@@ -19,6 +19,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodeRecord } from '../src/ecg12/record.js';
 import { measure } from '../src/ecg12/measure.js';
+import { checkFindings } from '../src/ecg12/findings.js';
 import { CASES, shuffledOptions } from '../src/ecg12/cases.js';
 import { RECORD_IDS, RECORDS, SOURCE } from '../src/ecg12/records.js';
 import { LEAD_LABELS } from '../src/ecg12/record.js';
@@ -29,7 +30,6 @@ const LANGS = ['es', 'en', 'pt'];
 let pass = 0, fail = 0;
 const check = (n, c, e = '') => { c ? (pass++, console.log(`  ✓ ${n}`)) : (fail++, console.log(`  ✗ ${n}  ${e}`)); };
 const uv = (x) => Math.round(x * 1000);
-const mm = (x) => `${(x * 10).toFixed(1)} mm`;
 
 console.log('\n[1] Cada caso apunta a un registro descargado');
 check('la lista de registros coincide con la de casos',
@@ -72,71 +72,14 @@ for (const c of CASES) {
 }
 
 console.log('\n[3] Cada caso enseña lo que su electro muestra');
+// Las reglas viven en src/ecg12/findings.js, que es también lo que usa
+// scripts/ptbxl-search.mjs para elegir los registros. Un solo predicado: el que
+// encontró el caso es el que lo vigila.
 for (const c of CASES) {
   const s = signals[c.record];
   if (!s) continue;
-  const q = measure(s);
-  const f = c.findings;
-  const tag = `${c.id}`;
-
-  if (f.stElevation) {
-    const { leads, min } = f.stElevation;
-    const bad = leads.filter((l) => q.st[l] < min);
-    check(`${tag}: ST elevado ≥ ${mm(min)} en ${leads.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l}=${uv(q.st[l])}µV`).join(' ')})`);
-  }
-  if (f.stDepression) {
-    const { leads, min } = f.stDepression;
-    const bad = leads.filter((l) => q.st[l] > -min);
-    check(`${tag}: ST descendido ≥ ${mm(min)} en ${leads.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l}=${uv(q.st[l])}µV`).join(' ')})`);
-  }
-  if (f.stFlat) {
-    const { leads, max } = f.stFlat;
-    const bad = leads.filter((l) => Math.abs(q.st[l]) > max);
-    check(`${tag}: ST sin desnivel (< ${mm(max)}) en ${leads.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l}=${uv(q.st[l])}µV`).join(' ')})`);
-  }
-  if (f.tInversion) {
-    const { leads, min } = f.tInversion;
-    const bad = leads.filter((l) => q.t[l] > -min);
-    check(`${tag}: T invertida ≥ ${mm(min)} en ${leads.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l}=${uv(q.t[l])}µV`).join(' ')})`);
-  }
-  if (f.tUpright) {
-    const { leads, min } = f.tUpright;
-    const bad = leads.filter((l) => q.t[l] < min);
-    check(`${tag}: T positiva en ${leads.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l}=${uv(q.t[l])}µV`).join(' ')})`);
-  }
-  if (f.dominantR) {
-    const bad = f.dominantR.filter((l) => q.r[l] <= -q.s[l]);
-    check(`${tag}: R dominante en ${f.dominantR.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l} R=${uv(q.r[l])} S=${uv(-q.s[l])}`).join(' ')})`);
-  }
-  if (f.rsPattern) {
-    const bad = f.rsPattern.filter((l) => q.r[l] >= -q.s[l]);
-    check(`${tag}: patrón rS (S más profunda que R) en ${f.rsPattern.join(', ')}`, !bad.length,
-          `(falla en ${bad.map((l) => `${l} R=${uv(q.r[l])} S=${uv(-q.s[l])}`).join(' ')})`);
-  }
-  if (f.rRegression) {
-    const [a, b] = f.rRegression;
-    check(`${tag}: la onda R NO progresa de ${a} a ${b}`, q.r[b] <= q.r[a],
-          `(${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])})`);
-  }
-  if (f.rProgression) {
-    const [a, b] = f.rProgression;
-    check(`${tag}: la onda R crece de ${a} a ${b}`, q.r[b] > q.r[a],
-          `(${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])})`);
-  }
-  if (f.rate) {
-    const [lo, hi] = f.rate;
-    check(`${tag}: frecuencia entre ${lo} y ${hi} lpm`, q.hr >= lo && q.hr <= hi, `(${q.hr.toFixed(0)} lpm)`);
-  }
-  if (f.irregular !== undefined) {
-    const irr = q.rrCv > 0.08;
-    check(`${tag}: el ritmo es ${f.irregular ? 'irregular' : 'regular'}`, irr === f.irregular,
-          `(variabilidad del RR ${q.rrCv.toFixed(3)})`);
+  for (const r of checkFindings(measure(s), c.findings)) {
+    check(`${c.id}: ${r.label}`, r.ok, r.detalle && `(${r.detalle})`);
   }
 }
 

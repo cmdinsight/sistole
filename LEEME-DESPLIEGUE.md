@@ -128,6 +128,67 @@ Qué registro usa cada caso se declara en `src/ecg12/records.js`, y
 realmente muestra. Si una prueba de `test-cases.mjs` falla, el caso no se
 publica: el texto y el electro dejaron de coincidir.
 
+### Agregar un caso nuevo
+
+Los trazados son de pacientes reales: nadie los grabó a medida del texto que los
+acompaña. Por eso el orden es al revés del que uno esperaría — primero se
+describe lo que se quiere enseñar en términos medibles, después se busca qué
+electro lo muestra, y recién al final se escribe el texto.
+
+**1. Describir el hallazgo.** Un `findings` es esa descripción: umbrales en
+milivoltios (0,1 mV = 1 mm de papel = un cuadradito), derivación por derivación.
+Hay un ejemplo comentado en `scripts/ejemplos/clbbb.mjs`. El vocabulario completo
+está en `src/ecg12/findings.js`.
+
+**2. Buscar registros que lo cumplan.** El buscador recorre PTB-XL midiendo, y
+devuelve sólo los que satisfacen el `findings` entero:
+
+```bash
+npm run search:ptbxl -- --scp CLBBB --findings scripts/ejemplos/clbbb.mjs
+npm run search:ptbxl -- --case inferior-stemi      # alternativas a un caso que ya existe
+npm run search:ptbxl -- --report "posterior"       # por lo que escribió el cardiólogo
+```
+
+Los ordena por lo CLARO que se vea el hallazgo, no por lo grande: cuenta el
+margen con que se cumple la regla más ajustada y penaliza el ruido entre latidos.
+Un infarto espectacular sobre un trazado sucio enseña peor que uno moderado sobre
+uno limpio.
+
+**3. Mirarlos.** Este paso no se saltea aunque los números den bien:
+
+```bash
+npm run preview:ecg12 -- 5191 2940            # la hoja 3×4
+npm run preview:ecg12 -- 5191 --lead V2 V6    # una derivación, en grande
+```
+
+Se aprendió por las malas. En la primera tanda, el registro con el descenso del
+ST más marcado de toda la base tenía, al dibujarlo, las derivaciones de los
+miembros casi planas: la medición era correcta y el electro no servía igual. Los
+números descartan; la vista decide. (Requiere Playwright, que no es dependencia
+del proyecto porque sólo lo usa esta herramienta: `npm i -D playwright && npx
+playwright install chromium`.)
+
+**4. Anotarlo y escribirlo.** En `records.js` van el id, la edad y el sexo del
+registro y el informe original del cardiólogo, sin traducir. En `cases.js` va el
+caso, con el mismo `findings` con que se lo buscó. Después:
+
+```bash
+npm run fetch:ptbxl && npm test
+```
+
+Las pruebas comprueban, midiendo, que el registro siga mostrando lo que el texto
+dice. El predicado que encontró el caso es el que después lo vigila: si mañana se
+cambia el registro y deja de cumplir, la prueba falla antes de que un estudiante
+lea algo que el trazado no dice.
+
+**Dos límites conocidos.** La hoja 3×4 dibuja a 10 mm/mV, así que un registro con
+más de unos 3 mV de excursión invade la fila de al lado — el buscador lo avisa
+con «necesita media ganancia». Pasa sobre todo con bloqueos de rama e hipertrofia
+ventricular; la salida sería dibujarlos a 5 mm/mV, como hace cualquier
+electrocardiógrafo, y escribirlo en el pie (que `draw.js` ya imprime). Y hay
+cuadros que la base simplemente no tiene con la limpieza necesaria: el infarto
+lateral aislado, por ejemplo, da cero candidatos.
+
 **Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 
 **Variables de entorno requeridas:**

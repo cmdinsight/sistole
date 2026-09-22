@@ -1,0 +1,141 @@
+// ═══════════════════════════════════════════════════════════════
+// HALLAZGOS: UN VOCABULARIO, DOS USOS
+// ═══════════════════════════════════════════════════════════════
+// Un `findings` describe, en términos medibles, lo que un electro tiene que
+// mostrar: "ST elevado al menos 1,5 mm en II, III y aVF", "ritmo regular",
+// "frecuencia entre 60 y 90". Ese mismo objeto sirve para las dos mitades del
+// trabajo, y ahí está el sentido de tenerlo en un solo lugar:
+//
+//   BUSCAR   scripts/ptbxl-search.mjs recorre PTB-XL midiendo registros y se
+//            queda con los que lo satisfacen. Se escribe el caso que se quiere
+//            enseñar y la herramienta trae los electros que lo muestran.
+//   CUSTODIAR  scripts/test-cases.mjs comprueba, en cada corrida de las pruebas,
+//            que el registro elegido lo siga satisfaciendo.
+//
+// El predicado que encuentra el caso es el mismo que después lo vigila. Si
+// fueran dos implementaciones, tarde o temprano dirían cosas distintas y la
+// segunda dejaría pasar lo que la primera había elegido con otro criterio.
+//
+// Todos los umbrales están en milivoltios, que es la unidad en que mide
+// measure.js. 0,1 mV = 1 mm de papel = un cuadradito.
+
+const uv = (x) => `${Math.round(x * 1000)} µV`;
+const mmStr = (x) => `${(x * 10).toFixed(1)} mm`;
+
+// El umbral de irregularidad. En ritmo sinusal la variación del RR queda por
+// debajo de 0,05 incluso con arritmia respiratoria; en fibrilación auricular
+// trepa muy por encima. El 0,08 es el valle entre las dos poblaciones.
+export const RR_IRREGULAR = 0.08;
+
+// Cada regla sabe describirse y sabe evaluarse. Agregar un tipo de hallazgo
+// nuevo es agregar una entrada acá, y queda disponible para buscar y para
+// comprobar al mismo tiempo.
+const REGLAS = {
+  stElevation: ({ leads, min }, q) => ({
+    label: `ST elevado ≥ ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.st[l] < min).map((l) => `${l}=${uv(q.st[l])}`),
+    // El margen es cuánto sobra por encima del umbral en la derivación más
+    // justa. Sirve para ordenar candidatos: entre dos registros que cumplen,
+    // el de margen mayor muestra el hallazgo con más claridad.
+    margen: Math.min(...leads.map((l) => q.st[l] - min)),
+  }),
+  stDepression: ({ leads, min }, q) => ({
+    label: `ST descendido ≥ ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.st[l] > -min).map((l) => `${l}=${uv(q.st[l])}`),
+    margen: Math.min(...leads.map((l) => -q.st[l] - min)),
+  }),
+  stFlat: ({ leads, max }, q) => ({
+    label: `ST sin desnivel (< ${mmStr(max)}) en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => Math.abs(q.st[l]) > max).map((l) => `${l}=${uv(q.st[l])}`),
+    margen: Math.min(...leads.map((l) => max - Math.abs(q.st[l]))),
+  }),
+  tInversion: ({ leads, min }, q) => ({
+    label: `T invertida ≥ ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.t[l] > -min).map((l) => `${l}=${uv(q.t[l])}`),
+    margen: Math.min(...leads.map((l) => -q.t[l] - min)),
+  }),
+  tUpright: ({ leads, min }, q) => ({
+    label: `T positiva ≥ ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.t[l] < min).map((l) => `${l}=${uv(q.t[l])}`),
+    margen: Math.min(...leads.map((l) => q.t[l] - min)),
+  }),
+  // R dominante: la onda R supera en altura a la profundidad de la S. En V1 es
+  // anormal (hace pensar en infarto posterior o hipertrofia derecha); en V6 es
+  // lo esperable.
+  dominantR: (leads, q) => ({
+    label: `R dominante en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.r[l] <= -q.s[l]).map((l) => `${l} R=${uv(q.r[l])} S=${uv(-q.s[l])}`),
+    margen: Math.min(...leads.map((l) => q.r[l] + q.s[l])),
+  }),
+  rsPattern: (leads, q) => ({
+    label: `patrón rS (S más profunda que R) en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.r[l] >= -q.s[l]).map((l) => `${l} R=${uv(q.r[l])} S=${uv(-q.s[l])}`),
+    margen: Math.min(...leads.map((l) => -q.s[l] - q.r[l])),
+  }),
+  rProgression: ([a, b], q) => ({
+    label: `la onda R crece de ${a} a ${b}`,
+    fallos: q.r[b] > q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
+    margen: q.r[b] - q.r[a],
+  }),
+  // Lo contrario, y es un hallazgo por derecho propio: cuando la R deja de
+  // crecer por las precordiales hay que pensar en infarto anterior antiguo.
+  rRegression: ([a, b], q) => ({
+    label: `la onda R NO progresa de ${a} a ${b}`,
+    fallos: q.r[b] <= q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
+    margen: q.r[a] - q.r[b],
+  }),
+  rate: ([lo, hi], q) => ({
+    label: `frecuencia entre ${lo} y ${hi} lpm`,
+    fallos: q.hr >= lo && q.hr <= hi ? [] : [`${q.hr.toFixed(0)} lpm`],
+    margen: Math.min(q.hr - lo, hi - q.hr) / 60,
+  }),
+  irregular: (quiere, q) => {
+    const esIrregular = q.rrCv > RR_IRREGULAR;
+    return {
+      label: `el ritmo es ${quiere ? 'irregular' : 'regular'}`,
+      fallos: esIrregular === quiere ? [] : [`variación del RR ${q.rrCv.toFixed(3)}`],
+      margen: quiere ? q.rrCv - RR_IRREGULAR : RR_IRREGULAR - q.rrCv,
+    };
+  },
+};
+
+/**
+ * Evalúa un `findings` contra una medición.
+ *
+ * @param {object} q          lo que devuelve measure()
+ * @param {object} findings   el objeto declarado en cases.js
+ * @returns {{ok:boolean, label:string, detalle:string, margen:number}[]}
+ *   Una entrada por regla declarada, en el orden en que se escribieron.
+ */
+export function checkFindings(q, findings) {
+  const out = [];
+  for (const [clave, valor] of Object.entries(findings || {})) {
+    const regla = REGLAS[clave];
+    if (!regla) {
+      out.push({ ok: false, label: `hallazgo desconocido: ${clave}`, detalle: '', margen: -Infinity });
+      continue;
+    }
+    if (valor === undefined) continue;
+    const { label, fallos, margen } = regla(valor, q);
+    out.push({
+      ok: fallos.length === 0,
+      label,
+      detalle: fallos.length ? `falla en ${fallos.join(' ')}` : '',
+      margen,
+    });
+  }
+  return out;
+}
+
+/** true si la medición satisface todas las reglas declaradas. */
+export const satisfies = (q, findings) => checkFindings(q, findings).every((r) => r.ok);
+
+/**
+ * Cuán holgadamente las satisface: el margen de la regla más ajustada. Negativo
+ * si alguna no se cumple. Es el criterio para ordenar candidatos — entre dos
+ * electros que muestran el hallazgo, enseña mejor el que lo muestra más claro.
+ */
+export const margin = (q, findings) => {
+  const rs = checkFindings(q, findings);
+  return rs.length ? Math.min(...rs.map((r) => r.margen)) : 0;
+};
