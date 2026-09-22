@@ -127,11 +127,18 @@ const REGLAS = {
   // pase los 5 mm para que no haya bajo voltaje. Por eso la regla exige el
   // máximo en cada una de las derivaciones de la lista, y el margen es el de la
   // derivación MÁS ALTA, que es la que decide.
-  qrsAmplitude: ({ leads, max }, q) => ({
-    label: `QRS de pico a pico ≤ ${mmStr(max)} en ${leads.join(', ')}`,
-    fallos: leads.filter((l) => q.r[l] - q.s[l] > max).map((l) => `${l}=${uv(q.r[l] - q.s[l])}`),
-    margen: Math.min(...leads.map((l) => max - (q.r[l] - q.s[l]))),
-  }),
+  // Acepta un grupo o una lista de grupos, porque el criterio generalizado son
+  // dos umbrales distintos a la vez —5 mm en los miembros, 10 en las
+  // precordiales— y las claves de un objeto no se pueden repetir.
+  qrsAmplitude: (valor, q) => {
+    const grupos = Array.isArray(valor) ? valor : [valor];
+    const pp = (l) => q.r[l] - q.s[l];
+    return {
+      label: grupos.map((g) => `QRS de pico a pico ≤ ${mmStr(g.max)} en ${g.leads.join(', ')}`).join(' · '),
+      fallos: grupos.flatMap((g) => g.leads.filter((l) => pp(l) > g.max).map((l) => `${l}=${uv(pp(l))}`)),
+      margen: Math.min(...grupos.flatMap((g) => g.leads.map((l) => g.max - pp(l)))),
+    };
+  },
 
   // Intervalo PR, en milisegundos. Por encima de 200 hay bloqueo AV de primer
   // grado. Devuelve null cuando la P no se puede medir, y entonces la regla
