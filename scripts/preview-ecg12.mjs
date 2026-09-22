@@ -75,22 +75,24 @@ const paginaPath = join(raiz, '.ptbxl-preview', 'index.html');
 writeFileSync(paginaPath, `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#0b1018">
 <script type="module">
 import { decodeRecord } from '/src/ecg12/record.js';
-import { drawEcg, sheetSize } from '/src/ecg12/draw.js';
+import { drawEcg, sheetSize, suggestGain } from '/src/ecg12/draw.js';
 const REGISTROS = ${JSON.stringify(registros)};
 const DERIVACIONES = ${JSON.stringify(derivaciones)};
 const ANCHO = 1500;
 for (const [id, rec] of Object.entries(REGISTROS)) {
   const senal = decodeRecord(rec);
+  // La misma ganancia que elegiría la app, para revisar lo que el estudiante ve.
+  const gain = suggestGain(senal);
   const vistas = DERIVACIONES.length ? DERIVACIONES.map((l) => ({ singleRow: true, rhythmLead: l })) : [{}];
   for (const v of vistas) {
     const rot = document.createElement('div');
-    rot.textContent = 'PTB-XL ' + id + (v.rhythmLead ? ' · ' + v.rhythmLead : '');
+    rot.textContent = 'PTB-XL ' + id + (v.rhythmLead ? ' · ' + v.rhythmLead : '') + (gain !== 10 ? '  ·  media ganancia' : '');
     rot.style.cssText = 'color:#9fb0c8;font:600 18px ui-monospace,monospace;padding:8px 12px';
     const sz = sheetSize(v);
     const c = document.createElement('canvas');
     c.width = ANCHO; c.height = Math.round(ANCHO * sz.h / sz.w);
     c.dataset.nombre = id + (v.rhythmLead ? '-' + v.rhythmLead : '');
-    drawEcg(c.getContext('2d'), { signal: senal, cssW: ANCHO, ...v });
+    drawEcg(c.getContext('2d'), { signal: senal, cssW: ANCHO, gain, ...v });
     document.body.append(rot, c);
   }
 }

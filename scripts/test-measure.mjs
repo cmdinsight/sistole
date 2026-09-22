@@ -13,6 +13,7 @@
 import { synth12 } from '../src/ecg12/synth.js';
 import { measure } from '../src/ecg12/measure.js';
 import { encodeRecord, decodeRecord } from '../src/ecg12/record.js';
+import { suggestGain } from '../src/ecg12/draw.js';
 
 let pass = 0, fail = 0;
 const check = (n, c, e = '') => { c ? (pass++, console.log(`  ✓ ${n}`)) : (fail++, console.log(`  ✗ ${n}  ${e}`)); };
@@ -117,6 +118,43 @@ console.log('\n[7] Guardar y volver a leer no cambia la medición');
   check('III, aVR, aVL y aVF reconstruidas coinciden con las originales',
         ['III','aVR','aVL','aVF'].every((l) => Math.abs(before.st[l] - after.st[l]) < 0.005),
         `(${['III','aVR','aVL','aVF'].map(l=>`${l}:${uv(Math.abs(before.st[l]-after.st[l]))}`).join(' ')})`);
+}
+
+console.log('\n[8] La ganancia del dibujo se elige sola y por grupo');
+{
+  // Ningún caso publicado hoy necesita media ganancia, así que sin esta prueba
+  // el mecanismo quedaría sin cubrir hasta que alguien agregue un bloqueo de
+  // rama o una hipertrofia — y se enteraría del problema ahí.
+  const base = synth12({ rate: 72, fs: 250, duration: 10 });
+  check('un trazado de voltaje normal se dibuja a 10 mm/mV',
+        suggestGain(base).limb === 10 && suggestGain(base).chest === 10);
+
+  const escalar = (sig, k, leads) => {
+    const out = { ...sig, leads: { ...sig.leads } };
+    for (const l of leads) {
+      const src = sig.leads[l];
+      const dst = new Float32Array(src.length);
+      for (let i = 0; i < src.length; i++) dst[i] = src[i] * k;
+      out.leads[l] = dst;
+    }
+    return out;
+  };
+
+  const precordialesGrandes = escalar(base, 6, ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']);
+  const g1 = suggestGain(precordialesGrandes);
+  check('con precordiales de mucho voltaje, sólo ellas bajan a la mitad',
+        g1.chest === 5 && g1.limb === 10, `(${JSON.stringify(g1)})`);
+
+  const miembrosGrandes = escalar(base, 8, ['I', 'II', 'III', 'aVR', 'aVL', 'aVF']);
+  const g2 = suggestGain(miembrosGrandes);
+  check('y al revés: si el voltaje está en los miembros, bajan los miembros',
+        g2.limb === 5 && g2.chest === 10, `(${JSON.stringify(g2)})`);
+
+  // Que no baje de más es tan importante como que baje: a media ganancia un
+  // trazado de voltaje chico queda como una línea recta.
+  const apenas = escalar(base, 1.6, ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']);
+  check('una superposición parcial no alcanza para bajar la ganancia',
+        suggestGain(apenas).chest === 10, `(${JSON.stringify(suggestGain(apenas))})`);
 }
 
 console.log(`\n${'─'.repeat(44)}\n${pass} pasaron, ${fail} fallaron\n`);

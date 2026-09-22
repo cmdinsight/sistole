@@ -181,13 +181,16 @@ dice. El predicado que encontró el caso es el que después lo vigila: si mañan
 cambia el registro y deja de cumplir, la prueba falla antes de que un estudiante
 lea algo que el trazado no dice.
 
-**Dos límites conocidos.** La hoja 3×4 dibuja a 10 mm/mV, así que un registro con
-más de unos 3 mV de excursión invade la fila de al lado — el buscador lo avisa
-con «necesita media ganancia». Pasa sobre todo con bloqueos de rama e hipertrofia
-ventricular; la salida sería dibujarlos a 5 mm/mV, como hace cualquier
-electrocardiógrafo, y escribirlo en el pie (que `draw.js` ya imprime). Y hay
-cuadros que la base simplemente no tiene con la limpieza necesaria: el infarto
-lateral aislado, por ejemplo, da cero candidatos.
+**Ganancia.** Un registro con más de 3 mV de excursión no entra en su fila a
+10 mm/mV. La app lo resuelve sola: `suggestGain()` baja ese grupo a 5 mm/mV y el
+pie de la hoja lo dice, igual que cualquier electrocardiógrafo. Se decide POR
+GRUPO —miembros y precordiales por separado— porque el voltaje grande casi
+siempre está en las precordiales, y bajar la hoja entera deja las de los miembros
+como una línea recta. El buscador avisa qué candidatos van a caer en ese caso.
+
+**Lo que la base no tiene.** Hay cuadros que PTB-XL no contiene con la limpieza
+necesaria para enseñarlos. El infarto lateral aislado, por ejemplo, da cero
+candidatos. No es un límite de la herramienta; es el material.
 
 **Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 

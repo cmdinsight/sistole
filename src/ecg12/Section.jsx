@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Check, X, AlertTriangle, Activity, Stethoscope, Maximize2, Ruler } from 'lucide-react';
 import TwelveLead from './TwelveLead.jsx';
-import { sheetSize } from './draw.js';
+import { sheetSize, suggestGain, MM_PER_MV } from './draw.js';
 import { loadRecord, prefetchRecord } from './load.js';
 import { measure } from './measure.js';
 import { SOURCE } from './records.js';
@@ -31,11 +31,13 @@ const L = {
   tapLead: { es: 'Tocá una derivación para ampliarla', en: 'Tap a lead to enlarge it', pt: 'Toque numa derivação para ampliá-la' },
   swipe: { es: '← Deslizá para ver las precordiales (V1 a V6)', en: '← Swipe to see the precordial leads (V1 to V6)', pt: '← Deslize para ver as precordiais (V1 a V6)' },
   close: { es: 'Cerrar', en: 'Close', pt: 'Fechar' },
-  done: { es: 'Terminaste los ocho', en: 'You finished all eight', pt: 'Você terminou os oito' },
+  // El número sale de CASES y no está escrito en el texto: la primera vez que se
+  // agregó un caso, la pantalla final seguía felicitando por "los ocho".
+  done: { es: (n) => `Terminaste los ${n}`, en: (n) => `You finished all ${n}`, pt: (n) => `Você terminou os ${n}` },
   doneSub: {
-    es: 'Los ocho trazados son electrocardiogramas reales de PTB-XL, registrados a pacientes y anotados por cardiólogos. Entrenan la localización, que es lo que una sola derivación no puede enseñar.',
-    en: 'All eight tracings are real electrocardiograms from PTB-XL, recorded from patients and annotated by cardiologists. They train localization, which a single lead cannot teach.',
-    pt: 'Os oito traçados são eletrocardiogramas reais do PTB-XL, registrados em pacientes e anotados por cardiologistas. Treinam a localização, que uma única derivação não pode ensinar.',
+    es: (n) => `Los ${n} trazados son electrocardiogramas reales de PTB-XL, registrados a pacientes y anotados por cardiólogos. Entrenan la localización, que es lo que una sola derivación no puede enseñar.`,
+    en: (n) => `All ${n} tracings are real electrocardiograms from PTB-XL, recorded from patients and annotated by cardiologists. They train localization, which a single lead cannot teach.`,
+    pt: (n) => `Os ${n} traçados são eletrocardiogramas reais do PTB-XL, registrados em pacientes e anotados por cardiologistas. Treinam a localização, que uma única derivação não pode ensinar.`,
   },
   loading: { es: 'Cargando el trazado…', en: 'Loading the tracing…', pt: 'Carregando o traçado…' },
   loadError: {
@@ -50,6 +52,14 @@ const L = {
     en: 'ST deviation at J+60 ms relative to the PR segment, averaged across beats.',
     pt: 'Desnivelamento do ST em J+60 ms em relação ao segmento PR, média entre batimentos.',
   },
+  halfGainNote: {
+    es: (grupo) => `Los milímetros son a ganancia estándar, que es como se informa un desnivel. ${grupo} está dibujado a 5 mm/mV porque los complejos no entraban: ahí, lo que contás en la pantalla es la mitad de estos valores.`,
+    en: (grupo) => `The millimetres are at standard gain, which is how a deviation is reported. ${grupo} is drawn at 5 mm/mV because the complexes did not fit: there, what you count on screen is half of these values.`,
+    pt: (grupo) => `Os milímetros são em ganho padrão, que é como se informa um desnivelamento. ${grupo} está desenhado a 5 mm/mV porque os complexos não cabiam: ali, o que você conta na tela é a metade destes valores.`,
+  },
+  groupChest: { es: 'El grupo V1-V6', en: 'The V1-V6 group', pt: 'O grupo V1-V6' },
+  groupLimb: { es: 'El grupo de los miembros', en: 'The limb lead group', pt: 'O grupo dos membros' },
+  groupBoth: { es: 'Todo el trazado', en: 'The whole tracing', pt: 'Todo o traçado' },
   irregular: { es: '(irregular)', en: '(irregular)', pt: '(irregular)' },
   bpm: { es: 'lpm', en: 'bpm', pt: 'bpm' },
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
@@ -91,13 +101,13 @@ const mm = (mv, lang) => {
 // elegir entre achicarlo hasta que no se lea o dejar scroll horizontal. Se elige
 // el scroll, que es lo que hace cualquiera con un electro impreso, y además se
 // permite tocar una derivación para verla sola y en grande.
-function EcgSheet({ signal, theme, highlight, lang, onLeadClick }) {
+function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
   return (
     <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
       <div className="relative">
         <div className="overflow-x-auto">
           <div className="min-w-[680px]">
-            <TwelveLead signal={signal} theme={theme} highlight={highlight} onLeadClick={onLeadClick} />
+            <TwelveLead signal={signal} theme={theme} highlight={highlight} onLeadClick={onLeadClick} gain={gain} />
           </div>
         </div>
         {/* Degradado en el borde derecho: en mobile el electro no entra entero y sin
@@ -132,7 +142,7 @@ function EcgSheet({ signal, theme, highlight, lang, onLeadClick }) {
 // base donde apoyar la medición: cualquier número de ST que se muestre ahí es
 // falso. En esos casos se miden la frecuencia y la regularidad, que sí se pueden
 // medir, y el número que no corresponde no se muestra.
-function Measured({ q, metrics, lang }) {
+function Measured({ q, metrics, lang, gain }) {
   if (!q || !metrics) return null;
 
   const chip = (key, label, value, tone) => (
@@ -154,7 +164,14 @@ function Measured({ q, metrics, lang }) {
                  : 'text-slate-400 border-slate-800 bg-slate-950/60';
       return chip(l, l, mm(q.st[l], lang), tone);
     });
-    note = L.measuredNote[lang];
+    // gain es {limb, chest}: comparar el objeto con 10 daba SIEMPRE distinto, y
+    // la nota de media ganancia aparecía en todos los casos, incluidos los
+    // dibujados a escala estándar. Una advertencia que no corresponde es peor
+    // que ninguna: hace desconfiar de los milímetros que sí están bien.
+    const bajoLimb = gain.limb !== MM_PER_MV;
+    const bajoChest = gain.chest !== MM_PER_MV;
+    const grupo = bajoLimb && bajoChest ? L.groupBoth[lang] : bajoChest ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.measuredNote[lang] + (bajoLimb || bajoChest ? ` ${L.halfGainNote[lang](grupo)}` : '');
   } else {
     const irregular = q.rrCv > 0.08;
     chips = [
@@ -181,7 +198,7 @@ function Measured({ q, metrics, lang }) {
 
 // Una sola derivación, a todo lo ancho y con el doble de alto: para mirar de
 // cerca el segmento ST cuando la vista general no alcanza.
-function LeadZoom({ signal, lead, theme, lang, onClose }) {
+function LeadZoom({ signal, lead, theme, lang, onClose, gain }) {
   const single = useMemo(() => ({
     fs: signal.fs,
     duration: signal.duration,
@@ -197,7 +214,7 @@ function LeadZoom({ signal, lead, theme, lang, onClose }) {
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 text-sm">{L.close[lang]}</button>
         </div>
         <div className="rounded-2xl overflow-hidden border border-slate-700">
-          <TwelveLead signal={single} theme={theme} rhythmLead={lead} singleRow />
+          <TwelveLead signal={single} theme={theme} rhythmLead={lead} singleRow gain={gain} />
         </div>
       </div>
     </div>
@@ -238,6 +255,11 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
   // cada render se notaría al tocar cualquier botón.
   const measured = useMemo(() => (signal ? measure(signal) : null), [signal]);
 
+  // Un electro de mucho voltaje —un bloqueo de rama, una hipertrofia— no entra
+  // en la fila a ganancia estándar. Se dibuja a la mitad, como en el papel, y el
+  // pie de la hoja lo dice.
+  const gain = useMemo(() => (signal ? suggestGain(signal) : { limb: MM_PER_MV, chest: MM_PER_MV }), [signal]);
+
   // El orden de las opciones se calcula una vez por caso: si se recalculara en
   // cada render, se reacomodarían solas al responder.
   const options = useMemo(() => shuffledOptions(c), [c]);
@@ -270,9 +292,9 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
         <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
           <Check className="w-7 h-7 text-emerald-400" />
         </div>
-        <h2 className="font-display text-2xl text-slate-100">{L.done[lang]}</h2>
+        <h2 className="font-display text-2xl text-slate-100">{L.done[lang](CASES.length)}</h2>
         <p className="text-3xl font-mono text-indigo-300">{score} / {CASES.length}</p>
-        <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">{L.doneSub[lang]}</p>
+        <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">{L.doneSub[lang](CASES.length)}</p>
         <p className="text-[11px] text-slate-600 max-w-md mx-auto leading-relaxed">
           <a href={SOURCE.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
             {SOURCE.citation}
@@ -348,6 +370,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
           highlight={answered ? c.highlight : []}
           lang={lang}
           onLeadClick={setZoomLead}
+          gain={gain}
         />
       ) : (
         <div className="rounded-2xl border border-slate-800 bg-slate-950 flex items-center justify-center"
@@ -398,7 +421,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
             )}
           </div>
 
-          <Measured q={measured} metrics={c.metrics} lang={lang} />
+          <Measured q={measured} metrics={c.metrics} lang={lang} gain={gain} />
 
           <Block icon={Activity} tone="indigo" title={L.why[lang]} text={c.explain[lang]} />
           <Block icon={AlertTriangle} tone="amber" title={L.pitfall[lang]} text={c.pitfall[lang]} />
@@ -412,7 +435,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
       )}
 
       {zoomLead && signal && (
-        <LeadZoom signal={signal} lead={zoomLead} theme={theme} lang={lang} onClose={() => setZoomLead(null)} />
+        <LeadZoom signal={signal} lead={zoomLead} theme={theme} lang={lang} gain={gain} onClose={() => setZoomLead(null)} />
       )}
     </div>
   );

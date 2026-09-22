@@ -68,6 +68,11 @@ export const RECORDS = {
       + 'anteriore ischämie oder linksbelastung laterale ischämie oder linksbelastung inferolaterale '
       + 'ischämie oder linksbelastung',
   },
+  14219: {
+    age: 78, sex: 'F', scp: ['CLBBB'],
+    report: 'sinusrhythmus llt vollstaendiger linksschenkelblock st-hebung in v1-v3 '
+      + 't-veraenderungen pathologisches ekg',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -75,4 +80,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '595'];

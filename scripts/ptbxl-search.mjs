@@ -102,11 +102,28 @@ for (const r of aMedir) {
     q = measure(decodeRecord(prepareRecord(await fetchRecord(r.id))));
   } catch (e) { continue; }
 
-  // Descartes de legibilidad, antes de mirar los hallazgos. Un QRS fuera de
-  // rango casi siempre significa que la detección falló, y entonces ninguna de
-  // las otras mediciones de ese registro es confiable.
-  if (!(q.qrsMs >= 50 && q.qrsMs <= 130)) continue;
+  // Descartes de confiabilidad, antes de mirar los hallazgos. Un QRS fuera de
+  // este rango casi siempre significa que la detección falló, y entonces
+  // ninguna de las otras mediciones de ese registro sirve.
+  //
+  // El rango es amplio a propósito. Un bloqueo de rama tiene el QRS ancho POR
+  // DEFINICIÓN —de los registros de rama izquierda de la base, el 60% pasa los
+  // 130 ms—, así que un filtro angosto acá descartaría justo los casos más
+  // típicos de lo que se está buscando. Quién quiere un QRS ancho y cuánto es
+  // asunto del `findings` del caso, con la regla qrsMs; esto sólo saca lo que no
+  // se puede medir.
+  if (!(q.qrsMs >= 50 && q.qrsMs <= 200)) continue;
   if (q.noise > 0.20) continue;
+
+  // Y el descarte que hay que hacer ANTES que cualquier otro: que se hayan
+  // detectado latidos suficientes. Si el detector encuentra dos o tres, todas
+  // las mediciones siguen saliendo —una frecuencia, un ST, un ruido— pero
+  // ninguna significa nada. El ruido incluso sale CERO, porque se calcula
+  // comparando latidos entre sí y no hay con qué comparar, y entonces el
+  // registro roto encabeza el ranking como si fuera el más limpio de todos.
+  // Pasó: un registro con frecuencia medida de 17 lpm salió primero.
+  if (q.beats.length < 6) continue;
+  if (q.hr < 30 || q.hr > 220) continue;
 
   const reglas = checkFindings(q, findings);
   if (!reglas.every((x) => x.ok)) continue;

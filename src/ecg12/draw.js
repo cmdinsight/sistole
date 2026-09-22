@@ -44,6 +44,57 @@ export const THEMES = {
   },
 };
 
+const LIMB = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'];
+
+/** Mayor excursión respecto de la línea de base, en mV, entre las derivaciones dadas. */
+function excursion(signal, leads) {
+  let peor = 0;
+  for (const l of leads) {
+    const datos = signal.leads[l];
+    if (!datos) continue;
+    // Referencia por mediana y no por promedio: una deriva de la línea de base
+    // corre el promedio y haría bajar la ganancia sin que haga falta.
+    const orden = Array.from(datos).sort((a, b) => a - b);
+    const centro = orden[orden.length >> 1];
+    peor = Math.max(peor, Math.abs(orden[0] - centro), Math.abs(orden[orden.length - 1] - centro));
+  }
+  return peor;
+}
+
+/**
+ * Elige la ganancia con que conviene dibujar un registro, por grupo.
+ *
+ * Cada fila del formato 3×4 tiene 17 mm arriba y 17 abajo de la línea de base. A
+ * 10 mm/mV eso alcanza para 1,7 mV, y hay electros reales que se pasan: un
+ * bloqueo de rama izquierda llega con frecuencia a 4 o 5 mV, y a ganancia
+ * estándar se mete en la fila de al lado hasta volverse ilegible.
+ *
+ * La solución es la de cualquier electrocardiógrafo: bajar a media ganancia,
+ * 5 mm/mV, y ESCRIBIRLO en el pie de la hoja. No es una licencia nuestra, es la
+ * convención.
+ *
+ * Y se baja POR GRUPO, que es el detalle que importa. El voltaje grande casi
+ * siempre está en las precordiales, porque el electrodo se apoya sobre el
+ * tórax; las de los miembros miden desde los brazos y las piernas y son mucho
+ * más chicas. Bajar la hoja entera arreglaría las precordiales y dejaría las de
+ * los miembros como una línea recta — probado, y en un bloqueo de rama eso borra
+ * justo la mitad del hallazgo, porque la discordancia se ve en I y aVL tanto
+ * como en V1 y V2.
+ */
+export function suggestGain(signal) {
+  const limite = 3.0;   // por debajo, la superposición parcial se lee bien igual
+  return {
+    limb: excursion(signal, LIMB) > limite ? 5 : MM_PER_MV,
+    chest: excursion(signal, ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']) > limite ? 5 : MM_PER_MV,
+  };
+}
+
+/** Acepta un número (una sola ganancia) o {limb, chest}. */
+function gainFor(gain, lead) {
+  if (typeof gain === 'number') return gain;
+  return (LIMB.includes(lead) ? gain.limb : gain.chest) ?? MM_PER_MV;
+}
+
 /** Tamaño de la hoja en milímetros para una configuración dada. */
 export function sheetSize({ singleRow = false, rhythmLead = 'II' } = {}) {
   const gridRows = singleRow ? 0 : LAYOUT_3x4.length;
@@ -65,7 +116,7 @@ export function sheetSize({ singleRow = false, rhythmLead = 'II' } = {}) {
  * @param {number} o.cssW  ancho del canvas en píxeles CSS
  * @returns {{lead:string,x:number,y:number,w:number,h:number}[]}
  */
-export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II', highlight = [], singleRow = false }) {
+export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II', highlight = [], singleRow = false, gain = MM_PER_MV }) {
   const t = THEMES[theme] || THEMES.paper;
   const { gridRows, rowMm, w: totalW, h: totalH } = sheetSize({ singleRow, rhythmLead });
   const cssH = (cssW * totalH) / totalW;
@@ -98,6 +149,7 @@ export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II',
   const plot = (lead, xStartMm, yBaseMm, fromSec, toSec, widthMm) => {
     const data = signal.leads[lead];
     if (!data) return;
+    const g = gainFor(gain, lead);
     const fs = signal.fs;
     const i0 = Math.max(0, Math.round(fromSec * fs));
     const i1 = Math.min(data.length, Math.round(toSec * fs));
@@ -117,7 +169,7 @@ export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II',
     ctx.lineCap = 'round';
     for (let i = i0; i < i1; i++) {
       const x = px(xStartMm + ((i - i0) / fs) * MM_PER_SEC);
-      const y = px(yBaseMm - data[i] * MM_PER_MV);
+      const y = px(yBaseMm - data[i] * g);
       if (i === i0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
@@ -130,13 +182,15 @@ export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II',
     boxes.push({ lead, x: px(xStartMm), y: px(yBaseMm - rowMm / 2), w: px(widthMm), h: px(rowMm) });
   };
 
-  // ── Pulso de calibración: 1 mV = 10 mm de alto, 0,2 s de ancho ──
-  const calibration = (yBaseMm) => {
+  // ── Pulso de calibración: 1 mV de alto, 0,2 s de ancho ──
+  // Alto = la ganancia vigente. A media ganancia el pulso mide la mitad, y ese
+  // escalón más bajo es la señal con que el equipo avisa del cambio de escala.
+  const calibration = (yBaseMm, g = gainFor(gain, 'II')) => {
     ctx.beginPath();
     ctx.strokeStyle = t.trace;
     ctx.lineWidth = Math.max(1, px(0.32));
     const x0 = px(PAD_MM.left - CAL_MM - 1.5), x1 = px(PAD_MM.left - 1.5);
-    const yb = px(yBaseMm), yt = px(yBaseMm - MM_PER_MV);
+    const yb = px(yBaseMm), yt = px(yBaseMm - g);
     ctx.moveTo(x0, yb);
     ctx.lineTo(x0 + px(1), yb); ctx.lineTo(x0 + px(1), yt);
     ctx.lineTo(x1 - px(1), yt); ctx.lineTo(x1 - px(1), yb);
@@ -159,14 +213,23 @@ export function drawEcg(ctx, { signal, cssW, theme = 'paper', rhythmLead = 'II',
   // ── Tira de ritmo: la derivación elegida, los 10 s completos ──
   if (rhythmLead) {
     const yBase = PAD_MM.top + gridRows * rowMm + rowMm / 2;
-    calibration(yBase);
+    // Acá el pulso va con la ganancia de la derivación que se está mostrando: al
+    // ampliar una precordial, la tira es esa precordial y no una de los miembros.
+    calibration(yBase, gainFor(gain, rhythmLead));
     plot(rhythmLead, PAD_MM.left, yBase, 0, signal.duration || 10, 4 * COL_SECONDS * MM_PER_SEC);
   }
 
   // ── Pie con la calibración, como lo imprime cualquier equipo ──
   ctx.fillStyle = t.label;
   ctx.font = `${px(2.6).toFixed(1)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-  ctx.fillText('25 mm/s    10 mm/mV', px(PAD_MM.left), cssH - px(1.2));
+  // El pie dice la escala, y dice las dos si son distintas. Un electro sin la
+  // escala escrita no se puede medir, y uno con la escala equivocada se mide mal,
+  // que es peor.
+  const gLimb = gainFor(gain, 'II'), gChest = gainFor(gain, 'V2');
+  const escala = gLimb === gChest ? `${gLimb} mm/mV`
+    : singleRow ? `${gainFor(gain, rhythmLead)} mm/mV`
+    : `${gLimb} mm/mV    V1-V6  ${gChest} mm/mV`;
+  ctx.fillText(`25 mm/s    ${escala}`, px(PAD_MM.left), cssH - px(1.2));
 
   return boxes;
 }

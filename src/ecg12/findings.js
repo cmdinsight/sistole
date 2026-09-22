@@ -84,6 +84,34 @@ const REGLAS = {
     fallos: q.r[b] <= q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
     margen: q.r[a] - q.r[b],
   }),
+  // Relación entre el desnivel del ST y la profundidad de la S, en las
+  // derivaciones donde el QRS es negativo. Es el criterio con que hoy se busca
+  // un infarto ESCONDIDO detrás de un bloqueo de rama izquierda (Sgarbossa
+  // modificado, Smith 2012).
+  //
+  // El razonamiento: un bloqueo de rama por sí solo eleva el ST de forma
+  // PROPORCIONAL al tamaño del complejo — cuanto más profunda la S, más elevado
+  // el ST, y la relación se mantiene alrededor de 0,15-0,20. Cuando esa
+  // proporción se rompe y el ST sube por encima del 25% de la S, la elevación ya
+  // no la explica el bloqueo y hay que pensar en oclusión.
+  //
+  // Por eso mirar sólo los milímetros no alcanza: 5 mm de elevación sobre una S
+  // de 30 mm son esperables, y 3 mm sobre una S de 8 mm no lo son.
+  stToSRatio: ({ leads, max }, q) => ({
+    label: `el ST es menos del ${Math.round(max * 100)}% de la S en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => Math.abs(q.st[l]) > Math.abs(q.s[l]) * max)
+                 .map((l) => `${l}=${(Math.abs(q.st[l]) / Math.abs(q.s[l]) * 100).toFixed(0)}%`),
+    margen: Math.min(...leads.map((l) => max - Math.abs(q.st[l]) / Math.abs(q.s[l]))),
+  }),
+
+  // Ancho del QRS en milisegundos. Es EL hallazgo de los bloqueos de rama: por
+  // encima de 120 ms el ventrículo ya no se despolarizó por el sistema de
+  // conducción sino de músculo en músculo, que es más lento.
+  qrsMs: ([lo, hi], q) => ({
+    label: `QRS entre ${lo} y ${hi} ms`,
+    fallos: q.qrsMs >= lo && q.qrsMs <= hi ? [] : [`${q.qrsMs.toFixed(0)} ms`],
+    margen: Math.min(q.qrsMs - lo, hi - q.qrsMs) / 400,
+  }),
   rate: ([lo, hi], q) => ({
     label: `frecuencia entre ${lo} y ${hi} lpm`,
     fallos: q.hr >= lo && q.hr <= hi ? [] : [`${q.hr.toFixed(0)} lpm`],

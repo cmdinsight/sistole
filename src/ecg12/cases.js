@@ -338,6 +338,57 @@ export const CASES = [
   },
 
   {
+    id: 'lbbb',
+    record: '14219',
+    age: 78, sex: 'F',
+    vitals: { bp: '142/86', spo2: 96, rr: 18 },
+    highlight: ['V1', 'V2', 'V3', 'I', 'aVL', 'V5', 'V6'],
+    answer: 'brizq',
+    metrics: { kind: 'st', leads: ['V1', 'V2', 'V3', 'I', 'aVL', 'V5', 'V6'] },
+    // Medido: QRS 128 ms. V1 +343, V2 +498, V3 +348 µV con S de 1651, 2259 y
+    // 1631 µV — el ST es el 21%, el 22% y el 21% de la S. I −231, aVL −182,
+    // V5 −211, V6 −226 µV, con T invertida en las cuatro.
+    findings: {
+      qrsMs: [120, 160],
+      rsPattern: ['V1', 'V2', 'V3'],
+      stElevation: { leads: ['V1', 'V2', 'V3'], min: 0.20 },
+      tUpright: { leads: ['V1', 'V2', 'V3'], min: 0.30 },
+      stDepression: { leads: ['I', 'aVL', 'V5', 'V6'], min: 0.12 },
+      tInversion: { leads: ['I', 'aVL', 'V5', 'V6'], min: 0.15 },
+      dominantR: ['V5', 'V6'],
+      stToSRatio: { leads: ['V1', 'V2', 'V3'], max: 0.25 },
+      rate: [70, 92],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 78 años con dolor torácico opresivo de una hora. En la guardia miran el electro, ven la elevación del ST en V1, V2 y V3, y activan la sala de hemodinamia por un infarto anterior.',
+      en: '78-year-old woman with one hour of crushing chest pain. In the emergency department they look at the ECG, see the ST elevation in V1, V2 and V3, and activate the cath lab for an anterior infarction.',
+      pt: 'Mulher de 78 anos com dor torácica opressiva há uma hora. No pronto-socorro veem o ECG, notam a elevação do ST em V1, V2 e V3 e acionam a hemodinâmica por um infarto anterior.',
+    },
+    options: [
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'anterior', label: { es: 'IAM anterior con supradesnivel', en: 'Anterior STEMI', pt: 'IAM anterior com supradesnivelamento' } },
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'LV hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'marcapasos', label: { es: 'Ritmo de marcapasos', en: 'Paced rhythm', pt: 'Ritmo de marca-passo' } },
+    ],
+    explain: {
+      es: 'Mirá el ancho antes que la altura. El QRS dura 128 ms, y por encima de 120 el ventrículo izquierdo ya no se despolarizó por su rama sino de músculo en músculo, desde el derecho. Eso solo cambia las reglas de todo lo que viene después. Cuando la despolarización es anormal, la repolarización también lo es, y el ST y la T terminan apuntando al lado CONTRARIO del QRS. Se llama discordancia y está en las dos direcciones: en V1 a V3, donde el QRS es una S profunda, el ST sube y la T es positiva; en I, aVL, V5 y V6, donde el QRS es una R ancha, el ST baja y la T se invierte. Un infarto anterior no hace eso: eleva el ST donde mira la zona dañada y deja el resto sin la imagen opuesta sistemática.',
+      en: 'Look at the width before the height. The QRS lasts 128 ms, and above 120 the left ventricle is no longer depolarized through its own branch but muscle to muscle, from the right. That alone changes the rules for everything that follows. When depolarization is abnormal, so is repolarization, and the ST and T end up pointing the OPPOSITE way to the QRS. It is called discordance, and it runs in both directions: in V1 to V3, where the QRS is a deep S, the ST rises and the T is upright; in I, aVL, V5 and V6, where the QRS is a broad R, the ST falls and the T inverts. An anterior infarct does not do that: it elevates the ST where the leads face the damaged wall and leaves the rest without that systematic mirror.',
+      pt: 'Olhe a largura antes da altura. O QRS dura 128 ms, e acima de 120 o ventrículo esquerdo já não se despolarizou pelo seu ramo, mas de músculo em músculo, a partir do direito. Isso por si só muda as regras de tudo o que vem depois. Quando a despolarização é anormal, a repolarização também é, e o ST e a T acabam apontando para o lado CONTRÁRIO do QRS. Chama-se discordância e ocorre nas duas direções: em V1 a V3, onde o QRS é uma S profunda, o ST sobe e a T é positiva; em I, aVL, V5 e V6, onde o QRS é uma R larga, o ST desce e a T se inverte. Um infarto anterior não faz isso: eleva o ST onde as derivações olham a parede lesada e deixa o resto sem essa imagem oposta sistemática.',
+    },
+    pitfall: {
+      es: 'El bloqueo de rama no impide diagnosticar un infarto: impide diagnosticarlo contando milímetros. Lo que se mide es la PROPORCIÓN, porque el bloqueo eleva el ST en proporción al tamaño del complejo. Acá la S de V2 baja unos 22 mm y el ST sube 5: el 22%. Por debajo del 25% la elevación la explica el bloqueo solo; por encima de ese umbral, no, y hay que pensar en oclusión. Lo mismo vale para el otro indicio: un descenso del ST en V1-V3, donde el QRS es negativo y el ST debería subir, es una discordancia rota y no la explica el bloqueo. Por eso 5 mm de elevación sobre una S enorme son esperables y 3 mm sobre una S chica no lo son.',
+      en: 'A bundle branch block does not prevent diagnosing infarction: it prevents diagnosing it by counting millimetres. What you measure is the PROPORTION, because the block elevates the ST in proportion to the size of the complex. Here the S in V2 drops about 22 mm and the ST rises 5: 22%. Below 25% the elevation is explained by the block alone; above that threshold it is not, and you should think of occlusion. The same goes for the other clue: ST depression in V1-V3, where the QRS is negative and the ST should rise, is broken discordance and the block does not explain it. That is why 5 mm of elevation over a huge S is expected and 3 mm over a small S is not.',
+      pt: 'O bloqueio de ramo não impede diagnosticar um infarto: impede diagnosticá-lo contando milímetros. O que se mede é a PROPORÇÃO, porque o bloqueio eleva o ST proporcionalmente ao tamanho do complexo. Aqui a S de V2 desce cerca de 22 mm e o ST sobe 5: 22%. Abaixo de 25% a elevação é explicada apenas pelo bloqueio; acima desse limiar, não, e deve-se pensar em oclusão. O mesmo vale para o outro indício: um infradesnivelamento em V1-V3, onde o QRS é negativo e o ST deveria subir, é uma discordância rompida que o bloqueio não explica. Por isso 5 mm de elevação sobre uma S enorme são esperáveis e 3 mm sobre uma S pequena não são.',
+    },
+    action: {
+      es: 'El electro no descarta el infarto, y el dolor sigue siendo dolor: la paciente necesita troponinas seriadas, antiagregación y un electro repetido. Lo que cambia la decisión es un dato que no está en el trazado: si este bloqueo es nuevo. Buscá un electro previo antes que cualquier otra cosa. Si el bloqueo ya estaba y la proporción del ST es la esperable, no hay indicación de hemodinamia por el electro solo; si es nuevo y el cuadro clínico acompaña, se maneja como un síndrome coronario de alto riesgo.',
+      en: 'The ECG does not rule out infarction, and the pain is still pain: she needs serial troponins, antiplatelet therapy and a repeat ECG. What changes the decision is a piece of information that is not in the tracing: whether this block is new. Find a previous ECG before anything else. If the block was already there and the ST proportion is as expected, the ECG alone does not indicate the cath lab; if it is new and the clinical picture fits, manage it as a high-risk acute coronary syndrome.',
+      pt: 'O ECG não afasta o infarto, e a dor continua sendo dor: a paciente precisa de troponinas seriadas, antiagregação e ECG repetido. O que muda a decisão é um dado que não está no traçado: se este bloqueio é novo. Procure um ECG anterior antes de qualquer outra coisa. Se o bloqueio já existia e a proporção do ST é a esperada, o ECG sozinho não indica hemodinâmica; se é novo e o quadro clínico acompanha, trata-se como síndrome coronariana de alto risco.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',
