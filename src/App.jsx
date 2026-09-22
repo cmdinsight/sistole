@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
-import { Play, Pause, Heart, RotateCcw, BookOpen, Brain, Check, X, Activity, ChevronRight, Stethoscope, AlertTriangle, User, Shuffle, List, Volume2, VolumeX, Zap } from 'lucide-react';
+import { Play, Pause, Heart, RotateCcw, BookOpen, Brain, Check, X, Activity, ChevronRight, Stethoscope, AlertTriangle, User, Shuffle, List, Volume2, VolumeX, Zap, HeartPulse } from 'lucide-react';
+
+// La sección de 12 derivaciones se carga aparte: trae su propio renderizador y
+// el contenido clínico de los casos, y sólo hace falta si el usuario entra ahí.
+const TwelveLeadSection = React.lazy(() => import('./ecg12/Section.jsx'));
 
 // ═══════════════════════════════════════════════════════════════
 // CLINICAL CASES (inlined — 24 casos trilingüe)
@@ -301,7 +305,7 @@ for (const [cat,keys] of Object.entries(CATEGORIES)) for (const k of keys) RHYTH
 const T = {
   es:{
     appTitle:'Sístole',appSubtitle:'Simulador de ritmos cardíacos',
-    quiz:'Quiz',reference:'Referencia',cases:'Casos',simulator:'Simulador',
+    quiz:'Quiz',reference:'Referencia',cases:'Casos',simulator:'Simulador',twelve:'12 derivaciones',
     score:'Puntaje',streak:'Racha',accuracy:'Precisión',
     start:'Comenzar',stop:'Detener',next:'Siguiente',
     correct:'Correcto',incorrect:'Incorrecto',
@@ -357,7 +361,7 @@ const T = {
   },
   en:{
     appTitle:'Sístole',appSubtitle:'Cardiac rhythm simulator',
-    quiz:'Quiz',reference:'Reference',cases:'Cases',simulator:'Simulator',
+    quiz:'Quiz',reference:'Reference',cases:'Cases',simulator:'Simulator',twelve:'12-lead ECG',
     score:'Score',streak:'Streak',accuracy:'Accuracy',
     start:'Start',stop:'Stop',next:'Next',
     correct:'Correct',incorrect:'Incorrect',
@@ -414,7 +418,7 @@ const T = {
   },
   pt:{
     appTitle:'Sístole',appSubtitle:'Simulador de ritmos cardíacos',
-    quiz:'Quiz',reference:'Referência',cases:'Casos',simulator:'Simulador',
+    quiz:'Quiz',reference:'Referência',cases:'Casos',simulator:'Simulador',twelve:'12 derivações',
     score:'Pontuação',streak:'Sequência',accuracy:'Precisão',
     start:'Iniciar',stop:'Parar',next:'Próximo',
     correct:'Correto',incorrect:'Incorreto',
@@ -778,6 +782,12 @@ const deleteAccount=(email)=>{
   }catch(e){}
 };
 
+// El correo de recuperación apunta a /?reset=<token>. Se lee una sola vez al cargar
+// y se limpia de la barra de direcciones en cuanto se usa, para que el token no quede
+// en el historial ni se reenvíe como referer.
+const readResetToken=()=>{try{return new URLSearchParams(window.location.search).get('reset')||'';}catch(e){return '';}};
+const clearResetTokenFromUrl=()=>{try{const u=new URL(window.location.href);u.searchParams.delete('reset');window.history.replaceState({},'',u.pathname+u.search+u.hash);}catch(e){}};
+
 // ── Cliente de la API de cuentas (backend en /api, Postgres en Neon) ──
 async function apiJson(url,opts){
   const r=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...opts});
@@ -854,6 +864,29 @@ function useUser(){
     }catch(e){}
   },[]);
 
+  // Pide el correo de recuperación. La respuesta es siempre la misma exista o no la
+  // cuenta (el servidor no distingue, a propósito), así que acá tampoco se interpreta.
+  const requestPasswordReset=useCallback(async({email,lang})=>{
+    setAuthBusy(true);setAuthError('');
+    try{
+      await apiJson('/api/auth/forgot',{method:'POST',body:JSON.stringify({email,lang})});
+      return true;
+    }catch(e){setAuthError(e.message);return false;}
+    finally{setAuthBusy(false);}
+  },[]);
+
+  // Cambia la contraseña con el token del correo y deja la sesión abierta.
+  const resetPassword=useCallback(async({token,password})=>{
+    setAuthBusy(true);setAuthError('');
+    try{
+      const res=await apiJson('/api/auth/reset',{method:'POST',body:JSON.stringify({token,password})});
+      if(res.data) seedAccountStorage(res.user.email,res.data);
+      setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
+      return true;
+    }catch(e){setAuthError(e.message);return false;}
+    finally{setAuthBusy(false);}
+  },[]);
+
   const logoutUser=useCallback(()=>{
     apiJson('/api/auth/logout',{method:'POST'}).catch(()=>{});
     setActiveAccount(null);
@@ -865,10 +898,10 @@ function useUser(){
     setAccounts(loadAccounts());
   },[]);
 
-  return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount};
+  return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword};
 }
 
-function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,clearAuthError}){
+function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,authError,clearAuthError}){
   const list=Object.values(accounts||{}).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
   const [tab,setTab]=useState(list.length>0?'login':'signup');
   // signup
@@ -880,6 +913,9 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
   const [loginEmail,setLoginEmail]=useState('');
   const [loginPassword,setLoginPassword]=useState('');
   const [errors,setErrors]=useState({});
+  // olvidé mi contraseña
+  const [forgotEmail,setForgotEmail]=useState('');
+  const [forgotSent,setForgotSent]=useState(false);
 
   const L={
     title:{es:'Sístole',en:'Sístole',pt:'Sístole'},
@@ -906,6 +942,14 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
     passwordLabel:{es:'Contraseña',en:'Password',pt:'Senha'},
     passwordErr:{es:'La contraseña debe tener al menos 8 caracteres',en:'Password must be at least 8 characters',pt:'A senha deve ter pelo menos 8 caracteres'},
     working:{es:'Un momento…',en:'One moment…',pt:'Um momento…'},
+    forgotLink:{es:'¿Olvidaste tu contraseña?',en:'Forgot your password?',pt:'Esqueceu sua senha?'},
+    forgotTitle:{es:'Recuperar contraseña',en:'Reset password',pt:'Recuperar senha'},
+    forgotIntro:{es:'Escribí el correo de tu cuenta y te mandamos un enlace para elegir una contraseña nueva.',en:"Enter your account email and we'll send you a link to choose a new password.",pt:'Digite o e-mail da sua conta e enviaremos um link para escolher uma nova senha.'},
+    forgotSend:{es:'Enviarme el enlace →',en:'Send me the link →',pt:'Enviar o link →'},
+    forgotBack:{es:'← Volver a iniciar sesión',en:'← Back to sign in',pt:'← Voltar para entrar'},
+    forgotDoneTitle:{es:'Revisá tu correo',en:'Check your email',pt:'Confira seu e-mail'},
+    forgotDone:{es:'Si hay una cuenta con ese correo, en un momento te llega el enlace. Vence en una hora.',en:'If an account exists with that email, the link is on its way. It expires in one hour.',pt:'Se existir uma conta com esse e-mail, o link chegará em instantes. Expira em uma hora.'},
+    forgotSpam:{es:'No lo ves? Mirá en spam o correo no deseado.',en:"Don't see it? Check your spam folder.",pt:'Não encontrou? Veja na pasta de spam.'},
   };
   const roleIcon=r=>r==='medico'?'🩺':r==='estudiante'?'📚':'🏥';
   const roleName=r=>r==='medico'?L.medico[lang]:r==='estudiante'?L.estudiante[lang]:L.otro[lang];
@@ -918,6 +962,12 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
     if(password.length<8) e.password=true;
     if(Object.keys(e).length){setErrors(e);return;}
     onSignup({name:name.trim(),email:email.trim().toLowerCase(),password,role});
+  };
+  const doForgot=async()=>{
+    const target=forgotEmail.trim().toLowerCase();
+    if(!validEmail(target)){setErrors({forgotEmail:true});return;}
+    const ok=await onForgot({email:target,lang});
+    if(ok) setForgotSent(true);
   };
   const doLogin=()=>{
     const target=loginEmail.trim().toLowerCase();
@@ -944,7 +994,7 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
         </div>
 
         {/* Pestañas */}
-        <div className="flex gap-1 p-1 bg-slate-900/70 border border-slate-800 rounded-xl mb-4">
+        <div className={`${tab==='forgot'?'hidden':'flex'} gap-1 p-1 bg-slate-900/70 border border-slate-800 rounded-xl mb-4`}>
           <button onClick={()=>{setTab('login');setErrors({});clearAuthError&&clearAuthError();}}
             className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${tab==='login'?'bg-slate-800 text-indigo-300':'text-slate-500 hover:text-slate-300'}`}>
             {L.tabLogin[lang]}
@@ -957,7 +1007,45 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
 
         <div className="bg-slate-950/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl">
 
-          {tab==='login'?(
+          {tab==='forgot'?(
+            <>
+              {forgotSent?(
+                <div className="text-center py-2 space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                    <Check className="w-6 h-6 text-emerald-400"/>
+                  </div>
+                  <h2 className="text-slate-100 font-bold">{L.forgotDoneTitle[lang]}</h2>
+                  <p className="text-slate-400 text-sm leading-relaxed">{L.forgotDone[lang]}</p>
+                  <p className="text-slate-600 text-xs">{L.forgotSpam[lang]}</p>
+                </div>
+              ):(
+                <>
+                  <div className="text-center space-y-1.5">
+                    <h2 className="text-slate-100 font-bold">{L.forgotTitle[lang]}</h2>
+                    <p className="text-slate-400 text-sm leading-relaxed">{L.forgotIntro[lang]}</p>
+                  </div>
+                  <div>
+                    <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.emailLabel[lang]}</label>
+                    <input type="email" value={forgotEmail}
+                      onChange={e=>{setForgotEmail(e.target.value);setErrors({});}}
+                      onKeyDown={e=>e.key==='Enter'&&doForgot()}
+                      placeholder="correo@ejemplo.com"
+                      className={inputCls(errors.forgotEmail)}/>
+                    {errors.forgotEmail&&<p className="text-rose-400 text-xs mt-1">{L.emailErr[lang]}</p>}
+                  </div>
+                  {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
+                  <button onClick={doForgot} disabled={authBusy}
+                    className="w-full py-3.5 rounded-xl bg-indigo-700 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+                    {authBusy?L.working[lang]:L.forgotSend[lang]}
+                  </button>
+                </>
+              )}
+              <button onClick={()=>{setTab('login');setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
+                className="w-full text-center text-xs text-slate-500 hover:text-indigo-300 transition-colors pt-1">
+                {L.forgotBack[lang]}
+              </button>
+            </>
+          ):tab==='login'?(
             <>
               {list.length>0&&(
                 <div>
@@ -1000,6 +1088,10 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
                   onKeyDown={e=>e.key==='Enter'&&doLogin()}
                   placeholder="••••••••"
                   className={inputCls(errors.loginPassword)}/>
+                <button onClick={()=>{setTab('forgot');setForgotEmail(loginEmail);setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
+                  className="mt-2 text-xs text-slate-500 hover:text-indigo-300 transition-colors">
+                  {L.forgotLink[lang]}
+                </button>
               </div>
 
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
@@ -1057,6 +1149,90 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,authBusy,authError,cl
           )}
 
           <p className="text-center text-slate-600 text-xs leading-relaxed pt-1">{L.privacy[lang]}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Pantalla de contraseña nueva. Se muestra cuando la URL trae ?reset=<token>,
+// esté o no la sesión iniciada: el enlace del correo tiene que funcionar igual.
+function ResetPasswordScreen({lang,token,onReset,onDone,authBusy,authError,clearAuthError}){
+  const [password,setPassword]=useState('');
+  const [confirm,setConfirm]=useState('');
+  const [errors,setErrors]=useState({});
+
+  const L={
+    title:{es:'Elegí una contraseña nueva',en:'Choose a new password',pt:'Escolha uma nova senha'},
+    sub:{es:'Al guardarla se cierran las sesiones abiertas en otros dispositivos.',en:'Saving it will sign you out on any other devices.',pt:'Ao salvar, as sessões abertas em outros dispositivos serão encerradas.'},
+    passwordLabel:{es:'Contraseña nueva',en:'New password',pt:'Nova senha'},
+    confirmLabel:{es:'Repetila',en:'Repeat it',pt:'Repita'},
+    passwordErr:{es:'La contraseña debe tener al menos 8 caracteres',en:'Password must be at least 8 characters',pt:'A senha deve ter pelo menos 8 caracteres'},
+    confirmErr:{es:'Las contraseñas no coinciden',en:"Passwords don't match",pt:'As senhas não coincidem'},
+    submit:{es:'Guardar y entrar →',en:'Save and sign in →',pt:'Salvar e entrar →'},
+    cancel:{es:'Cancelar',en:'Cancel',pt:'Cancelar'},
+    working:{es:'Un momento…',en:'One moment…',pt:'Um momento…'},
+  };
+
+  const inputCls=(bad)=>`w-full px-4 py-3 rounded-xl bg-slate-900 border ${bad?'border-rose-500/60':'border-slate-700'} text-slate-100 placeholder-slate-600 text-sm outline-none focus:border-indigo-500/60 transition-colors`;
+
+  const submit=async()=>{
+    const e={};
+    if(password.length<8) e.password=true;
+    if(password!==confirm) e.confirm=true;
+    if(Object.keys(e).length){setErrors(e);return;}
+    const ok=await onReset({token,password});
+    // Pase lo que pase, el token sale de la URL: si funcionó ya se gastó, y si no,
+    // recargar la página no tiene por qué reintentarlo solo.
+    if(ok) onDone();
+  };
+
+  return(
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto" style={{background:'radial-gradient(ellipse at top,#0f1a26 0%,#03060c 100%)'}}>
+      <div className="w-full max-w-md my-auto py-6">
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-indigo-400"/>
+            </div>
+          </div>
+          <h1 className="font-display text-4xl text-slate-100 mb-1">Sístole</h1>
+        </div>
+
+        <div className="bg-slate-950/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+          <div className="text-center space-y-1.5">
+            <h2 className="text-slate-100 font-bold">{L.title[lang]}</h2>
+            <p className="text-slate-500 text-xs leading-relaxed">{L.sub[lang]}</p>
+          </div>
+
+          <div>
+            <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.passwordLabel[lang]}</label>
+            <input type="password" value={password}
+              onChange={e=>{setPassword(e.target.value);setErrors({});clearAuthError&&clearAuthError();}}
+              placeholder="••••••••" className={inputCls(errors.password)}/>
+            {errors.password&&<p className="text-rose-400 text-xs mt-1">{L.passwordErr[lang]}</p>}
+          </div>
+
+          <div>
+            <label className="font-mono text-[11px] text-slate-500 uppercase tracking-widest block mb-1.5">{L.confirmLabel[lang]}</label>
+            <input type="password" value={confirm}
+              onChange={e=>{setConfirm(e.target.value);setErrors({});clearAuthError&&clearAuthError();}}
+              onKeyDown={e=>e.key==='Enter'&&submit()}
+              placeholder="••••••••" className={inputCls(errors.confirm)}/>
+            {errors.confirm&&<p className="text-rose-400 text-xs mt-1">{L.confirmErr[lang]}</p>}
+          </div>
+
+          {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
+
+          <button onClick={submit} disabled={authBusy}
+            className="w-full py-3.5 rounded-xl bg-indigo-700 hover:bg-indigo-600 active:scale-[0.99] text-white font-bold transition-all disabled:opacity-60">
+            {authBusy?L.working[lang]:L.submit[lang]}
+          </button>
+
+          <button onClick={onDone}
+            className="w-full text-center text-xs text-slate-500 hover:text-indigo-300 transition-colors">
+            {L.cancel[lang]}
+          </button>
         </div>
       </div>
     </div>
@@ -10954,7 +11130,8 @@ export default function App() {
   const [mode,setMode]=useState('quiz');
   const t=T[lang];
   const audio=useAudio();
-  const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount}=useUser();
+  const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword}=useUser();
+  const [resetToken,setResetToken]=useState(readResetToken);
   const acctKey=user?normEmail(user.email):'guest';
   const {progress,earnXP,toasts,dismissToast,saveProgress}=useProgress(acctKey);
   const {srData,dueRhythms,updateSR,resetSR}=useSR(acctKey);
@@ -11194,7 +11371,8 @@ export default function App() {
       <Activity className="w-8 h-8 text-indigo-500/60 animate-pulse"/>
     </div>
   );
-  if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
+  if(resetToken) return <ResetPasswordScreen lang={lang} token={resetToken} onReset={resetPassword} onDone={()=>{clearResetTokenFromUrl();setResetToken('');setAuthError('');}} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
+  if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} onForgot={requestPasswordReset} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
 
   return(
     <div className="min-h-screen w-full text-slate-200" style={{fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:'radial-gradient(ellipse at top,#0f1a26 0%,#0a1420 40%,#03060c 100%)'}}>
@@ -11237,6 +11415,11 @@ export default function App() {
         {/* vuelve a ser una fila, que ya entra cómoda en pantallas más anchas. Simulador */}
         {/* va primero: es la sección más valorada y la que menos se descubría. */}
         <div className="grid grid-cols-2 sm:flex gap-1 mb-6 p-1 bg-slate-900/60 border border-slate-800/80 rounded-xl w-full">
+          <div className="col-span-2 sm:contents">
+            <TabButton active={mode==='twelve'} onClick={()=>setMode('twelve')} icon={HeartPulse} full>
+              <span className="flex items-center gap-1.5">{t.twelve}<span className="text-[10px] font-mono opacity-50 uppercase">nuevo</span></span>
+            </TabButton>
+          </div>
           <TabButton active={mode==='simulator'} onClick={()=>setMode('simulator')} icon={Zap}>
             <span className="flex items-center gap-1.5">{t.simulator}<span className="hidden sm:inline text-[10px] font-mono opacity-50 uppercase">ACLS</span></span>
           </TabButton>
@@ -11244,6 +11427,13 @@ export default function App() {
           <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
           <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
         </div>
+
+        {/* ══ 12 DERIVACIONES ══ */}
+        {mode==='twelve'&&(
+          <React.Suspense fallback={<div className="py-16 text-center text-slate-500 text-sm">…</div>}>
+            <TwelveLeadSection lang={lang} onAnswer={(right)=>earnXP(right?12:3,{quizAnswer:true,...(right?{quizCorrect:true}:{})})}/>
+          </React.Suspense>
+        )}
 
         {/* ══ QUIZ ══ */}
         {mode==='quiz'&&quizQ&&(
@@ -11657,10 +11847,10 @@ function LangToggle({lang,setLang}){
   );
 }
 
-function TabButton({active,onClick,icon:Icon,children}){
+function TabButton({active,onClick,icon:Icon,children,full}){
   return(
     <button onClick={onClick}
-      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${active?'bg-slate-800 text-indigo-300 shadow-sm':'text-slate-500 hover:text-slate-300'}`}>
+      className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${full?'w-full sm:w-auto':''} ${active?'bg-slate-800 text-indigo-300 shadow-sm':'text-slate-500 hover:text-slate-300'}`}>
       <Icon className="w-4 h-4"/>{children}
     </button>
   );
