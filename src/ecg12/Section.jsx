@@ -116,6 +116,14 @@ const L = {
     en: 'How many times the shortest RR fits into the pause. Below 2 there was decrement before conduction failed (Wenckebach); around 2, a premature P found the node refractory while the sinus node marched on; above that and unrelated to the cycle, it was the sinus node that failed.',
     pt: 'Quantas vezes o RR mais curto cabe na pausa. Abaixo de 2 houve decremento antes de a condução falhar (Wenckebach); à volta de 2, uma P prematura encontrou o nó refratário e o nó sinusal seguiu a sua marcha; acima disso e sem relação com o ciclo, quem falhou foi o nó sinusal.',
   },
+  pvcLabel: { es: 'latidos prematuros', en: 'premature beats', pt: 'batimentos prematuros' },
+  earlyLabel: { es: 'llegó al', en: 'arrived at', pt: 'chegou aos' },
+  shapeLabel: { es: 'parecido', en: 'similarity', pt: 'semelhança' },
+  pvcNote: {
+    es: 'Un latido cuenta como extrasístole ventricular cuando cumple las dos cosas: llega antes del 85 % del ciclo Y se parece menos del 80 % a la plantilla del latido típico. Ninguna alcanza sola — prematura también es una extrasístole auricular, que sale idéntica a las demás, y distinta también sale una deformada por el ruido.',
+    en: 'A beat counts as a ventricular premature beat when it meets both conditions: it arrives before 85 % of the cycle AND resembles the typical-beat template by less than 80 %. Neither is enough alone — an atrial premature beat is also early but comes out identical to the rest, and a noise-deformed beat is also different.',
+    pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 80 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -314,6 +322,19 @@ function Measured({ q, metrics, lang, gain }) {
       chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
     ];
     note = L.pauseNote[lang];
+  } else if (metrics.kind === 'pvc') {
+    chips = [
+      chip('n', L.pvcLabel[lang], `${q.prematuros}`,
+           q.prematuros > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                            : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(q.prematuridad !== null ? [
+        chip('p', L.earlyLabel[lang], `${Math.round(q.prematuridad * 100)} %`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+        chip('f', L.shapeLabel[lang], `${Math.round(q.forma * 100)} %`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      ] : []),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.pvcNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);

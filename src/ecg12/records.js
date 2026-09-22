@@ -148,6 +148,10 @@ export const RECORDS = {
     report: 'sinus rhythm. "dropped beats" due to blocked atrial premature beats. otherwise normal '
       + 'ecg, as before.',
   },
+  4647: {
+    age: 48, sex: 'M', scp: ['NORM', 'PVC'],
+    report: 'premature ventricular contraction(s). sinus rhythm. otherwise normal ecg.',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -155,4 +159,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '595'];

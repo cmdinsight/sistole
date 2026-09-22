@@ -157,6 +157,15 @@ const REGLAS = {
     margen: q.prMs === null ? -1 : Math.min(q.prMs - lo, hi - q.prMs) / 100,
   }),
 
+  // Latidos prematuros de forma distinta: extrasístoles ventriculares.
+  // Se pide un rango y no un mínimo, porque "cuántas hay" es parte del
+  // hallazgo: una es un hallazgo banal, y muchas cambian la conducta.
+  prematureBeats: ([lo, hi], q) => ({
+    label: `entre ${lo} y ${hi} latidos prematuros de forma distinta`,
+    fallos: q.prematuros >= lo && q.prematuros <= hi ? [] : [`hay ${q.prematuros}`],
+    margen: Math.min(q.prematuros - lo, hi - q.prematuros),
+  }),
+
   // La PAUSA, medida como cuántas veces el RR más corto entra en el más largo.
   // Es el número que separa las tres causas de un latido que falta, y no
   // necesita ver una sola onda P:

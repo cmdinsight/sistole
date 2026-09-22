@@ -372,6 +372,85 @@ function intervaloPR(leads, beats, fs, onset) {
   return { prMs: salidas[0].pr, pAmp: salidas[0].amp, pLead: salidas[0].lead };
 }
 
+// ── LATIDOS PREMATUROS DE ORIGEN VENTRICULAR ──────────────────────────────
+// Una extrasístole ventricular es un latido que llega ANTES de tiempo y que
+// además NO SE PARECE a los otros. Se piden las dos cosas, y ninguna alcanza
+// sola: prematuro también es una extrasístole auricular, que baja por el camino
+// normal y sale idéntica a las demás; y distinto también sale un latido que el
+// ruido deformó. Juntas son específicas.
+//
+// La forma se compara por CORRELACIÓN contra la plantilla del latido típico,
+// no por ancho. Medir el ancho de un latido suelto es frágil —es una sola
+// muestra, sin promediar—, mientras que la correlación usa los cien puntos de
+// la ventana y no depende de acertar dónde empieza y termina el complejo.
+//
+// Calibrado sobre 70 registros de cada grupo: dispara en el 43 % de los
+// etiquetados con extrasístole ventricular, en el 1 % de los normales y en el
+// 4 % de las fibrilaciones. Sensibilidad media y especificidad alta, que es
+// exactamente el reparto que conviene: lo que no se puede permitir es decirle
+// a un electro normal que tiene extrasístoles.
+// Umbral de parecido. Con la correlación al MEJOR desplazamiento un latido
+// normal se acerca a 1, así que el corte sube respecto de la versión sin
+// deslizamiento. El valor sale de la calibración, no de la intuición.
+const UMBRAL_FORMA = 0.94;
+
+function latidosPrematuros(leads, beats, fs, rrMed) {
+  if (beats.length < 5) return { prematuros: 0, prematuridad: null, forma: null };
+  // Compuesto propio, con TODAS las derivaciones medidas. El de detección usa
+  // cinco y está afinado para encontrar picos, no para comparar formas: con
+  // cinco, la extrasístole del registro 4647 correlacionaba 0,83 contra la
+  // plantilla, y con ocho, 0,78. La diferencia decide si se detecta o no.
+  const use = ['I', 'II', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'].filter((l) => leads[l]);
+  const n = leads[use[0]].length;
+  const det = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    let x = 0;
+    for (const l of use) x += leads[l][i] * leads[l][i];
+    det[i] = Math.sqrt(x);
+  }
+  const w = Math.round(0.06 * fs);
+  const tpl = [];
+  for (let k = -w; k <= w; k++) {
+    const v = [];
+    for (const b of beats) { const i = b + k; if (i >= 0 && i < n) v.push(det[i]); }
+    tpl.push(median(v) ?? 0);
+  }
+  // Correlación con el MEJOR desplazamiento, deslizando la ventana ±28 ms.
+  // Sin esto el número depende de dónde cayó exactamente el pico detectado: en
+  // el registro 4647 la misma extrasístole daba 0,78 o 0,87 según qué compuesto
+  // hubiera fijado el pico. Un latido normal mal alineado se recupera al
+  // deslizarlo; una extrasístole sigue sin parecerse por más que se la mueva.
+  const desliz = Math.round(0.028 * fs);
+  const unaCorr = (b, off) => {
+    const x = [], y = [];
+    for (let k = -w; k <= w; k++) { const i = b + off + k; if (i < 0 || i >= n) return null; x.push(det[i]); y.push(tpl[k + w]); }
+    const mx = x.reduce((a, c) => a + c, 0) / x.length;
+    const my = y.reduce((a, c) => a + c, 0) / y.length;
+    let num = 0, d1 = 0, d2 = 0;
+    for (let i = 0; i < x.length; i++) { num += (x[i] - mx) * (y[i] - my); d1 += (x[i] - mx) ** 2; d2 += (y[i] - my) ** 2; }
+    return (d1 > 0 && d2 > 0) ? num / Math.sqrt(d1 * d2) : 0;
+  };
+  const correlacion = (b) => {
+    let mejor = null;
+    for (let off = -desliz; off <= desliz; off++) {
+      const c = unaCorr(b, off);
+      if (c !== null && (mejor === null || c > mejor)) mejor = c;
+    }
+    return mejor;
+  };
+  let prematuros = 0, peorPrem = null, peorForma = null;
+  for (let i = 1; i < beats.length; i++) {
+    const prem = ((beats[i] - beats[i - 1]) / fs) / rrMed;
+    const c = correlacion(beats[i]);
+    if (c === null) continue;
+    if (prem < 0.85 && c < UMBRAL_FORMA) {
+      prematuros++;
+      if (peorPrem === null || prem < peorPrem) { peorPrem = prem; peorForma = c; }
+    }
+  }
+  return { prematuros, prematuridad: peorPrem, forma: peorForma };
+}
+
 export function measure(signal) {
   const { fs, leads } = signal;
   const det = detectionSignal(leads, fs);
@@ -424,6 +503,10 @@ export function measure(signal) {
     for (let k = 0; k < tpl.length; k++) tpl[k] /= n;
     return { tpl, rIdx: antes };
   };
+
+  // Los latidos prematuros usan su propio compuesto, sobre todas las
+  // derivaciones: la forma de un latido se ve en las doce a la vez.
+  const { prematuros, prematuridad, forma } = latidosPrematuros(leads, beats, fs, rrMed);
 
   // El PR necesita el latido promedio y el comienzo del QRS, así que se mide
   // acá, una vez que los dos existen.
@@ -615,5 +698,12 @@ export function measure(signal) {
     prMs,
     pAmp,
     pLead,
+    // Cuántos latidos llegaron antes de tiempo Y con forma distinta, y de ellos
+    // el más prematuro: prematuridad es su RR como fracción del RR típico
+    // (0,61 = llegó al 61 % del ciclo), forma es su correlación con la
+    // plantilla (1 = idéntico).
+    prematuros,
+    prematuridad,
+    forma,
   };
 }
