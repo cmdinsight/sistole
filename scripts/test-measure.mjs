@@ -122,7 +122,45 @@ console.log('\n[7] Guardar y volver a leer no cambia la medición');
         `(${['III','aVR','aVL','aVF'].map(l=>`${l}:${uv(Math.abs(before.st[l]-after.st[l]))}`).join(' ')})`);
 }
 
-console.log('\n[8] Intervalo QT');
+console.log('\n[8] Forma del segmento ST: la cubeta');
+{
+  // Un ST plano no tiene cubeta, y eso es lo primero que hay que exigirle a la
+  // medida: la primera versión medía el hundimiento contra la cuerda que va
+  // hasta el pico de la T, y como esa cuerda sube, un electro normal marcaba
+  // 124 µV de cubeta donde no había ninguna.
+  const normal = synth12({ rate: 68, fs: 250, duration: 10 });
+  const qn = measure(normal);
+  check('un ST plano no marca cubeta',
+        Math.max(qn.sag.V5, qn.sag.V6, qn.sag.II) < 0.02,
+        `(V5 ${uv(qn.sag.V5)} V6 ${uv(qn.sag.V6)} II ${uv(qn.sag.II)} µV)`);
+
+  // Y ahora una cubeta de verdad: se hunde el segmento ST, entre el final del
+  // QRS y la onda T, con una panza hacia abajo.
+  // El bache se coloca respecto de los picos R que detecta el propio medidor, y
+  // no calculando la fase del generador: así la prueba no depende de dónde
+  // synth12 ponga la R dentro del latido.
+  const conCubeta = { ...normal, leads: { ...normal.leads } };
+  const fs = normal.fs;
+  const desde = Math.round(0.05 * fs), hasta = Math.round(0.17 * fs);
+  for (const l of ['V5', 'V6']) {
+    const out = new Float32Array(normal.leads[l].length);
+    out.set(normal.leads[l]);
+    for (const r of qn.beats) {
+      for (let k = r + desde; k <= r + hasta && k < out.length; k++) {
+        const u = (k - (r + desde)) / (hasta - desde);   // 0 en el J, 1 al final del ST
+        out[k] -= 0.15 * Math.sin(Math.PI * u);          // panza hacia abajo
+      }
+    }
+    conCubeta.leads[l] = out;
+  }
+  const qc = measure(conCubeta);
+  check('hundir el ST bajo el punto J sí marca cubeta',
+        qc.sag.V5 > 0.08 && qc.sag.V6 > 0.08, `(V5 ${uv(qc.sag.V5)} V6 ${uv(qc.sag.V6)} µV)`);
+  check('y sólo en las derivaciones donde se hundió',
+        qc.sag.II < 0.02, `(II ${uv(qc.sag.II)} µV)`);
+}
+
+console.log('\n[9] Intervalo QT');
 {
   // El QT del generador no depende de la frecuencia: la T está donde está. Si el
   // medidor lo hace variar con la frecuencia, está midiendo mal.
@@ -173,7 +211,7 @@ console.log('\n[8] Intervalo QT');
         `(${Math.min(...medidos).toFixed(0)}–${Math.max(...medidos).toFixed(0)} ms)`);
 }
 
-console.log('\n[9] La ganancia del dibujo se elige sola y por grupo');
+console.log('\n[10] La ganancia del dibujo se elige sola y por grupo');
 {
   // Ningún caso publicado hoy necesita media ganancia, así que sin esta prueba
   // el mecanismo quedaría sin cubrir hasta que alguien agregue un bloqueo de

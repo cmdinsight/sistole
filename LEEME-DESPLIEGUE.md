@@ -193,6 +193,15 @@ como una línea recta. El buscador avisa qué candidatos van a caer en ese caso.
 necesaria para enseñarlos. El infarto lateral aislado, por ejemplo, da cero
 candidatos. No es un límite de la herramienta; es el material.
 
+**Un hallazgo que mide forma, no causa.** `stSag` mide la «cubeta» del efecto
+digitálico: cuánto se hunde el ST por debajo del punto J antes de volver a subir.
+Se midió sobre toda la base y separa poco — 35 µV con digital contra 25 en la
+isquemia lateral, con mucha superposición. Sirve para encontrar un trazado donde
+la forma se vea clara y para describirla; no para afirmar la causa, y el caso lo
+dice así. (La primera versión de la medida parecía separar seis veces mejor, pero
+comparaba contra una cuerda que sube hacia la T, y por eso marcaba 124 µV de
+falsa cubeta en electros normales.)
+
 **El QT es un caso aparte.** El final de la onda T es el punto más discutible de
 un electro, y por eso `findings.js` trae `qtSpreadMs`, que no es un hallazgo
 clínico sino una condición para poder afirmar el hallazgo: si las derivaciones no

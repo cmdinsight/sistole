@@ -487,6 +487,53 @@ export const CASES = [
   },
 
   {
+    id: 'digitalis',
+    record: '15985',
+    age: 84, sex: 'F',
+    vitals: { bp: '126/72', spo2: 96, rr: 16 },
+    highlight: ['II', 'III', 'aVF', 'V4', 'V5', 'V6'],
+    answer: 'digital',
+    metrics: { kind: 'st', leads: ['II', 'aVF', 'V4', 'V5', 'V6'], sag: ['V5', 'V6', 'aVF'] },
+    // Medido: ST II −171, aVF −150, V4 −175, V5 −198, V6 −164 µV, con la cubeta
+    // hundiéndose 100 µV bajo el punto J en V5 y 87 en V6. Ritmo irregular
+    // (variación del RR 0,199), QRS de 76 ms, R dominante en V5 y V6.
+    findings: {
+      irregular: true,
+      qrsMs: [60, 110],
+      stDepression: { leads: ['II', 'aVF', 'V4', 'V5', 'V6'], min: 0.12 },
+      stSag: { leads: ['V5', 'V6', 'aVF'], min: 0.07 },
+      tInversion: { leads: ['II', 'aVF', 'V4', 'V5', 'V6'], min: 0.18 },
+      dominantR: ['V4', 'V5', 'V6'],
+    },
+    stem: {
+      es: 'Mujer de 84 años con fibrilación auricular conocida, en control de rutina. No tiene dolor torácico ni disnea. El médico que la ve mira el electro, encuentra descenso del ST en seis derivaciones y se pregunta si hay que estudiarla por enfermedad coronaria.',
+      en: '84-year-old woman with known atrial fibrillation, at a routine check-up. She has no chest pain or breathlessness. The doctor seeing her looks at the ECG, finds ST depression in six leads, and wonders whether she should be worked up for coronary disease.',
+      pt: 'Mulher de 84 anos com fibrilação atrial conhecida, em consulta de rotina. Não tem dor torácica nem dispneia. O médico que a atende vê o ECG, encontra infradesnivelamento do ST em seis derivações e se pergunta se deve investigá-la por doença coronariana.',
+    },
+    options: [
+      { id: 'digital', label: { es: 'Efecto digitálico sobre fibrilación auricular', en: 'Digitalis effect on atrial fibrillation', pt: 'Efeito digitálico sobre fibrilação atrial' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica extensa', en: 'Extensive subendocardial ischemia', pt: 'Isquemia subendocárdica extensa' } },
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'LV hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'intoxicacion', label: { es: 'Intoxicación digitálica', en: 'Digitalis toxicity', pt: 'Intoxicação digitálica' } },
+    ],
+    explain: {
+      es: 'Dos cosas, y la segunda explica a la primera. El ritmo es irregularmente irregular y sin ondas P: fibrilación auricular. Y el ST está descendido en II, III, aVF y de V4 a V6, pero con una forma particular: no baja derecho ni se queda plano, se hunde por debajo del punto J —un milímetro en V5— y vuelve a subir hacia la T. Esa concavidad es lo que se llama cubeta, y es la marca del efecto digitálico. La pregunta que la ordena todo no es del electro sino de la historia: ¿por qué está en fibrilación auricular una mujer de 84 años? Porque la tiene hace años. ¿Y con qué se le controla la frecuencia? Con digoxina.',
+      en: 'Two things, and the second explains the first. The rhythm is irregularly irregular with no P waves: atrial fibrillation. And the ST is depressed in II, III, aVF and V4 to V6, but with a particular shape: it does not slope straight down nor stay flat — it dips below the J point, a millimetre in V5, and rises again towards the T. That concavity is what is called the sag, or scoop, and it is the mark of digitalis effect. The question that orders everything is not on the ECG but in the history: why is an 84-year-old woman in atrial fibrillation? Because she has had it for years. And what controls her rate? Digoxin.',
+      pt: 'Duas coisas, e a segunda explica a primeira. O ritmo é irregularmente irregular e sem ondas P: fibrilação atrial. E o ST está infradesnivelado em II, III, aVF e de V4 a V6, mas com uma forma peculiar: não desce reto nem fica plano, afunda abaixo do ponto J — um milímetro em V5 — e volta a subir rumo à T. Essa concavidade é a chamada cubeta, e é a marca do efeito digitálico. A pergunta que ordena tudo não está no ECG, mas na história: por que uma mulher de 84 anos está em fibrilação atrial? Porque a tem há anos. E com o que se controla a frequência? Com digoxina.',
+    },
+    pitfall: {
+      es: 'Acá hay dos trampas, y conviene ser franco con la segunda. La primera: «efecto» no es «intoxicación». La cubeta aparece con dosis correctas, es esperable en quien toma digoxina y no indica suspenderla ni pedir una digoxinemia. La intoxicación se ve de otra manera —náuseas, alteraciones visuales, y sobre todo arritmias: taquicardia auricular con bloqueo, extrasístoles, taquicardia ventricular bidireccional—, y el grado de cubeta no dice nada del nivel en sangre. La segunda trampa es más incómoda: esta forma NO descarta isquemia. Se midió sobre la base entera, y los registros con digital se hunden 35 µV bajo el punto J contra 25 de los de isquemia lateral, con mucha superposición. La forma orienta; lo que decide es la lista de medicamentos y el cuadro clínico, no el trazado.',
+      en: 'There are two traps here, and the second deserves candour. The first: "effect" is not "toxicity". The sag appears at correct doses, is expected in anyone taking digoxin, and does not call for stopping the drug or checking a level. Toxicity looks different — nausea, visual disturbance, and above all arrhythmias: atrial tachycardia with block, ectopy, bidirectional ventricular tachycardia — and the degree of sag says nothing about the blood level. The second trap is less comfortable: this shape does NOT rule out ischemia. Measured across the whole dataset, digitalis records dip 35 µV below the J point against 25 for lateral ischemia, with heavy overlap. The shape points; what decides is the medication list and the clinical picture, not the tracing.',
+      pt: 'Aqui há duas armadilhas, e com a segunda convém ser franco. A primeira: «efeito» não é «intoxicação». A cubeta aparece com doses corretas, é esperável em quem toma digoxina e não indica suspendê-la nem pedir dosagem. A intoxicação se apresenta de outro modo — náuseas, alterações visuais e sobretudo arritmias: taquicardia atrial com bloqueio, extrassístoles, taquicardia ventricular bidirecional — e o grau de cubeta nada diz sobre o nível sanguíneo. A segunda armadilha é mais incômoda: esta forma NÃO afasta isquemia. Medido sobre toda a base, os registros com digital afundam 35 µV abaixo do ponto J contra 25 dos de isquemia lateral, com muita superposição. A forma orienta; quem decide é a lista de medicamentos e o quadro clínico, não o traçado.',
+    },
+    action: {
+      es: 'Ninguna conducta por el electro. Una paciente sin dolor, en fibrilación conocida y con la frecuencia controlada, con un patrón compatible con la medicación que toma, no necesita un estudio coronario por este trazado. Lo que sí corresponde es revisar la digoxinemia si hay síntomas, la función renal —la digoxina se elimina por riñón y en una persona de 84 años ese margen se estrecha— y el potasio, porque la hipopotasemia favorece la intoxicación. Y guardar el electro: si algún día consulta por dolor, este trazado es lo que va a permitir decir qué es nuevo y qué estaba desde antes.',
+      en: 'No action because of the ECG. A patient with no pain, in known fibrillation with a controlled rate, showing a pattern compatible with the medication she takes, does not need a coronary workup on the strength of this tracing. What is appropriate is to check a digoxin level if she has symptoms, renal function — digoxin is cleared by the kidney and at 84 that margin narrows — and potassium, because hypokalemia predisposes to toxicity. And to file the ECG: if she ever comes in with pain, this tracing is what will let you say what is new and what was already there.',
+      pt: 'Nenhuma conduta pelo ECG. Uma paciente sem dor, em fibrilação conhecida e com frequência controlada, com um padrão compatível com a medicação que toma, não precisa de investigação coronariana por causa deste traçado. O que cabe é verificar a digoxinemia se houver sintomas, a função renal — a digoxina é eliminada pelo rim e aos 84 anos essa margem se estreita — e o potássio, porque a hipocalemia favorece a intoxicação. E guardar o ECG: se um dia ela consultar por dor, este traçado é o que permitirá dizer o que é novo e o que já estava.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',

@@ -264,6 +264,7 @@ export function measure(signal) {
   const st = {};
   const t = {};
   const qt = {};
+  const sag = {};   // hundimiento del ST bajo la cuerda J→pico de la T
   const r = {};   // altura de la onda R (positiva)
   const sw = {};  // profundidad de la onda S (negativa)
   const span = {};// excursión máxima respecto de la línea de base, para el dibujo
@@ -273,6 +274,7 @@ export function measure(signal) {
     const tVals = [];
     const rVals = [];
     const sVals = [];
+    const sagVals = [];
     let spanMax = 0;
     for (const r0 of usable) {
       if (r0 + dB0 < 0 || r0 + dT1 >= sig.length) continue;
@@ -283,12 +285,35 @@ export function measure(signal) {
 
       // De la onda T interesa la amplitud CON SIGNO: una T invertida es el
       // hallazgo, y tomar el valor absoluto lo borraría.
-      let peak = 0;
+      let peak = 0, peakIdx = r0 + dT0;
       for (let k = r0 + dT0; k <= r0 + dT1; k++) {
         const v = sig[k] - base;
-        if (Math.abs(v) > Math.abs(peak)) peak = v;
+        if (Math.abs(v) > Math.abs(peak)) { peak = v; peakIdx = k; }
       }
       tVals.push(peak);
+
+      // ── Forma del segmento ST ──
+      // No alcanza con saber CUÁNTO bajó el ST; importa CÓMO bajó, y lo que
+      // separa las formas es dónde está el punto más bajo.
+      //
+      //   · Normal o isquemia horizontal: el ST arranca en su punto más bajo —el
+      //     J— y de ahí sólo sube hacia la T. Nunca baja por debajo del J.
+      //   · Efecto digitálico: el ST sigue bajando DESPUÉS del punto J, toca
+      //     fondo en el medio del segmento y vuelve a subir. Esa panza es la
+      //     "cubeta", y se mide como cuánto más abajo del J llega el trazado.
+      //
+      // Se mide contra el punto J y no contra la cuerda que va hasta el pico de
+      // la T: esa cuerda sube, y entonces hasta un electro normal —con el ST
+      // plano y la T alta— queda por debajo de ella y marcaba 124 µV de falsa
+      // cubeta. Contra el J, un ST plano da cero, que es lo correcto.
+      const jIdx = r0 + offset;
+      const finST = Math.min(peakIdx, jIdx + Math.round(0.16 * fs));
+      if (finST - jIdx >= Math.round(0.04 * fs)) {
+        const vJ = sig[jIdx] - base;
+        let hundimiento = 0;
+        for (let k = jIdx; k <= finST; k++) hundimiento = Math.max(hundimiento, vJ - (sig[k] - base));
+        sagVals.push(hundimiento);
+      }
 
       // R y S dentro del complejo. La progresión de la R por las precordiales
       // —de una r mínima en V1 a una R dominante en V6— es un hallazgo en sí
@@ -305,6 +330,7 @@ export function measure(signal) {
     }
     st[lead] = median(stVals);
     t[lead] = median(tVals);
+    sag[lead] = sagVals.length ? median(sagVals) : 0;
 
     // QT de esta derivación, sobre el latido promedio.
     const prom = promedio(sig);
@@ -377,6 +403,7 @@ export function measure(signal) {
     beats,
     st,
     t,
+    sag,
     qt,
     // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
     // puede medir, no el promedio. Es la convención clínica y tiene su razón: la

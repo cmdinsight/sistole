@@ -81,6 +81,11 @@ export const RECORDS = {
     age: 49, sex: 'F', scp: ['LNGQT'],
     report: 'sinusrhythmus lagetyp normal qt-verlängerung',
   },
+  15985: {
+    age: 84, sex: 'F', scp: ['DIG', 'AFIB'],
+    report: 'vorhofflimmern normokard stlt st-hebung in v4-6, ii, iii, avf st-senkung in ii, iii, avf, v4-6 '
+      + 'neg. t in ii, iii, avf, v4-6 digitalisveraenderung pathologisches ekg',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -88,4 +93,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '595'];

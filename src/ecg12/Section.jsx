@@ -65,6 +65,12 @@ const L = {
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
   regularRhythm: { es: 'ritmo regular', en: 'regular rhythm', pt: 'ritmo regular' },
   irregularRhythm: { es: 'irregularmente irregular', en: 'irregularly irregular', pt: 'irregularmente irregular' },
+  sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
+  sagNote: {
+    es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
+    en: 'The sag is how far the ST dips below the J point before rising again. A flat or straight-sloping ST gives zero; only the concave shape raises it.',
+    pt: 'A cubeta é o quanto o ST afunda abaixo do ponto J antes de voltar a subir. Um ST plano ou que desce reto dá zero; só a forma côncava o eleva.',
+  },
   qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
   qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
   qtcF: { es: 'QTc Fridericia', en: 'QTc Fridericia', pt: 'QTc Fridericia' },
@@ -195,6 +201,14 @@ function Measured({ q, metrics, lang, gain }) {
     const bajoChest = gain.chest !== MM_PER_MV;
     const grupo = bajoLimb && bajoChest ? L.groupBoth[lang] : bajoChest ? L.groupChest[lang] : L.groupLimb[lang];
     note = L.measuredNote[lang] + (bajoLimb || bajoChest ? ` ${L.halfGainNote[lang](grupo)}` : '');
+    // Algunos casos no se juegan en cuánto bajó el ST sino en cómo bajó.
+    if (metrics.sag) {
+      chips = chips.concat(metrics.sag.map((l) => chip(
+        `sag-${l}`, `${L.sagLabel[lang]} ${l}`, mm(q.sag[l], lang),
+        q.sag[l] >= 0.05 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                         : 'text-slate-400 border-slate-800 bg-slate-950/60')));
+      note += ` ${L.sagNote[lang]}`;
+    }
   } else {
     const irregular = q.rrCv > 0.08;
     chips = [

@@ -84,6 +84,22 @@ const REGLAS = {
     fallos: q.r[b] <= q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
     margen: q.r[a] - q.r[b],
   }),
+  // Cuánto se hunde el segmento ST por debajo del punto J antes de volver a
+  // subir: la panza de la "cubeta" del efecto digitálico.
+  //
+  // Advertencia sobre este hallazgo, porque el número invita a más de lo que
+  // puede dar: mide una FORMA, no una causa. Sobre la base, los registros con
+  // digital dan una mediana de 35 µV y los de isquemia lateral, 25. Es una
+  // diferencia real pero chica, con mucha superposición. Sirve para elegir un
+  // trazado donde la forma se vea clara y para describirla; NO sirve para
+  // afirmar que un electro con cubeta es digital y no isquemia. Eso lo decide la
+  // lista de medicamentos, no el electrocardiograma.
+  stSag: ({ leads, min }, q) => ({
+    label: `el ST se hunde ≥ ${mmStr(min)} bajo el punto J en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.sag[l] < min).map((l) => `${l}=${uv(q.sag[l])}`),
+    margen: Math.min(...leads.map((l) => q.sag[l] - min)),
+  }),
+
   // Índice de Sokolow-Lyon: la S más profunda de V1 más la R más alta de V5 o
   // V6. Es el criterio de voltaje clásico de hipertrofia ventricular izquierda,
   // y el umbral son 35 mm, o sea 3,5 mV.
