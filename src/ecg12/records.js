@@ -16,6 +16,34 @@
 // escrito, sin traducir ni corregir. Es la anotación original: si se la
 // retocara, dejaría de servir como referencia contra la cual contrastar.
 
+// Dos fuentes, no una. PTB-XL cubre casi todo, pero hay hallazgos que no tiene
+// —ni un solo Wenckebach con ondas P visibles, ninguna repolarización precoz,
+// ninguna onda U— y para ésos se recurre al desafío CinC 2021, que junta ocho
+// bases (PTB-XL entre ellas) en el mismo formato y con acceso abierto.
+// Cada registro declara de dónde sale; el que no lo diga es de PTB-XL.
+export const SOURCES = {
+  ptbxl: {
+    dataset: 'PTB-XL',
+    version: '1.0.3',
+    url: 'https://physionet.org/content/ptb-xl/1.0.3/',
+    license: 'Open Data Commons Attribution License v1.0 (ODC-BY 1.0)',
+    citation: 'Wagner P, Strodthoff N, Bousseljot R-D, Kreiseler D, Lunze FI, Samek W, Schaeffter T. '
+      + 'PTB-XL, a large publicly available electrocardiography dataset. Scientific Data 7:154 (2020). '
+      + 'PhysioNet, doi:10.13026/kfzx-aw45',
+  },
+  cinc2021: {
+    dataset: 'CinC 2021',
+    version: '1.0.3',
+    url: 'https://physionet.org/content/challenge-2021/1.0.3/',
+    license: 'Creative Commons Attribution 4.0 (CC BY 4.0)',
+    citation: 'Reyna MA, Sadr N, Perez Alday EA, et al. Will Two Do? Varying Dimensions in '
+      + 'Electrocardiography: the PhysioNet/Computing in Cardiology Challenge 2021. '
+      + 'Computing in Cardiology 48 (2021). PhysioNet, doi:10.13026/34va-7q14',
+  },
+};
+
+// Se conserva SOURCE apuntando a PTB-XL: es la fuente de la enorme mayoría de
+// los registros y lo que la sección cita por defecto.
 export const SOURCE = {
   dataset: 'PTB-XL',
   version: '1.0.3',
@@ -157,6 +185,13 @@ export const RECORDS = {
     report: 'sinus rhythm. probable right atrial enlargement. minor non-specific st segment '
       + 'depression and t wave flattening in chest leads.',
   },
+  // Del desafío CinC 2021, base de Ningbo. PTB-XL no tiene ningún Wenckebach
+  // con ondas P medibles: los dos que trae están documentados como imposibles
+  // en scripts/ejemplos/mobitz.mjs.
+  JS12422: {
+    source: 'cinc2021', age: 61, sex: 'M', scp: ['54016002', '426177001'],
+    report: 'mobitz type i wenckebach atrioventricular block; sinus bradycardia (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -164,4 +199,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', '595'];

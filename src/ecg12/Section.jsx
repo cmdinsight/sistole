@@ -4,7 +4,7 @@ import TwelveLead from './TwelveLead.jsx';
 import { sheetSize, suggestGain, MM_PER_MV } from './draw.js';
 import { loadRecord, prefetchRecord } from './load.js';
 import { measure } from './measure.js';
-import { SOURCE } from './records.js';
+import { SOURCE, SOURCES, RECORDS } from './records.js';
 import { CASES, shuffledOptions } from './cases.js';
 
 const L = {
@@ -130,6 +130,13 @@ const L = {
     en: 'P wave height on an averaged beat, in the lead where it shows best. Normal up to 2.5 mm in II: above that it speaks of right atrial overload. In the database\u2019s normal records the median is 1.0 mm and none reaches 2.5.',
     pt: 'Altura da onda P sobre um batimento médio, na derivação onde melhor se vê. Normal até 2,5 mm em II: acima disso fala de sobrecarga da aurícula direita. Nos registros normais da base a mediana é 1,0 mm e nenhum chega a 2,5.',
   },
+  prSeriesLabel: { es: 'PR latido a latido', en: 'PR beat by beat', pt: 'PR batimento a batimento' },
+  prJumpLabel: { es: 'se estira', en: 'stretches', pt: 'estica-se' },
+  wenckebachNote: {
+    es: 'El PR de cada latido, en milisegundos, y cuánto se estira de punta a punta. Se mide latido a latido y no sobre un promedio, porque acá cada latido tiene un PR distinto y promediarlos borraría el hallazgo. Sólo aparece cuando dos derivaciones independientes dan la misma serie: si no coinciden, es ruido. En ritmo sinusal normal esta cifra ronda los 20 ms.',
+    en: 'The PR of each beat, in milliseconds, and how far it stretches end to end. It is measured beat by beat and not on an average, because here every beat has a different PR and averaging would erase the finding. It only appears when two independent leads give the same series: if they disagree, it is noise. In normal sinus rhythm this figure is around 20 ms.',
+    pt: 'O PR de cada batimento, em milissegundos, e quanto se estica de ponta a ponta. Mede-se batimento a batimento e não sobre uma média, porque aqui cada batimento tem um PR diferente e a média apagaria o achado. Só aparece quando duas derivações independentes dão a mesma série: se não coincidirem, é ruído. Em ritmo sinusal normal este valor ronda os 20 ms.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -165,6 +172,12 @@ const SHEET = sheetSize({});
 
 // El separador decimal cambia con el idioma: en español y en portugués es la
 // coma. Mostrar "3.9 mm" en español se lee como otra cosa.
+// Las bases distintas de PTB-XL que algún registro declara. Se calcula de los
+// registros y no se escribe a mano: si mañana se suma otra fuente, la cita
+// aparece sola, y si se quita el último registro de una, deja de citarse.
+const OTRAS_FUENTES = [...new Set(Object.values(RECORDS).map((r) => r.source).filter(Boolean))]
+  .map((k) => SOURCES[k]).filter(Boolean);
+
 const num = (v, d, lang) => v.toFixed(d).replace('.', lang === 'en' ? '.' : ',');
 
 // Formatea un desnivel del ST como lo diría un médico: en milímetros de papel,
@@ -187,6 +200,9 @@ const mm = (mv, lang) => {
 // el scroll, que es lo que hace cualquiera con un electro impreso, y además se
 // permite tocar una derivación para verla sola y en grande.
 function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
+  // De qué base salió ESTE registro. Por defecto PTB-XL, que es de donde viene
+  // la enorme mayoría; los que declaran otra la usan.
+  const fuente = SOURCES[RECORDS[signal.id]?.source || 'ptbxl'] || SOURCE;
   return (
     <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
       <div className="relative">
@@ -200,14 +216,16 @@ function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
             de sm:, donde ya entra completo. */}
         <div className="sm:hidden pointer-events-none absolute inset-y-0 right-0 w-7 bg-gradient-to-l from-slate-950/55 to-transparent" />
       </div>
-      {/* De dónde salió este electro. No es un pie de página decorativo: la
-          licencia de PTB-XL pide atribución, y además el estudiante tiene
-          derecho a saber que está mirando el registro de un paciente real y a
-          poder ir a buscarlo. */}
+      {/* De dónde salió este electro. No es un pie de página decorativo: las dos
+          bases piden atribución, y además el estudiante tiene derecho a saber
+          que está mirando el registro de un paciente real y a poder ir a
+          buscarlo. Ojo: la fuente sale del REGISTRO, no es fija. Cuando se
+          sumó la segunda base, este pie seguía diciendo PTB-XL sobre un
+          registro del CinC, que es una atribución equivocada. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-slate-800/80">
-        <a href={`${SOURCE.url}#files`} target="_blank" rel="noopener noreferrer"
+        <a href={`${fuente.url}#files`} target="_blank" rel="noopener noreferrer"
            className="text-[10px] text-slate-500 hover:text-indigo-300 font-mono uppercase tracking-wider truncate transition-colors">
-          {SOURCE.dataset} · {lang === 'es' ? 'registro' : lang === 'pt' ? 'registro' : 'record'} {signal.id}
+          {fuente.dataset} · {lang === 'es' ? 'registro' : lang === 'pt' ? 'registro' : 'record'} {signal.id}
         </a>
         <span className="flex items-center gap-1 text-[10px] text-slate-500 flex-shrink-0">
           <Maximize2 className="w-3 h-3" /><span className="hidden xs:inline sm:inline">{L.tapLead[lang]}</span>
@@ -353,6 +371,22 @@ function Measured({ q, metrics, lang, gain }) {
            'text-slate-400 border-slate-800 bg-slate-950/60')),
     ];
     note = L.pNote[lang];
+  } else if (metrics.kind === 'wenckebach') {
+    if (q.prSalto === null) return null;
+    const rr = q.rr || [];
+    const razon = rr.length >= 4 ? Math.max(...rr) / Math.min(...rr) : null;
+    chips = [
+      chip('j', L.prJumpLabel[lang], `${Math.round(q.prSalto)} ms`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      ...(razon !== null ? [chip('r', L.ratioLabel[lang], num(razon, 2, lang),
+           razon < 2 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                     : 'text-slate-400 border-slate-800 bg-slate-950/60')] : []),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // La serie entera: es donde se ve el escalón, que ningún número resume.
+      ...(q.prSerie || []).map((v, i) => chip(`pr${i}`, '', v === null ? '—' : `${Math.round(v)}`,
+           v === null ? 'text-slate-600 border-slate-800 bg-slate-950/60'
+                      : 'text-violet-300 border-violet-900/60 bg-violet-950/30')),
+    ];
+    note = L.wenckebachNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);
@@ -625,8 +659,9 @@ export default function TwelveLeadSection({
         <p className="text-[11px] text-slate-600 max-w-md mx-auto leading-relaxed">
           <a href={SOURCE.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
             {SOURCE.citation}
+            {OTRAS_FUENTES.map((f) => <span key={f.dataset}><br />{f.citation}</span>)}
           </a>
-          <br />{SOURCE.license}
+          <br />{[SOURCE, ...OTRAS_FUENTES].map((f) => f.license).join(' · ')}
         </p>
         <button onClick={restart}
           className="px-6 py-3 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-bold transition-colors">

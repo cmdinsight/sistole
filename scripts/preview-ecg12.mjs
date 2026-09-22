@@ -26,6 +26,20 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fetchRecord, prepareRecord } from './ptbxl.mjs';
+import { fetchRecord as fetchCinc } from './cinc.mjs';
+import { readFileSync, existsSync } from 'node:fs';
+
+// Los identificadores del CinC 2021 no son números: JS12429, HR00001. Se los
+// busca en el índice que dejó el escaneo de cabeceras y se bajan de esa base.
+function esCinc(id) { return /^[A-Za-z]/.test(String(id)); }
+async function traerCinc(id) {
+  const idx = JSON.parse(readFileSync('.cinc-cache/indice.json', 'utf8'));
+  for (const lista of Object.values(idx)) {
+    const c = lista.find((x) => x.id === id);
+    if (c) return fetchCinc('ningbo', c.g, id);
+  }
+  throw new Error(`No está en el índice del CinC: ${id}`);
+}
 
 const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
 const salida = join(raiz, '.ptbxl-preview');
@@ -52,7 +66,7 @@ mkdirSync(salida, { recursive: true });
 const registros = {};
 for (const id of ids) {
   process.stderr.write(`  ${id}…\r`);
-  registros[id] = prepareRecord(await fetchRecord(id));
+  registros[id] = prepareRecord(esCinc(id) ? await traerCinc(id) : await fetchRecord(id));
 }
 process.stderr.write('        \r');
 

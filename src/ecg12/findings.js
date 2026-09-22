@@ -177,6 +177,24 @@ const REGLAS = {
     margen: Math.min(q.prematuros - lo, hi - q.prematuros),
   }),
 
+  // Cuánto se estira el PR dentro del registro, latido a latido. Es el hallazgo
+  // definitorio del Wenckebach, y el único que no se puede promediar: promediar
+  // los PR de un Wenckebach borra exactamente lo que hay que ver.
+  //
+  // Calibrado contra los grupos etiquetados, con el estadístico recortado a los
+  // percentiles 10-90: en ritmo sinusal normal da 20 ms de mediana —que es el
+  // ruido de medir latido a latido, porque ahí el PR es constante— y los tres
+  // Wenckebach del CinC 2021 dan 164, 180 y 228 ms.
+  //
+  // Sólo hay número cuando DOS derivaciones independientes dan la misma serie
+  // dentro de 25 ms. Si no coinciden, es ruido y measure.js devuelve null.
+  prLengthening: ({ min }, q) => ({
+    label: `el PR se estira al menos ${min} ms de latido a latido`,
+    fallos: q.prSalto !== null && q.prSalto >= min
+      ? [] : [q.prSalto === null ? 'sin serie de PR fiable' : `${Math.round(q.prSalto)} ms`],
+    margen: q.prSalto === null ? -1 : (q.prSalto - min) / 100,
+  }),
+
   // La PAUSA, medida como cuántas veces el RR más corto entra en el más largo.
   // Es el número que separa las tres causas de un latido que falta, y no
   // necesita ver una sola onda P:

@@ -372,6 +372,76 @@ function intervaloPR(leads, beats, fs, onset) {
   return { prMs: salidas[0].pr, pAmp: salidas[0].amp, pLead: salidas[0].lead };
 }
 
+// ── EL PR, LATIDO A LATIDO ────────────────────────────────────────────────
+// El PR promediado sirve para el bloqueo de primer grado, donde todos los
+// latidos tienen el mismo. No sirve para el Wenckebach, donde el hallazgo ES
+// que cada latido tiene uno distinto: promediarlos borra exactamente lo que hay
+// que ver.
+//
+// Medirlo latido a latido es más frágil —no hay promedio que limpie el ruido—
+// así que se mide en varias derivaciones y se exige que COINCIDAN. Si tres
+// derivaciones independientes dan la misma serie de PR, está midiendo una onda
+// P; si dan series distintas, está midiendo ruido. Ése es el control que faltó
+// la primera vez que se intentó este caso.
+function prPorLatido(leads, beats, fs, env) {
+  const salidas = [];
+  for (const lead of LEADS_P) {
+    if (!leads[lead]) continue;
+    const sig = leads[lead];
+    const n = sig.length;
+    const serie = [];
+    for (const b of beats) {
+      // Comienzo del QRS de ESTE latido, con la energía de pendiente.
+      const piso = median(Array.from(env.slice(Math.max(0, b - Math.round(0.35 * fs)), Math.max(1, b - Math.round(0.20 * fs)))));
+      let iQ = b;
+      const lim = Math.max(0, b - Math.round(0.10 * fs));
+      while (iQ > lim && env[iQ] > piso + 0.06 * (env[b] - piso)) iQ--;
+      const desde = Math.max(0, b - Math.round(0.42 * fs));
+      const hasta = iQ - Math.round(0.015 * fs);
+      if (hasta - desde < 5) { serie.push(null); continue; }
+      let base = 0, c = 0;
+      for (let k = desde; k < desde + Math.round(0.04 * fs) && k < hasta; k++) { base += sig[k]; c++; }
+      base = c ? base / c : 0;
+      let iP = -1, amp = 0;
+      for (let k = desde; k <= hasta; k++) { const v = Math.abs(sig[k] - base); if (v > amp) { amp = v; iP = k; } }
+      if (iP < 0 || amp < 0.04) { serie.push(null); continue; }
+      const sg = Math.sign(sig[iP] - base);
+      let iP0 = iP;
+      while (iP0 > desde && sg * (sig[iP0] - base) > 0.20 * amp) iP0--;
+      const pr = ((iQ - iP0) / fs) * 1000;
+      serie.push(pr >= 80 && pr <= 460 ? pr : null);
+    }
+    const validos = serie.filter((x) => x !== null);
+    if (validos.length >= Math.max(4, beats.length * 0.6)) salidas.push({ lead, serie, validos });
+  }
+  if (salidas.length < 2) return { prSerie: null, prSalto: null, prLeads: 0 };
+
+  // Se queda la serie de la derivación con más latidos medidos, pero sólo si
+  // otra la CONFIRMA: dos series independientes que coinciden dentro de 25 ms.
+  salidas.sort((a, b) => b.validos.length - a.validos.length);
+  const ref = salidas[0];
+  const coincide = salidas.slice(1).some((o) => {
+    const pares = ref.serie.map((v, i) => [v, o.serie[i]]).filter(([a, b]) => a !== null && b !== null);
+    if (pares.length < 4) return false;
+    const dif = median(pares.map(([a, b]) => Math.abs(a - b)));
+    return dif <= 25;
+  });
+  if (!coincide) return { prSerie: null, prSalto: null, prLeads: salidas.length };
+
+  // Cuánto se estira el PR dentro del registro. NO se usa el máximo menos el
+  // mínimo: ese número lo deciden los dos peores latidos, y en ritmo sinusal
+  // —donde el PR es constante por definición— daba 72 ms de mediana, que es
+  // ruido de medición y no variación real. Se recorta a los percentiles 10 y
+  // 90, que es lo mismo pero sin dejar que dos latidos manden.
+  const v = ref.validos.slice().sort((a, b) => a - b);
+  const q = (p) => v[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * p)))];
+  return {
+    prSerie: ref.serie,
+    prSalto: q(0.90) - q(0.10),
+    prLeads: salidas.length,
+  };
+}
+
 // ── LATIDOS PREMATUROS DE ORIGEN VENTRICULAR ──────────────────────────────
 // Una extrasístole ventricular es un latido que llega ANTES de tiempo y que
 // además NO SE PARECE a los otros. Se piden las dos cosas, y ninguna alcanza
@@ -507,6 +577,9 @@ export function measure(signal) {
   // Los latidos prematuros usan su propio compuesto, sobre todas las
   // derivaciones: la forma de un latido se ve en las doce a la vez.
   const { prematuros, prematuridad, forma } = latidosPrematuros(leads, beats, fs, rrMed);
+  // El PR latido a latido necesita la energía de pendiente del compuesto para
+  // ubicar el comienzo de cada QRS por separado.
+  const { prSerie, prSalto, prLeads } = prPorLatido(leads, usable, fs, slopeEnergy(det, fs, 0.03));
 
   // El PR necesita el latido promedio y el comienzo del QRS, así que se mide
   // acá, una vez que los dos existen.
@@ -705,5 +778,11 @@ export function measure(signal) {
     prematuros,
     prematuridad,
     forma,
+    // Serie de PR latido a latido (null donde la P no se pudo medir), y cuánto
+    // se estira de punta a punta. Sólo se devuelve cuando dos derivaciones
+    // independientes dan la misma serie.
+    prSerie,
+    prSalto,
+    prLeads,
   };
 }
