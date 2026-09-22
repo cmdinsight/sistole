@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node scripts/test-ecg12.mjs && node scripts/test-wfdb.mjs",
+    "test:ecg12": "node scripts/test-ecg12.mjs",
+    "test:wfdb": "node scripts/test-wfdb.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
