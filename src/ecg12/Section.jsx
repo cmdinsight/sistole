@@ -108,6 +108,28 @@ const L = {
     en: 'The PR runs from the start of the P wave to the start of the QRS: the time the impulse takes to cross the atrium and the AV node. It is measured on an averaged beat, which is what makes a P of one or two tenths of a millivolt visible. Normal between 120 and 200 ms; above 200, first degree AV block.',
     pt: 'O PR vai do começo da onda P ao começo do QRS: o que o estímulo demora a atravessar o átrio e o nó AV. Mede-se sobre um batimento médio, que é o que permite ver uma P de um ou dois décimos de milivolt. Normal entre 120 e 200 ms; acima de 200, bloqueio AV de primeiro grau.',
   },
+  pauseLabel: { es: 'pausa', en: 'pause', pt: 'pausa' },
+  shortestLabel: { es: 'RR más corto', en: 'shortest RR', pt: 'RR mais curto' },
+  ratioLabel: { es: 'razón', en: 'ratio', pt: 'razão' },
+  pauseNote: {
+    es: 'Cuántas veces el RR más corto entra en la pausa. Por debajo de 2 hubo decremento antes de que fallara la conducción (Wenckebach); alrededor de 2, una P prematura encontró el nodo refractario y el nodo sinusal siguió su marcha; por encima y sin relación con el ciclo, el que falló fue el nodo sinusal.',
+    en: 'How many times the shortest RR fits into the pause. Below 2 there was decrement before conduction failed (Wenckebach); around 2, a premature P found the node refractory while the sinus node marched on; above that and unrelated to the cycle, it was the sinus node that failed.',
+    pt: 'Quantas vezes o RR mais curto cabe na pausa. Abaixo de 2 houve decremento antes de a condução falhar (Wenckebach); à volta de 2, uma P prematura encontrou o nó refratário e o nó sinusal seguiu a sua marcha; acima disso e sem relação com o ciclo, quem falhou foi o nó sinusal.',
+  },
+  pvcLabel: { es: 'latidos prematuros', en: 'premature beats', pt: 'batimentos prematuros' },
+  earlyLabel: { es: 'llegó al', en: 'arrived at', pt: 'chegou aos' },
+  shapeLabel: { es: 'parecido', en: 'similarity', pt: 'semelhança' },
+  pvcNote: {
+    es: 'Un latido cuenta como extrasístole ventricular cuando cumple las dos cosas: llega antes del 85 % del ciclo Y se parece menos del 94 % a la plantilla del latido típico. Ninguna alcanza sola — prematura también es una extrasístole auricular, que sale idéntica a las demás, y distinta también sale una deformada por el ruido.',
+    en: 'A beat counts as a ventricular premature beat when it meets both conditions: it arrives before 85 % of the cycle AND resembles the typical-beat template by less than 94 %. Neither is enough alone — an atrial premature beat is also early but comes out identical to the rest, and a noise-deformed beat is also different.',
+    pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 94 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
+  },
+  pLabel: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  pNote: {
+    es: 'Altura de la onda P sobre el latido promedio, en la derivación donde mejor se ve. Normal hasta 2,5 mm en II: por encima habla de sobrecarga de la aurícula derecha. Sobre los registros normales de la base la mediana es 1,0 mm y ninguno llega a 2,5.',
+    en: 'P wave height on an averaged beat, in the lead where it shows best. Normal up to 2.5 mm in II: above that it speaks of right atrial overload. In the database\u2019s normal records the median is 1.0 mm and none reaches 2.5.',
+    pt: 'Altura da onda P sobre um batimento médio, na derivação onde melhor se vê. Normal até 2,5 mm em II: acima disso fala de sobrecarga da aurícula direita. Nos registros normais da base a mediana é 1,0 mm e nenhum chega a 2,5.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -291,6 +313,46 @@ function Measured({ q, metrics, lang, gain }) {
                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
     ];
     note = L.prNote[lang];
+  } else if (metrics.kind === 'pause') {
+    const rr = q.rr || [];
+    if (rr.length < 4) return null;
+    const largo = Math.max(...rr), corto = Math.min(...rr);
+    const razon = largo / corto;
+    chips = [
+      chip('p', L.pauseLabel[lang], `${Math.round(largo * 1000)} ms`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('c', L.shortestLabel[lang], `${Math.round(corto * 1000)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // El 2 es la frontera: por eso se marca distinto a cada lado.
+      chip('r', L.ratioLabel[lang], num(razon, 2, lang),
+           razon >= 2 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                      : 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.pauseNote[lang];
+  } else if (metrics.kind === 'pvc') {
+    chips = [
+      chip('n', L.pvcLabel[lang], `${q.prematuros}`,
+           q.prematuros > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                            : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(q.prematuridad !== null ? [
+        chip('p', L.earlyLabel[lang], `${Math.round(q.prematuridad * 100)} %`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+        chip('f', L.shapeLabel[lang], `${Math.round(q.forma * 100)} %`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      ] : []),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.pvcNote[lang];
+  } else if (metrics.kind === 'p') {
+    if (q.pAmp === null) return null;
+    chips = [
+      chip('p', `${L.pLabel[lang]} ${q.pLead}`, mmAbs(q.pAmp, lang),
+           q.pAmp >= 0.25 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(metrics.leads ?? []).map((l) => chip(`st-${l}`, l, mm(q.st[l], lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60')),
+    ];
+    note = L.pNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);
