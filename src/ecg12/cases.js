@@ -921,6 +921,54 @@ export const CASES = [
   },
 
   {
+    id: 'sinus-bradycardia',
+    record: '11331',
+    age: 66, sex: 'M',
+    vitals: { bp: '128/76', spo2: 98, rr: 13 },
+    highlight: ['II'],
+    answer: 'bradicardia',
+    metrics: { kind: 'rhythm' },
+    // Medido: FC 44, RR regular (cv 0,004), PR 184 ms, QRS 84 ms, eje +47°,
+    // QTc 330. Ruido de 5 µV: el trazado más limpio de toda la sección.
+    // El ST de los miembros no pasa de 37 µV en ninguna derivación.
+    findings: {
+      rate: [38, 55],
+      irregular: false,
+      // Cada QRS tiene su P a distancia normal: es sinusal, no un ritmo de
+      // escape. Sin esto, el caso no podría afirmar de dónde sale el impulso.
+      prMs: [140, 210],
+      qrsMs: [70, 105],
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.06 },
+    },
+    stem: {
+      es: 'Hombre de 66 años, corredor de fondo desde los treinta, sin síntomas. Electro de control anual. La enfermera que lo toma ve 44 por minuto en el monitor, se preocupa y lo manda a la guardia antes de que el médico lo vea.',
+      en: '66-year-old man, a long-distance runner since his thirties, no symptoms. Annual check-up ECG. The nurse recording it sees 44 per minute on the monitor, becomes worried and sends him to the emergency department before the doctor has seen him.',
+      pt: 'Homem de 66 anos, corredor de fundo desde os trinta, sem sintomas. ECG de controle anual. A enfermeira que o realiza vê 44 por minuto no monitor, preocupa-se e o encaminha ao pronto-socorro antes que o médico o veja.',
+    },
+    options: [
+      { id: 'bradicardia', label: { es: 'Bradicardia sinusal', en: 'Sinus bradycardia', pt: 'Bradicardia sinusal' } },
+      { id: 'bloqueo', label: { es: 'Bloqueo AV completo', en: 'Complete AV block', pt: 'Bloqueio AV completo' } },
+      { id: 'nodal', label: { es: 'Ritmo de la unión', en: 'Junctional rhythm', pt: 'Ritmo juncional' } },
+      { id: 'paro', label: { es: 'Paro sinusal con escape', en: 'Sinus arrest with escape', pt: 'Parada sinusal com escape' } },
+    ],
+    explain: {
+      es: 'La frecuencia es 44 y el ritmo es regular: la variación del RR mide 0,004, o sea que los latidos caen como un metrónomo. Eso ya descarta mucho. Y lo que lo define es lo que pasa ANTES de cada QRS: hay una P, siempre la misma, siempre a la misma distancia —184 ms—. Eso es bradicardia sinusal, y el nombre dice exactamente lo que hay: el nodo sinusal sigue mandando, sólo que despacio. Las otras tres opciones se caen por lo mismo que la define. No es un bloqueo completo, porque ahí las aurículas y los ventrículos van cada uno por su lado y el PR no sería constante. No es un ritmo de la unión, porque en ése no hay P delante del QRS, o aparece invertida y pegada. Y no es un paro sinusal, porque en ése habría una pausa —un hueco donde falta un latido— y acá no falta ninguno: el ritmo es lento pero parejo. El resto del electro es normal: QRS de 84 ms, eje +47°, y el ST de los miembros dentro de 0,4 mm.',
+      en: 'The rate is 44 and the rhythm is regular: the RR variation measures 0.004, meaning the beats fall like a metronome. That already rules out a lot. And what defines it is what happens BEFORE each QRS: there is a P wave, always the same, always at the same distance — 184 ms. That is sinus bradycardia, and the name says exactly what is there: the sinus node is still in charge, just slowly. The other three options fall for the same reason. It is not complete block, because there the atria and ventricles each go their own way and the PR would not be constant. It is not a junctional rhythm, because that one has no P in front of the QRS, or it appears inverted and close up. And it is not sinus arrest, because that would show a pause — a gap where a beat is missing — and here none is missing: the rhythm is slow but even. The rest of the ECG is normal: QRS 84 ms, axis +47°, and limb-lead ST within 0.4 mm.',
+      pt: 'A frequência é 44 e o ritmo é regular: a variação do RR mede 0,004, ou seja, os batimentos caem como um metrônomo. Isso já descarta muito. E o que a define é o que acontece ANTES de cada QRS: há uma P, sempre a mesma, sempre à mesma distância — 184 ms. Isso é bradicardia sinusal, e o nome diz exatamente o que há: o nó sinusal continua no comando, só que devagar. As outras três opções caem pelo mesmo motivo. Não é bloqueio completo, porque aí os átrios e os ventrículos vão cada um para seu lado e o PR não seria constante. Não é ritmo juncional, porque nesse não há P à frente do QRS, ou aparece invertida e colada. E não é parada sinusal, porque essa mostraria uma pausa — um buraco onde falta um batimento — e aqui não falta nenhum: o ritmo é lento mas parelho. O resto do ECG é normal: QRS de 84 ms, eixo +47° e o ST dos membros dentro de 0,4 mm.',
+    },
+    pitfall: {
+      es: 'El error no es de lectura, es de decisión: confundir un NÚMERO con un problema. Cuarenta y cuatro por minuto en un corredor de fondo de 66 años, sin síntomas y con el resto del electro normal, es adaptación al entrenamiento, no enfermedad: el corazón entrenado bombea más por latido y necesita menos latidos. La misma frecuencia en alguien con mareos, con síncope, o que empezó betabloqueantes la semana pasada, es otra conversación entera. La frecuencia sola no decide nada; lo que decide es si hay síntomas Y si coinciden en el tiempo con la bradicardia. Segunda trampa, más técnica: a frecuencias bajas hay mucho espacio entre latidos, y ahí es fácil confundir una onda T alta con una P, o ver "pausas" donde sólo hay un ritmo lento. Se mide de R a R, no a ojo. Y una tercera que conviene tener presente: acá el QTc da 330 ms, que suena corto, pero a 44 por minuto la fórmula de Bazett sobrecorrige y achica el número. El QT sin corregir es normal; no hay QT corto.',
+      en: 'The mistake is not one of reading, it is one of decision: confusing a NUMBER with a problem. Forty-four per minute in a 66-year-old long-distance runner, without symptoms and with an otherwise normal ECG, is training adaptation, not disease: the trained heart pumps more per beat and needs fewer beats. The same rate in someone with dizziness, with syncope, or who started beta blockers last week, is an entirely different conversation. The rate alone decides nothing; what decides is whether there are symptoms AND whether they coincide in time with the bradycardia. Second trap, more technical: at low rates there is a lot of space between beats, and it becomes easy to mistake a tall T wave for a P, or to see "pauses" where there is only a slow rhythm. Measure R to R, not by eye. And a third worth keeping in mind: here the QTc reads 330 ms, which sounds short, but at 44 per minute Bazett\u2019s formula over-corrects and shrinks the number. The uncorrected QT is normal; there is no short QT.',
+      pt: 'O erro não é de leitura, é de decisão: confundir um NÚMERO com um problema. Quarenta e quatro por minuto num corredor de fundo de 66 anos, sem sintomas e com o resto do ECG normal, é adaptação ao treino, não doença: o coração treinado bombeia mais por batimento e precisa de menos batimentos. A mesma frequência em alguém com tonturas, com síncope, ou que começou betabloqueadores na semana passada, é outra conversa inteira. A frequência sozinha não decide nada; o que decide é se há sintomas E se coincidem no tempo com a bradicardia. Segunda armadilha, mais técnica: em frequências baixas há muito espaço entre batimentos, e aí é fácil confundir uma onda T alta com uma P, ou ver «pausas» onde só há um ritmo lento. Mede-se de R a R, não a olho. E uma terceira que convém ter presente: aqui o QTc dá 330 ms, que soa curto, mas a 44 por minuto a fórmula de Bazett sobrecorrige e encolhe o número. O QT sem corrigir é normal; não há QT curto.',
+    },
+    action: {
+      es: 'Vuelve a su casa y sigue corriendo. Una bradicardia sinusal asintomática, con QRS angosto y electro por lo demás normal, no necesita estudios, ni monitoreo, ni marcapasos, ni suspender el ejercicio: necesita que alguien mire al paciente además del monitor. Lo único que vale preguntar es lo de siempre, y son tres cosas: si tiene síntomas —mareo, cansancio desproporcionado, síncope—, qué medicación toma (betabloqueantes, verapamilo, diltiazem, digoxina, amiodarona, y también colirios de timolol, que se olvidan porque son gotas), y si hay algo sistémico detrás, sobre todo hipotiroidismo. Si las tres respuestas son negativas, el electro está explicado. Y si alguna vez aparece síncope, lo que hay que documentar no es la frecuencia en reposo sino el ritmo DURANTE el síntoma: ahí sirve un Holter o un registrador de eventos, no otro electro de diez segundos.',
+      en: 'He goes home and keeps running. An asymptomatic sinus bradycardia, with a narrow QRS and an otherwise normal ECG, needs no tests, no monitoring, no pacemaker and no stopping exercise: it needs someone to look at the patient as well as the monitor. The only things worth asking are the usual three: whether there are symptoms — dizziness, disproportionate fatigue, syncope — what medication he takes (beta blockers, verapamil, diltiazem, digoxin, amiodarone, and also timolol eye drops, which get forgotten because they are drops), and whether there is something systemic behind it, above all hypothyroidism. If all three answers are negative, the ECG is explained. And if syncope ever appears, what has to be documented is not the resting rate but the rhythm DURING the symptom: that calls for a Holter or an event recorder, not another ten-second ECG.',
+      pt: 'Volta para casa e continua a correr. Uma bradicardia sinusal assintomática, com QRS estreito e ECG de resto normal, não precisa de exames, nem de monitorização, nem de marca-passo, nem de suspender o exercício: precisa que alguém olhe para o paciente além do monitor. O único que vale perguntar são as três de sempre: se tem sintomas — tontura, cansaço desproporcional, síncope —, que medicação toma (betabloqueadores, verapamil, diltiazem, digoxina, amiodarona, e também colírios de timolol, que se esquecem por serem gotas), e se há algo sistêmico por trás, sobretudo hipotiroidismo. Se as três respostas forem negativas, o ECG está explicado. E se aлguma vez surgir síncope, o que há que documentar não é a frequência em repouso mas o ritmo DURANTE o sintoma: aí serve um Holter ou um registrador de eventos, não outro ECG de dez segundos.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',
