@@ -15,3 +15,4 @@ ios-appicon-1024.png
 # Caché de los registros WFDB crudos de PTB-XL (npm run fetch:ptbxl).
 # Lo que se versiona es el resultado procesado, en public/ecg12/.
 .ptbxl-cache
+.ptbxl-preview

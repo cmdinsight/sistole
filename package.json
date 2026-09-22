@@ -12,7 +12,9 @@
     "test:wfdb": "node scripts/test-wfdb.mjs",
     "fetch:ptbxl": "node scripts/fetch-ptbxl.mjs",
     "test:measure": "node scripts/test-measure.mjs",
-    "test:cases": "node scripts/test-cases.mjs"
+    "test:cases": "node scripts/test-cases.mjs",
+    "search:ptbxl": "node scripts/ptbxl-search.mjs",
+    "preview:ecg12": "node scripts/preview-ecg12.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

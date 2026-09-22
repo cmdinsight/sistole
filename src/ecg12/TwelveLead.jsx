@@ -17,6 +17,10 @@ export default function TwelveLead({
   // singleRow dibuja sólo la tira de ritmo, sin la grilla 3×4: se usa al ampliar
   // una derivación para mirarle el ST de cerca.
   singleRow = false,
+  // Milímetros por milivoltio. Lo elige el que llama, normalmente con
+  // suggestGain(): un electro de mucho voltaje se dibuja a la mitad, como en el
+  // papel de cualquier equipo.
+  gain,
   className = '',
 }) {
   const canvasRef = useRef(null);
@@ -39,8 +43,8 @@ export default function TwelveLead({
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    boxesRef.current = drawEcg(ctx, { signal, cssW: rect.width, theme, rhythmLead, highlight, singleRow });
-  }, [signal, theme, rhythmLead, highlight, singleRow, sheet.w, sheet.h]);
+    boxesRef.current = drawEcg(ctx, { signal, cssW: rect.width, theme, rhythmLead, highlight, singleRow, gain });
+  }, [signal, theme, rhythmLead, highlight, singleRow, gain, sheet.w, sheet.h]);
 
   useEffect(() => {
     draw();

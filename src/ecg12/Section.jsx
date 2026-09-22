@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Check, X, AlertTriangle, Activity, Stethoscope, Maximize2, Ruler } from 'lucide-react';
 import TwelveLead from './TwelveLead.jsx';
-import { sheetSize } from './draw.js';
+import { sheetSize, suggestGain, MM_PER_MV } from './draw.js';
 import { loadRecord, prefetchRecord } from './load.js';
 import { measure } from './measure.js';
 import { SOURCE } from './records.js';
@@ -31,11 +31,13 @@ const L = {
   tapLead: { es: 'Tocá una derivación para ampliarla', en: 'Tap a lead to enlarge it', pt: 'Toque numa derivação para ampliá-la' },
   swipe: { es: '← Deslizá para ver las precordiales (V1 a V6)', en: '← Swipe to see the precordial leads (V1 to V6)', pt: '← Deslize para ver as precordiais (V1 a V6)' },
   close: { es: 'Cerrar', en: 'Close', pt: 'Fechar' },
-  done: { es: 'Terminaste los ocho', en: 'You finished all eight', pt: 'Você terminou os oito' },
+  // El número sale de CASES y no está escrito en el texto: la primera vez que se
+  // agregó un caso, la pantalla final seguía felicitando por "los ocho".
+  done: { es: (n) => `Terminaste los ${n}`, en: (n) => `You finished all ${n}`, pt: (n) => `Você terminou os ${n}` },
   doneSub: {
-    es: 'Los ocho trazados son electrocardiogramas reales de PTB-XL, registrados a pacientes y anotados por cardiólogos. Entrenan la localización, que es lo que una sola derivación no puede enseñar.',
-    en: 'All eight tracings are real electrocardiograms from PTB-XL, recorded from patients and annotated by cardiologists. They train localization, which a single lead cannot teach.',
-    pt: 'Os oito traçados são eletrocardiogramas reais do PTB-XL, registrados em pacientes e anotados por cardiologistas. Treinam a localização, que uma única derivação não pode ensinar.',
+    es: (n) => `Los ${n} trazados son electrocardiogramas reales de PTB-XL, registrados a pacientes y anotados por cardiólogos. Entrenan la localización, que es lo que una sola derivación no puede enseñar.`,
+    en: (n) => `All ${n} tracings are real electrocardiograms from PTB-XL, recorded from patients and annotated by cardiologists. They train localization, which a single lead cannot teach.`,
+    pt: (n) => `Os ${n} traçados são eletrocardiogramas reais do PTB-XL, registrados em pacientes e anotados por cardiologistas. Treinam a localização, que uma única derivação não pode ensinar.`,
   },
   loading: { es: 'Cargando el trazado…', en: 'Loading the tracing…', pt: 'Carregando o traçado…' },
   loadError: {
@@ -50,11 +52,71 @@ const L = {
     en: 'ST deviation at J+60 ms relative to the PR segment, averaged across beats.',
     pt: 'Desnivelamento do ST em J+60 ms em relação ao segmento PR, média entre batimentos.',
   },
+  halfGainNote: {
+    es: (grupo) => `Los milímetros son a ganancia estándar, que es como se informa un desnivel. ${grupo} está dibujado a 5 mm/mV porque los complejos no entraban: ahí, lo que contás en la pantalla es la mitad de estos valores.`,
+    en: (grupo) => `The millimetres are at standard gain, which is how a deviation is reported. ${grupo} is drawn at 5 mm/mV because the complexes did not fit: there, what you count on screen is half of these values.`,
+    pt: (grupo) => `Os milímetros são em ganho padrão, que é como se informa um desnivelamento. ${grupo} está desenhado a 5 mm/mV porque os complexos não cabiam: ali, o que você conta na tela é a metade destes valores.`,
+  },
+  groupChest: { es: 'El grupo V1-V6', en: 'The V1-V6 group', pt: 'O grupo V1-V6' },
+  groupLimb: { es: 'El grupo de los miembros', en: 'The limb lead group', pt: 'O grupo dos membros' },
+  groupBoth: { es: 'Todo el trazado', en: 'The whole tracing', pt: 'Todo o traçado' },
   irregular: { es: '(irregular)', en: '(irregular)', pt: '(irregular)' },
   bpm: { es: 'lpm', en: 'bpm', pt: 'bpm' },
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
   regularRhythm: { es: 'ritmo regular', en: 'regular rhythm', pt: 'ritmo regular' },
   irregularRhythm: { es: 'irregularmente irregular', en: 'irregularly irregular', pt: 'irregularmente irregular' },
+  axisLabel: { es: 'eje', en: 'axis', pt: 'eixo' },
+  axisNote: {
+    es: 'El eje sale del área neta del QRS en las seis derivaciones de los miembros, resuelto con la geometría del plano frontal. Normal entre −30° y +90°: por debajo es desviación izquierda, por encima, derecha. Las flechas dicen si el complejo es neto positivo o negativo en cada derivación, que es como se lee el eje a ojo.',
+    en: 'The axis comes from the net QRS area in the six limb leads, solved with the geometry of the frontal plane. Normal between −30° and +90°: below that is left deviation, above it, right. The arrows say whether the complex is net positive or negative in each lead, which is how the axis is read by eye.',
+    pt: 'O eixo sai da área líquida do QRS nas seis derivações dos membros, resolvido com a geometria do plano frontal. Normal entre −30° e +90°: abaixo é desvio esquerdo, acima, direito. As setas dizem se o complexo é líquido positivo ou negativo em cada derivação, que é como se lê o eixo a olho.',
+  },
+  qrsWidth: { es: 'QRS', en: 'QRS', pt: 'QRS' },
+  secondRLabel: { es: '2ª R', en: '2nd R', pt: '2ª R' },
+  sLabel: { es: 'S', en: 'S', pt: 'S' },
+  qrsNote: {
+    es: 'Ancho del QRS sobre un latido promedio. La segunda R es un segundo pico positivo dentro del mismo complejo: en un QRS normal no existe, y su altura es la del ventrículo que se despolarizó tarde y solo.',
+    en: 'QRS width on an averaged beat. The second R is a second positive peak inside the same complex: a normal QRS has none, and its height is that of the ventricle that depolarized late and alone.',
+    pt: 'Largura do QRS sobre um batimento médio. A segunda R é um segundo pico positivo dentro do mesmo complexo: num QRS normal não existe, e sua altura é a do ventrículo que se despolarizou tarde e sozinho.',
+  },
+  // Cuando el eje y la segunda R aparecen juntos hay que decir por qué: son dos
+  // bloqueos distintos sobre el mismo trazado, no un hallazgo con dos números.
+  axisSecondRNote: {
+    es: 'La segunda R de V1 y la desviación del eje son dos bloqueos distintos leídos sobre el mismo latido: el QRS ancho con segunda R es la rama derecha, el eje más allá de −45° con rS en la cara inferior es el fascículo anterior izquierdo.',
+    en: 'The second R in V1 and the axis deviation are two separate blocks read on the same beat: the wide QRS with a second R is the right bundle, the axis beyond −45° with rS inferiorly is the left anterior fascicle.',
+    pt: 'A segunda R de V1 e o desvio do eixo são dois bloqueios distintos lidos sobre o mesmo batimento: o QRS largo com segunda R é o ramo direito, o eixo além de −45° com rS na face inferior é o fascículo anterior esquerdo.',
+  },
+  // El bajo voltaje se define sobre la amplitud de PICO A PICO del QRS, que no
+  // es ninguna de las otras medidas: no importa si el complejo es positivo o
+  // negativo, importa cuánto mide de punta a punta.
+  voltageNote: {
+    es: 'Amplitud del QRS de pico a pico —lo que sube la R más lo que baja la S— en cada derivación. Hay bajo voltaje cuando NINGUNA de las seis derivaciones de los miembros llega a 5 mm; el criterio generalizado pide además que ninguna precordial llegue a 10 mm. Alcanza con que una sola derivación pase el umbral para que no se cumpla.',
+    en: 'Peak-to-peak QRS amplitude — how far the R goes up plus how far the S goes down — in each lead. There is low voltage when NONE of the six limb leads reaches 5 mm; the generalized criterion also requires that no chest lead reaches 10 mm. A single lead above the threshold is enough for the criterion to fail.',
+    pt: 'Amplitude do QRS de pico a pico — o que a R sobe mais o que a S desce — em cada derivação. Há baixa voltagem quando NENHUMA das seis derivações dos membros chega a 5 mm; o critério generalizado exige ainda que nenhuma precordial chegue a 10 mm. Basta uma derivação acima do limiar para o critério não se cumprir.',
+  },
+  limbGroup: { es: 'miembros', en: 'limb', pt: 'membros' },
+  chestGroup: { es: 'precordiales', en: 'chest', pt: 'precordiais' },
+  prLabel: { es: 'PR', en: 'PR', pt: 'PR' },
+  prNote: {
+    es: 'El PR va del comienzo de la onda P al comienzo del QRS: lo que tarda el estímulo en cruzar la aurícula y el nodo AV. Se mide sobre un latido promedio, que es lo que permite ver una P de una o dos décimas de milivoltio. Normal entre 120 y 200 ms; por encima de 200, bloqueo AV de primer grado.',
+    en: 'The PR runs from the start of the P wave to the start of the QRS: the time the impulse takes to cross the atrium and the AV node. It is measured on an averaged beat, which is what makes a P of one or two tenths of a millivolt visible. Normal between 120 and 200 ms; above 200, first degree AV block.',
+    pt: 'O PR vai do começo da onda P ao começo do QRS: o que o estímulo demora a atravessar o átrio e o nó AV. Mede-se sobre um batimento médio, que é o que permite ver uma P de um ou dois décimos de milivolt. Normal entre 120 e 200 ms; acima de 200, bloqueio AV de primeiro grau.',
+  },
+  sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
+  sagNote: {
+    es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
+    en: 'The sag is how far the ST dips below the J point before rising again. A flat or straight-sloping ST gives zero; only the concave shape raises it.',
+    pt: 'A cubeta é o quanto o ST afunda abaixo do ponto J antes de voltar a subir. Um ST plano ou que desce reto dá zero; só a forma côncava o eleva.',
+  },
+  qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
+  qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
+  qtcF: { es: 'QTc Fridericia', en: 'QTc Fridericia', pt: 'QTc Fridericia' },
+  qtLeads: { es: (n) => `${n} derivaciones`, en: (n) => `${n} leads`, pt: (n) => `${n} derivações` },
+  qtNote: {
+    es: 'Del inicio del QRS al final de la T, por el método de la tangente, sobre un latido promedio. Se informa el QT más largo entre las derivaciones donde la T se puede medir. Prolongado por encima de 450 ms en hombres y 460 en mujeres.',
+    en: 'From QRS onset to the end of the T, by the tangent method, on an averaged beat. The longest QT among the leads where the T can be measured is reported. Prolonged above 450 ms in men and 460 in women.',
+    pt: 'Do início do QRS ao fim da T, pelo método da tangente, sobre um batimento médio. Informa-se o QT mais longo entre as derivações onde a T pode ser medida. Prolongado acima de 450 ms em homens e 460 em mulheres.',
+  },
   rhythmNote: {
     es: 'La variación del RR es la diferencia típica entre latidos, relativa al RR. Por debajo de 0,08 el ritmo es regular.',
     en: 'RR variation is the typical beat-to-beat difference, relative to the RR interval. Below 0.08 the rhythm is regular.',
@@ -81,6 +143,11 @@ const num = (v, d, lang) => v.toFixed(d).replace('.', lang === 'en' ? '.' : ',')
 // con el signo adelante. 0,18 mV son 1,8 mm, o sea casi dos cuadraditos. Cuando
 // redondea a cero se omite el signo: escribir "+0,0 mm" sugiere una dirección
 // que la medición no tiene.
+// Para amplitudes —la altura de una onda, la profundidad de otra— el signo no
+// aporta: una onda S mide 2,6 mm de profundidad, no "+2,6". El signo se reserva
+// para los desniveles del ST, donde la dirección ES el hallazgo.
+const mmAbs = (mv, lang) => `${num(Math.abs(mv * 10), 1, lang)} mm`;
+
 const mm = (mv, lang) => {
   const abs = Math.abs(mv * 10);
   if (abs < 0.05) return `${num(0, 1, lang)} mm`;
@@ -91,13 +158,13 @@ const mm = (mv, lang) => {
 // elegir entre achicarlo hasta que no se lea o dejar scroll horizontal. Se elige
 // el scroll, que es lo que hace cualquiera con un electro impreso, y además se
 // permite tocar una derivación para verla sola y en grande.
-function EcgSheet({ signal, theme, highlight, lang, onLeadClick }) {
+function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
   return (
     <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
       <div className="relative">
         <div className="overflow-x-auto">
           <div className="min-w-[680px]">
-            <TwelveLead signal={signal} theme={theme} highlight={highlight} onLeadClick={onLeadClick} />
+            <TwelveLead signal={signal} theme={theme} highlight={highlight} onLeadClick={onLeadClick} gain={gain} />
           </div>
         </div>
         {/* Degradado en el borde derecho: en mobile el electro no entra entero y sin
@@ -132,7 +199,7 @@ function EcgSheet({ signal, theme, highlight, lang, onLeadClick }) {
 // base donde apoyar la medición: cualquier número de ST que se muestre ahí es
 // falso. En esos casos se miden la frecuencia y la regularidad, que sí se pueden
 // medir, y el número que no corresponde no se muestra.
-function Measured({ q, metrics, lang }) {
+function Measured({ q, metrics, lang, gain }) {
   if (!q || !metrics) return null;
 
   const chip = (key, label, value, tone) => (
@@ -144,7 +211,95 @@ function Measured({ q, metrics, lang }) {
   let chips = [];
   let note = '';
 
-  if (metrics.kind === 'st') {
+  if (metrics.kind === 'axis') {
+    if (q.axisDeg === null) return null;
+    const desviado = q.axisDeg < -30 || q.axisDeg > 90;
+    chips = [
+      chip('ax', L.axisLabel[lang], `${Math.round(q.axisDeg)}°`,
+           desviado ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                    : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // Así se lee el eje a ojo: qué derivaciones dan un complejo neto positivo
+      // y cuáles negativo. La flecha dice más que el área en milivoltios por
+      // segundo, que no significa nada para quien mira el electro.
+      ...(metrics.leads ?? []).map((l) => chip(`a-${l}`, l, q.areaQRS[l] >= 0 ? '↑' : '↓',
+           q.areaQRS[l] >= 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                             : 'text-sky-300 border-sky-900/60 bg-sky-950/30')),
+      // Un bloqueo bifascicular se lee en el eje Y en la segunda R: son los dos
+      // fascículos caídos, y el panel tiene que mostrar los dos a la vez.
+      ...(metrics.secondR ?? []).map((l) => chip(`r2-${l}`, `${L.secondRLabel[lang]} ${l}`, mmAbs(q.rPrime[l], lang),
+           q.rPrime[l] > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60')),
+    ];
+    note = L.axisNote[lang] + (metrics.secondR ? ` ${L.axisSecondRNote[lang]}` : '');
+  } else if (metrics.kind === 'qrs') {
+    chips = [
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(metrics.secondR ?? []).map((l) => chip(`r2-${l}`, `${L.secondRLabel[lang]} ${l}`, mmAbs(q.rPrime[l], lang),
+           q.rPrime[l] > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60')),
+      ...(metrics.sDepth ?? []).map((l) => chip(`s-${l}`, `${L.sLabel[lang]} ${l}`, mmAbs(q.s[l], lang),
+           'text-sky-300 border-sky-900/60 bg-sky-950/30')),
+    ];
+    note = L.qrsNote[lang];
+  } else if (metrics.kind === 'voltage') {
+    // Un grupo por umbral: 5 mm en los miembros, 10 mm en las precordiales. Se
+    // marca la derivación que está POR DEBAJO, que es la anormal — al revés que
+    // en casi todos los otros paneles, donde lo llamativo es lo que sobra.
+    //
+    // El criterio es del GRUPO, no de cada derivación: una V1 de 7 mm no es
+    // anormal por sí sola, y pintarla de alarma diría algo que no es cierto. Se
+    // marca el grupo entero cuando TODAS sus derivaciones quedan por debajo del
+    // umbral, que es justamente cuando el criterio se cumple.
+    const grupo = (leads, umbral, etiqueta) => {
+      if (!leads.length) return [];
+      const cumple = leads.every((l) => q.r[l] - q.s[l] <= umbral);
+      const tono = cumple ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60';
+      return [
+        chip(`g-${etiqueta}`, '', etiqueta, 'text-slate-500 border-slate-800 bg-slate-950/60'),
+        ...leads.map((l) => chip(`v-${l}`, l, mmAbs(q.r[l] - q.s[l], lang), tono)),
+      ];
+    };
+    chips = [
+      ...grupo(metrics.limb ?? [], 0.5, L.limbGroup[lang]),
+      ...grupo(metrics.chest ?? [], 1.0, L.chestGroup[lang]),
+    ];
+    note = L.voltageNote[lang];
+  } else if (metrics.kind === 'pr') {
+    if (q.prMs === null) return null;
+    const largo = q.prMs > 200;
+    chips = [
+      chip('pr', L.prLabel[lang], `${Math.round(q.prMs)} ms`,
+           largo ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                 : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('rr', L.rrVar[lang], num(q.rrCv, 3, lang),
+           q.rrCv > 0.08 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                         : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.prNote[lang];
+  } else if (metrics.kind === 'qt') {
+    if (q.qtMs === null) return null;
+    const medibles = Object.values(q.qt).filter((v) => v !== null);
+    // El umbral depende del sexo, así que lo decide el caso y no este bloque.
+    const alto = q.qtcBazett > (metrics.threshold ?? 450);
+    const tono = alto ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                      : 'text-slate-400 border-slate-800 bg-slate-950/60';
+    chips = [
+      chip('qt', L.qtMs[lang], `${Math.round(q.qtMs)} ms`, 'text-slate-300 border-slate-800 bg-slate-950/60'),
+      chip('qtcb', L.qtcB[lang], `${Math.round(q.qtcBazett)} ms`, tono),
+      chip('qtcf', L.qtcF[lang], `${Math.round(q.qtcFridericia)} ms`, tono),
+      chip('n', '', L.qtLeads[lang](medibles.length), 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.qtNote[lang];
+  } else if (metrics.kind === 'st') {
     chips = metrics.leads.map((l) => {
       const v = q.st[l];
       // El umbral de 1 mm no es decorativo: por debajo de ese valor un desnivel
@@ -154,7 +309,22 @@ function Measured({ q, metrics, lang }) {
                  : 'text-slate-400 border-slate-800 bg-slate-950/60';
       return chip(l, l, mm(q.st[l], lang), tone);
     });
-    note = L.measuredNote[lang];
+    // gain es {limb, chest}: comparar el objeto con 10 daba SIEMPRE distinto, y
+    // la nota de media ganancia aparecía en todos los casos, incluidos los
+    // dibujados a escala estándar. Una advertencia que no corresponde es peor
+    // que ninguna: hace desconfiar de los milímetros que sí están bien.
+    const bajoLimb = gain.limb !== MM_PER_MV;
+    const bajoChest = gain.chest !== MM_PER_MV;
+    const grupo = bajoLimb && bajoChest ? L.groupBoth[lang] : bajoChest ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.measuredNote[lang] + (bajoLimb || bajoChest ? ` ${L.halfGainNote[lang](grupo)}` : '');
+    // Algunos casos no se juegan en cuánto bajó el ST sino en cómo bajó.
+    if (metrics.sag) {
+      chips = chips.concat(metrics.sag.map((l) => chip(
+        `sag-${l}`, `${L.sagLabel[lang]} ${l}`, mmAbs(q.sag[l], lang),
+        q.sag[l] >= 0.05 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                         : 'text-slate-400 border-slate-800 bg-slate-950/60')));
+      note += ` ${L.sagNote[lang]}`;
+    }
   } else {
     const irregular = q.rrCv > 0.08;
     chips = [
@@ -181,7 +351,7 @@ function Measured({ q, metrics, lang }) {
 
 // Una sola derivación, a todo lo ancho y con el doble de alto: para mirar de
 // cerca el segmento ST cuando la vista general no alcanza.
-function LeadZoom({ signal, lead, theme, lang, onClose }) {
+function LeadZoom({ signal, lead, theme, lang, onClose, gain }) {
   const single = useMemo(() => ({
     fs: signal.fs,
     duration: signal.duration,
@@ -197,7 +367,7 @@ function LeadZoom({ signal, lead, theme, lang, onClose }) {
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 text-sm">{L.close[lang]}</button>
         </div>
         <div className="rounded-2xl overflow-hidden border border-slate-700">
-          <TwelveLead signal={single} theme={theme} rhythmLead={lead} singleRow />
+          <TwelveLead signal={single} theme={theme} rhythmLead={lead} singleRow gain={gain} />
         </div>
       </div>
     </div>
@@ -238,6 +408,11 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
   // cada render se notaría al tocar cualquier botón.
   const measured = useMemo(() => (signal ? measure(signal) : null), [signal]);
 
+  // Un electro de mucho voltaje —un bloqueo de rama, una hipertrofia— no entra
+  // en la fila a ganancia estándar. Se dibuja a la mitad, como en el papel, y el
+  // pie de la hoja lo dice.
+  const gain = useMemo(() => (signal ? suggestGain(signal) : { limb: MM_PER_MV, chest: MM_PER_MV }), [signal]);
+
   // El orden de las opciones se calcula una vez por caso: si se recalculara en
   // cada render, se reacomodarían solas al responder.
   const options = useMemo(() => shuffledOptions(c), [c]);
@@ -270,9 +445,9 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
         <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
           <Check className="w-7 h-7 text-emerald-400" />
         </div>
-        <h2 className="font-display text-2xl text-slate-100">{L.done[lang]}</h2>
+        <h2 className="font-display text-2xl text-slate-100">{L.done[lang](CASES.length)}</h2>
         <p className="text-3xl font-mono text-indigo-300">{score} / {CASES.length}</p>
-        <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">{L.doneSub[lang]}</p>
+        <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">{L.doneSub[lang](CASES.length)}</p>
         <p className="text-[11px] text-slate-600 max-w-md mx-auto leading-relaxed">
           <a href={SOURCE.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
             {SOURCE.citation}
@@ -348,6 +523,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
           highlight={answered ? c.highlight : []}
           lang={lang}
           onLeadClick={setZoomLead}
+          gain={gain}
         />
       ) : (
         <div className="rounded-2xl border border-slate-800 bg-slate-950 flex items-center justify-center"
@@ -398,7 +574,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
             )}
           </div>
 
-          <Measured q={measured} metrics={c.metrics} lang={lang} />
+          <Measured q={measured} metrics={c.metrics} lang={lang} gain={gain} />
 
           <Block icon={Activity} tone="indigo" title={L.why[lang]} text={c.explain[lang]} />
           <Block icon={AlertTriangle} tone="amber" title={L.pitfall[lang]} text={c.pitfall[lang]} />
@@ -412,7 +588,7 @@ export default function TwelveLeadSection({ lang = 'es', onAnswer }) {
       )}
 
       {zoomLead && signal && (
-        <LeadZoom signal={signal} lead={zoomLead} theme={theme} lang={lang} onClose={() => setZoomLead(null)} />
+        <LeadZoom signal={signal} lead={zoomLead} theme={theme} lang={lang} gain={gain} onClose={() => setZoomLead(null)} />
       )}
     </div>
   );

@@ -128,6 +128,99 @@ Qué registro usa cada caso se declara en `src/ecg12/records.js`, y
 realmente muestra. Si una prueba de `test-cases.mjs` falla, el caso no se
 publica: el texto y el electro dejaron de coincidir.
 
+### Agregar un caso nuevo
+
+Los trazados son de pacientes reales: nadie los grabó a medida del texto que los
+acompaña. Por eso el orden es al revés del que uno esperaría — primero se
+describe lo que se quiere enseñar en términos medibles, después se busca qué
+electro lo muestra, y recién al final se escribe el texto.
+
+**1. Describir el hallazgo.** Un `findings` es esa descripción: umbrales en
+milivoltios (0,1 mV = 1 mm de papel = un cuadradito), derivación por derivación.
+Hay un ejemplo comentado en `scripts/ejemplos/clbbb.mjs`. El vocabulario completo
+está en `src/ecg12/findings.js`.
+
+**2. Buscar registros que lo cumplan.** El buscador recorre PTB-XL midiendo, y
+devuelve sólo los que satisfacen el `findings` entero:
+
+```bash
+npm run search:ptbxl -- --scp CLBBB --findings scripts/ejemplos/clbbb.mjs
+npm run search:ptbxl -- --case inferior-stemi      # alternativas a un caso que ya existe
+npm run search:ptbxl -- --report "posterior"       # por lo que escribió el cardiólogo
+```
+
+Los ordena por lo CLARO que se vea el hallazgo, no por lo grande: cuenta el
+margen con que se cumple la regla más ajustada y penaliza el ruido entre latidos.
+Un infarto espectacular sobre un trazado sucio enseña peor que uno moderado sobre
+uno limpio. Baja de a ocho registros en paralelo, así una búsqueda de trescientos
+tarda un par de minutos la primera vez y segundos después, con el caché ya hecho.
+
+**3. Mirarlos.** Este paso no se saltea aunque los números den bien:
+
+```bash
+npm run preview:ecg12 -- 5191 2940            # la hoja 3×4
+npm run preview:ecg12 -- 5191 --lead V2 V6    # una derivación, en grande
+```
+
+Se aprendió por las malas. En la primera tanda, el registro con el descenso del
+ST más marcado de toda la base tenía, al dibujarlo, las derivaciones de los
+miembros casi planas: la medición era correcta y el electro no servía igual. Los
+números descartan; la vista decide. (Requiere Playwright, que no es dependencia
+del proyecto porque sólo lo usa esta herramienta: `npm i -D playwright && npx
+playwright install chromium`.)
+
+**4. Anotarlo y escribirlo.** En `records.js` van el id, la edad y el sexo del
+registro y el informe original del cardiólogo, sin traducir. En `cases.js` va el
+caso, con el mismo `findings` con que se lo buscó. Después:
+
+```bash
+npm run fetch:ptbxl && npm test
+```
+
+Las pruebas comprueban, midiendo, que el registro siga mostrando lo que el texto
+dice. El predicado que encontró el caso es el que después lo vigila: si mañana se
+cambia el registro y deja de cumplir, la prueba falla antes de que un estudiante
+lea algo que el trazado no dice.
+
+**Ganancia.** Un registro con más de 3 mV de excursión no entra en su fila a
+10 mm/mV. La app lo resuelve sola: `suggestGain()` baja ese grupo a 5 mm/mV y el
+pie de la hoja lo dice, igual que cualquier electrocardiógrafo. Se decide POR
+GRUPO —miembros y precordiales por separado— porque el voltaje grande casi
+siempre está en las precordiales, y bajar la hoja entera deja las de los miembros
+como una línea recta. El buscador avisa qué candidatos van a caer en ese caso.
+
+**Lo que la base no tiene.** Hay cuadros que PTB-XL no contiene con la limpieza
+necesaria para enseñarlos. El infarto lateral aislado, por ejemplo, da cero
+candidatos. No es un límite de la herramienta; es el material.
+
+**Una medición validada contra referencia.** El eje eléctrico es la única del
+módulo que se pudo contrastar con una etiqueta de la propia base, la columna
+`heart_axis`. Los registros que PTB-XL llama MID miden +54° de mediana, los LAD
+−34°, los ALAD −49° y los RAD +101°: el orden sale bien y las medianas no se
+solapan. Se calcula por mínimos cuadrados sobre las seis derivaciones de los
+miembros y no con la receta de mirar I y aVF, porque las aumentadas valen √3/2 de
+las bipolares y combinarlas sin corregir ese factor inclina el resultado.
+
+**Un hallazgo que mide forma, no causa.** `stSag` mide la «cubeta» del efecto
+digitálico: cuánto se hunde el ST por debajo del punto J antes de volver a subir.
+Se midió sobre toda la base y separa poco — 35 µV con digital contra 25 en la
+isquemia lateral, con mucha superposición. Sirve para encontrar un trazado donde
+la forma se vea clara y para describirla; no para afirmar la causa, y el caso lo
+dice así. (La primera versión de la medida parecía separar seis veces mejor, pero
+comparaba contra una cuerda que sube hacia la T, y por eso marcaba 124 µV de
+falsa cubeta en electros normales.)
+
+**El QT es un caso aparte.** El final de la onda T es el punto más discutible de
+un electro, y por eso `findings.js` trae `qtSpreadMs`, que no es un hallazgo
+clínico sino una condición para poder afirmar el hallazgo: si las derivaciones no
+coinciden entre sí, el QT del registro depende de cuál se mire. Sirvió. De los
+278 registros de la base cuyo informe menciona QT prolongado, sólo un puñado
+sostiene una medición defendible; entre los descartados hubo uno donde la mediana
+daba 434 ms —normal— y el máximo 502 —prolongado—, y otro donde la onda T y la U
+estaban fundidas y el número medido era en realidad un QU. El medidor devuelve
+`null` en las derivaciones donde la T mide menos de 1 mm, que es la forma honesta
+de decir que ahí no se puede medir.
+
 **Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 
 **Variables de entorno requeridas:**

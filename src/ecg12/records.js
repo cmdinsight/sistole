@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // LOS REGISTROS: DE DÓNDE SALE CADA TRAZADO
 // ═══════════════════════════════════════════════════════════════
-// Los ocho electrocardiogramas de la sección son reales. Salen de PTB-XL, una
+// Los electrocardiogramas de la sección son reales. Salen de PTB-XL, una
 // base de 21.799 registros de 12 derivaciones, de 10 segundos, anotados por
 // cardiólogos, que el Physikalisch-Technische Bundesanstalt publica en
 // PhysioNet. Se eligieron midiendo los 21.799 con el módulo measure.js y
@@ -68,6 +68,62 @@ export const RECORDS = {
       + 'anteriore ischämie oder linksbelastung laterale ischämie oder linksbelastung inferolaterale '
       + 'ischämie oder linksbelastung',
   },
+  14219: {
+    age: 78, sex: 'F', scp: ['CLBBB'],
+    report: 'sinusrhythmus llt vollstaendiger linksschenkelblock st-hebung in v1-v3 '
+      + 't-veraenderungen pathologisches ekg',
+  },
+  1451: {
+    age: 69, sex: 'F', scp: ['LVH'],
+    report: 'sinusrytm vänster kammarhypertrofi',
+  },
+  8198: {
+    age: 49, sex: 'F', scp: ['LNGQT'],
+    report: 'sinusrhythmus lagetyp normal qt-verlängerung',
+  },
+  15985: {
+    age: 84, sex: 'F', scp: ['DIG', 'AFIB'],
+    report: 'vorhofflimmern normokard stlt st-hebung in v4-6, ii, iii, avf st-senkung in ii, iii, avf, v4-6 '
+      + 'neg. t in ii, iii, avf, v4-6 digitalisveraenderung pathologisches ekg',
+  },
+  2017: {
+    age: 82, sex: 'F', scp: ['CRBBB'],
+    report: 'sinusrhythmus ueberdrehter linkstyp rechtsschenkelblock qrs(t) abnormal '
+      + 'supraventr. extrasystolen pathologisch',
+  },
+  41: {
+    age: 42, sex: 'M', scp: ['LAFB'],
+    report: 'sinusrhythmus ueberdrehter linkstyp linksanteriorer hemiblock',
+  },
+  16389: {
+    age: 75, sex: 'F', scp: ['CRBBB', 'LAFB'],
+    report: 'sinus rhythm. left axis deviation. left anterior fascicular block. right bundle branch block. '
+      + 'bifascicular block. pr interval is normal.',
+  },
+  // PTB-XL etiqueta este registro a la vez como NORM (probabilidad 100) y como
+  // LPFB. La contradicción no es un error de la base: es exactamente lo que el
+  // caso enseña, y por eso se transcribe tal cual.
+  13052: {
+    age: 35, sex: 'M', scp: ['NORM', 'LPFB'],
+    report: 'sinusrhythmus ueberdrehter rechtstyp linksposteriorer hemiblock',
+  },
+  4215: {
+    age: 62, sex: 'M', scp: ['NORM', 'LVOLT'],
+    report: 'sinusrhythmus lagetyp normal periphere niederspannung',
+  },
+  // PTB-XL lo estadifica como Stadium III: un infarto ya evolucionado. Eso es
+  // parte del hallazgo, porque el ST que sigue arriba a esa altura es
+  // justamente lo que define el patrón.
+  7953: {
+    age: 76, sex: 'F', stage: 'Stadium III', scp: ['ASMI', 'ALMI', 'ANEUR'],
+    report: 'sinus rhythm. tiny r waves in v2,3. q waves in i, avl, v4,5,6. t waves are low or flat '
+      + 'in i, avl, v5,6. consistent with anterior and lateral myocardial infarction.',
+  },
+  9619: {
+    age: 76, sex: 'M', scp: ['NORM', '1AVB'],
+    report: 'sinusrhythmus a-v block i lagetyp normal st & t abnorm, wahrscheinlich inferolaterale '
+      + 'ischÄmie oder linksbelastung 4.46 unbestÄtigter bericht',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -75,4 +131,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '595'];

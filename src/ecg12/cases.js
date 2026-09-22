@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // CASOS DE 12 DERIVACIONES
 // ═══════════════════════════════════════════════════════════════
-// Los ocho trazados son electrocardiogramas REALES, de PTB-XL. La procedencia de
+// Los trazados son electrocardiogramas REALES, de PTB-XL. La procedencia de
 // cada uno está en records.js; acá está lo que enseña.
 //
 // La regla es la misma de siempre, pero ahora es más exigente: cada caso declara
@@ -334,6 +334,589 @@ export const CASES = [
       es: 'Si está inestable, cardioversión eléctrica sincronizada, que en el aleteo suele necesitar menos energía que en la fibrilación. Si está estable, control de frecuencia y anticoagulación con el mismo criterio que en la fibrilación auricular: el riesgo embólico es equivalente. Si la frecuencia no se define a ojo, maniobras vagales o adenosina frenan el nodo unos segundos y dejan las ondas F al descubierto — es diagnóstico, no tratamiento.',
       en: 'If unstable, synchronized electrical cardioversion, which in flutter usually needs less energy than in fibrillation. If stable, rate control and anticoagulation on the same criteria as atrial fibrillation: the embolic risk is equivalent. If the rhythm is not clear by eye, vagal manoeuvres or adenosine slow the node for a few seconds and lay the F waves bare — that is diagnostic, not therapeutic.',
       pt: 'Se instável, cardioversão elétrica sincronizada, que no flutter costuma exigir menos energia que na fibrilação. Se estável, controle de frequência e anticoagulação com o mesmo critério da fibrilação atrial: o risco embólico é equivalente. Se o ritmo não ficar claro a olho nu, manobras vagais ou adenosina freiam o nó por alguns segundos e deixam as ondas F à mostra — isso é diagnóstico, não tratamento.',
+    },
+  },
+
+  {
+    id: 'lbbb',
+    record: '14219',
+    age: 78, sex: 'F',
+    vitals: { bp: '142/86', spo2: 96, rr: 18 },
+    highlight: ['V1', 'V2', 'V3', 'I', 'aVL', 'V5', 'V6'],
+    answer: 'brizq',
+    metrics: { kind: 'st', leads: ['V1', 'V2', 'V3', 'I', 'aVL', 'V5', 'V6'] },
+    // Medido: QRS 128 ms. V1 +343, V2 +498, V3 +348 µV con S de 1651, 2259 y
+    // 1631 µV — el ST es el 21%, el 22% y el 21% de la S. I −231, aVL −182,
+    // V5 −211, V6 −226 µV, con T invertida en las cuatro.
+    findings: {
+      qrsMs: [120, 160],
+      rsPattern: ['V1', 'V2', 'V3'],
+      stElevation: { leads: ['V1', 'V2', 'V3'], min: 0.20 },
+      tUpright: { leads: ['V1', 'V2', 'V3'], min: 0.30 },
+      stDepression: { leads: ['I', 'aVL', 'V5', 'V6'], min: 0.12 },
+      tInversion: { leads: ['I', 'aVL', 'V5', 'V6'], min: 0.15 },
+      dominantR: ['V5', 'V6'],
+      stToSRatio: { leads: ['V1', 'V2', 'V3'], max: 0.25 },
+      rate: [70, 92],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 78 años con dolor torácico opresivo de una hora. En la guardia miran el electro, ven la elevación del ST en V1, V2 y V3, y activan la sala de hemodinamia por un infarto anterior.',
+      en: '78-year-old woman with one hour of crushing chest pain. In the emergency department they look at the ECG, see the ST elevation in V1, V2 and V3, and activate the cath lab for an anterior infarction.',
+      pt: 'Mulher de 78 anos com dor torácica opressiva há uma hora. No pronto-socorro veem o ECG, notam a elevação do ST em V1, V2 e V3 e acionam a hemodinâmica por um infarto anterior.',
+    },
+    options: [
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'anterior', label: { es: 'IAM anterior con supradesnivel', en: 'Anterior STEMI', pt: 'IAM anterior com supradesnivelamento' } },
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'LV hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'marcapasos', label: { es: 'Ritmo de marcapasos', en: 'Paced rhythm', pt: 'Ritmo de marca-passo' } },
+    ],
+    explain: {
+      es: 'Mirá el ancho antes que la altura. El QRS dura 128 ms, y por encima de 120 el ventrículo izquierdo ya no se despolarizó por su rama sino de músculo en músculo, desde el derecho. Eso solo cambia las reglas de todo lo que viene después. Cuando la despolarización es anormal, la repolarización también lo es, y el ST y la T terminan apuntando al lado CONTRARIO del QRS. Se llama discordancia y está en las dos direcciones: en V1 a V3, donde el QRS es una S profunda, el ST sube y la T es positiva; en I, aVL, V5 y V6, donde el QRS es una R ancha, el ST baja y la T se invierte. Un infarto anterior no hace eso: eleva el ST donde mira la zona dañada y deja el resto sin la imagen opuesta sistemática.',
+      en: 'Look at the width before the height. The QRS lasts 128 ms, and above 120 the left ventricle is no longer depolarized through its own branch but muscle to muscle, from the right. That alone changes the rules for everything that follows. When depolarization is abnormal, so is repolarization, and the ST and T end up pointing the OPPOSITE way to the QRS. It is called discordance, and it runs in both directions: in V1 to V3, where the QRS is a deep S, the ST rises and the T is upright; in I, aVL, V5 and V6, where the QRS is a broad R, the ST falls and the T inverts. An anterior infarct does not do that: it elevates the ST where the leads face the damaged wall and leaves the rest without that systematic mirror.',
+      pt: 'Olhe a largura antes da altura. O QRS dura 128 ms, e acima de 120 o ventrículo esquerdo já não se despolarizou pelo seu ramo, mas de músculo em músculo, a partir do direito. Isso por si só muda as regras de tudo o que vem depois. Quando a despolarização é anormal, a repolarização também é, e o ST e a T acabam apontando para o lado CONTRÁRIO do QRS. Chama-se discordância e ocorre nas duas direções: em V1 a V3, onde o QRS é uma S profunda, o ST sobe e a T é positiva; em I, aVL, V5 e V6, onde o QRS é uma R larga, o ST desce e a T se inverte. Um infarto anterior não faz isso: eleva o ST onde as derivações olham a parede lesada e deixa o resto sem essa imagem oposta sistemática.',
+    },
+    pitfall: {
+      es: 'El bloqueo de rama no impide diagnosticar un infarto: impide diagnosticarlo contando milímetros. Lo que se mide es la PROPORCIÓN, porque el bloqueo eleva el ST en proporción al tamaño del complejo. Acá la S de V2 baja unos 22 mm y el ST sube 5: el 22%. Por debajo del 25% la elevación la explica el bloqueo solo; por encima de ese umbral, no, y hay que pensar en oclusión. Lo mismo vale para el otro indicio: un descenso del ST en V1-V3, donde el QRS es negativo y el ST debería subir, es una discordancia rota y no la explica el bloqueo. Por eso 5 mm de elevación sobre una S enorme son esperables y 3 mm sobre una S chica no lo son.',
+      en: 'A bundle branch block does not prevent diagnosing infarction: it prevents diagnosing it by counting millimetres. What you measure is the PROPORTION, because the block elevates the ST in proportion to the size of the complex. Here the S in V2 drops about 22 mm and the ST rises 5: 22%. Below 25% the elevation is explained by the block alone; above that threshold it is not, and you should think of occlusion. The same goes for the other clue: ST depression in V1-V3, where the QRS is negative and the ST should rise, is broken discordance and the block does not explain it. That is why 5 mm of elevation over a huge S is expected and 3 mm over a small S is not.',
+      pt: 'O bloqueio de ramo não impede diagnosticar um infarto: impede diagnosticá-lo contando milímetros. O que se mede é a PROPORÇÃO, porque o bloqueio eleva o ST proporcionalmente ao tamanho do complexo. Aqui a S de V2 desce cerca de 22 mm e o ST sobe 5: 22%. Abaixo de 25% a elevação é explicada apenas pelo bloqueio; acima desse limiar, não, e deve-se pensar em oclusão. O mesmo vale para o outro indício: um infradesnivelamento em V1-V3, onde o QRS é negativo e o ST deveria subir, é uma discordância rompida que o bloqueio não explica. Por isso 5 mm de elevação sobre uma S enorme são esperáveis e 3 mm sobre uma S pequena não são.',
+    },
+    action: {
+      es: 'El electro no descarta el infarto, y el dolor sigue siendo dolor: la paciente necesita troponinas seriadas, antiagregación y un electro repetido. Lo que cambia la decisión es un dato que no está en el trazado: si este bloqueo es nuevo. Buscá un electro previo antes que cualquier otra cosa. Si el bloqueo ya estaba y la proporción del ST es la esperable, no hay indicación de hemodinamia por el electro solo; si es nuevo y el cuadro clínico acompaña, se maneja como un síndrome coronario de alto riesgo.',
+      en: 'The ECG does not rule out infarction, and the pain is still pain: she needs serial troponins, antiplatelet therapy and a repeat ECG. What changes the decision is a piece of information that is not in the tracing: whether this block is new. Find a previous ECG before anything else. If the block was already there and the ST proportion is as expected, the ECG alone does not indicate the cath lab; if it is new and the clinical picture fits, manage it as a high-risk acute coronary syndrome.',
+      pt: 'O ECG não afasta o infarto, e a dor continua sendo dor: a paciente precisa de troponinas seriadas, antiagregação e ECG repetido. O que muda a decisão é um dado que não está no traçado: se este bloqueio é novo. Procure um ECG anterior antes de qualquer outra coisa. Se o bloqueio já existia e a proporção do ST é a esperada, o ECG sozinho não indica hemodinâmica; se é novo e o quadro clínico acompanha, trata-se como síndrome coronariana de alto risco.',
+    },
+  },
+
+  {
+    id: 'lvh-strain',
+    record: '1451',
+    age: 69, sex: 'F',
+    vitals: { bp: '168/94', spo2: 97, rr: 16 },
+    highlight: ['I', 'V5', 'V6', 'V1', 'V2'],
+    answer: 'hvi',
+    metrics: { kind: 'st', leads: ['I', 'V5', 'V6', 'V1', 'V2'] },
+    // Medido: Sokolow-Lyon 52,4 mm (S de V1 27,8 + R de V5 24,7). QRS 92 ms.
+    // I −97, V5 −134, V6 −145 µV con T invertida; V1 +203, V2 +237 µV con T
+    // positiva, que es la misma sobrecarga vista desde el lado opuesto.
+    findings: {
+      qrsMs: [70, 110],
+      sokolowLyon: { min: 3.5 },
+      rsPattern: ['V1', 'V2', 'V3'],
+      dominantR: ['V5', 'V6'],
+      stDepression: { leads: ['I', 'V5', 'V6'], min: 0.08 },
+      tInversion: { leads: ['I', 'V5', 'V6'], min: 0.15 },
+      stElevation: { leads: ['V1', 'V2'], min: 0.15 },
+      rate: [75, 95],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 69 años, hipertensa de largo tiempo y mal controlada. Consulta por disnea al esfuerzo que fue empeorando en los últimos meses. No tiene dolor torácico. Le piden un electro antes de derivarla a cardiología.',
+      en: '69-year-old woman with long-standing, poorly controlled hypertension. She presents with exertional breathlessness that has worsened over recent months. She has no chest pain. An ECG is requested before referring her to cardiology.',
+      pt: 'Mulher de 69 anos, hipertensa de longa data e mal controlada. Consulta por dispneia aos esforços que piorou nos últimos meses. Não tem dor torácica. Pedem um ECG antes de encaminhá-la à cardiologia.',
+    },
+    options: [
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'Left ventricular hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica lateral', en: 'Lateral subendocardial ischemia', pt: 'Isquemia subendocárdica lateral' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'anterior', label: { es: 'IAM anterior con supradesnivel', en: 'Anterior STEMI', pt: 'IAM anterior com supradesnivelamento' } },
+    ],
+    explain: {
+      es: 'Empezá por el pie de la hoja: las precordiales están dibujadas a 5 mm/mV y no a 10, porque a escala normal no entraban. Eso ya es el primer dato. El voltaje se mide con el índice de Sokolow-Lyon, que suma la S de V1 y la R de V5: 27,8 más 24,7 son 52 mm, y el umbral son 35. Suma dos derivaciones opuestas a propósito, porque un ventrículo grande manda su vector hacia la izquierda y atrás, y eso agranda la R de las laterales y la S de V1 al mismo tiempo: son las dos caras de lo mismo. Sobre ese voltaje viene lo segundo: descenso del ST con la onda T invertida en I, V5 y V6, que es el patrón de sobrecarga. Y en V1 y V2 el ST está elevado con T positiva, que es esa misma sobrecarga vista desde el lado contrario.',
+      en: 'Start at the foot of the sheet: the precordial leads are drawn at 5 mm/mV instead of 10, because at normal scale they did not fit. That is already the first finding. Voltage is measured with the Sokolow-Lyon index, which adds the S in V1 to the R in V5: 27.8 plus 24.7 is 52 mm, and the threshold is 35. It deliberately adds two opposite leads, because an enlarged ventricle sends its vector left and backwards, which enlarges the R in the lateral leads and the S in V1 at the same time: they are two faces of the same thing. On top of that voltage comes the second finding: ST depression with an inverted T in I, V5 and V6 — the strain pattern. And in V1 and V2 the ST is elevated with an upright T, which is that same strain seen from the opposite side.',
+      pt: 'Comece pelo rodapé da folha: as precordiais estão desenhadas a 5 mm/mV e não a 10, porque em escala normal não cabiam. Isso já é o primeiro dado. A voltagem se mede com o índice de Sokolow-Lyon, que soma a S de V1 e a R de V5: 27,8 mais 24,7 são 52 mm, e o limiar é 35. Soma duas derivações opostas de propósito, porque um ventrículo grande manda seu vetor para a esquerda e para trás, e isso aumenta a R das laterais e a S de V1 ao mesmo tempo: são as duas faces da mesma coisa. Sobre essa voltagem vem o segundo achado: infradesnivelamento do ST com onda T invertida em I, V5 e V6, o padrão de sobrecarga. E em V1 e V2 o ST está elevado com T positiva, que é essa mesma sobrecarga vista do lado contrário.',
+    },
+    pitfall: {
+      es: 'Este trazado es idéntico al de una isquemia lateral, y no hay forma de separarlos con un solo electro. Lo que inclina la balanza es que el ST-T está montado sobre un voltaje enorme, que la T es asimétrica —baja despacio y sube rápido, al revés que la T simétrica de la isquemia— y que un electro previo lo mostraría igual. Pero ojo con la trampa en el otro sentido, que es la peligrosa: la hipertrofia no protege de un infarto. En un paciente con sobrecarga de base, los cambios de una isquemia se suman a un ST-T que ya estaba alterado, y "es la hipertrofia de siempre" es exactamente la frase con la que se pasa por alto un infarto.',
+      en: 'This tracing is identical to lateral ischemia, and there is no way to separate them from a single ECG. What tips the balance is that the ST-T sits on top of enormous voltage, that the T is asymmetric — descending slowly and rising fast, unlike the symmetric T of ischemia — and that a previous ECG would look the same. But beware the trap in the other direction, which is the dangerous one: hypertrophy does not protect against infarction. In a patient with baseline strain, ischemic changes add onto an ST-T that was already abnormal, and "it is just the usual hypertrophy" is exactly the sentence with which an infarct gets missed.',
+      pt: 'Este traçado é idêntico ao de uma isquemia lateral, e não há como separá-los com um único ECG. O que inclina a balança é que o ST-T está montado sobre uma voltagem enorme, que a T é assimétrica — desce devagar e sobe rápido, ao contrário da T simétrica da isquemia — e que um ECG anterior o mostraria igual. Mas atenção à armadilha no outro sentido, que é a perigosa: a hipertrofia não protege de um infarto. Num paciente com sobrecarga de base, as alterações isquêmicas se somam a um ST-T já alterado, e "é a hipertrofia de sempre" é exatamente a frase com que se deixa passar um infarto.',
+    },
+    action: {
+      es: 'Acá no hay indicación de hemodinamia: esta paciente no tiene dolor y el electro es compatible con su hipertensión de años. Lo que corresponde es un ecocardiograma, que confirma la hipertrofia y busca la causa —hipertensión, estenosis aórtica, miocardiopatía hipertrófica—, y ajustar el tratamiento antihipertensivo. Guardá este electro: el día que consulte por dolor torácico, este trazado es lo que va a permitir decir si algo cambió.',
+      en: 'There is no indication for the cath lab here: this patient has no pain and the ECG fits her years of hypertension. What is needed is an echocardiogram, which confirms the hypertrophy and looks for the cause — hypertension, aortic stenosis, hypertrophic cardiomyopathy — and adjustment of her antihypertensive treatment. File this ECG: the day she comes in with chest pain, this tracing is what will let you say whether anything changed.',
+      pt: 'Aqui não há indicação de hemodinâmica: esta paciente não tem dor e o ECG é compatível com sua hipertensão de anos. O que cabe é um ecocardiograma, que confirma a hipertrofia e busca a causa — hipertensão, estenose aórtica, miocardiopatia hipertrófica — e ajustar o tratamento anti-hipertensivo. Guarde este ECG: no dia em que ela consultar por dor torácica, este traçado é o que vai permitir dizer se algo mudou.',
+    },
+  },
+
+  {
+    id: 'long-qt',
+    record: '8198',
+    age: 49, sex: 'F',
+    vitals: { bp: '112/70', spo2: 98, rr: 14 },
+    highlight: ['II', 'V3', 'V4', 'V5'],
+    answer: 'qtlargo',
+    metrics: { kind: 'qt', threshold: 460 },
+    // Medido: QT 458 ms a 65 lpm. QTc 475 por Bazett y 469 por Fridericia, que
+    // a esta frecuencia casi coinciden. Once derivaciones medibles, todas dentro
+    // de 46 ms. ST plano en las doce (máximo 42 µV en V2).
+    findings: {
+      qtcMs: [455, 500],
+      qtSpreadMs: { max: 60 },
+      qrsMs: [70, 110],
+      tUpright: { leads: ['II', 'V3', 'V4', 'V5'], min: 0.25 },
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'], max: 0.06 },
+      rate: [58, 75],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 49 años traída por un desmayo mientras hacía la cola en una farmacia. Se recuperó sola en menos de un minuto. Toma citalopram desde hace años; esta semana le agregaron azitromicina por una bronquitis y ondansetrón porque el antibiótico le daba náuseas.',
+      en: '49-year-old woman brought in after fainting while queuing at a pharmacy. She recovered on her own in under a minute. She has taken citalopram for years; this week azithromycin was added for bronchitis, and ondansetron because the antibiotic was making her nauseated.',
+      pt: 'Mulher de 49 anos trazida após um desmaio enquanto fazia fila numa farmácia. Recuperou-se sozinha em menos de um minuto. Toma citalopram há anos; esta semana acrescentaram azitromicina por uma bronquite e ondansetrona porque o antibiótico lhe dava náuseas.',
+    },
+    options: [
+      { id: 'qtlargo', label: { es: 'QT prolongado', en: 'Prolonged QT', pt: 'QT prolongado' } },
+      { id: 'normal', label: { es: 'Electrocardiograma normal', en: 'Normal electrocardiogram', pt: 'Eletrocardiograma normal' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica difusa', en: 'Diffuse subendocardial ischemia', pt: 'Isquemia subendocárdica difusa' } },
+      { id: 'qtcorto', label: { es: 'QT corto por hipercalcemia', en: 'Short QT from hypercalcemia', pt: 'QT curto por hipercalcemia' } },
+    ],
+    explain: {
+      es: 'A primera vista no hay nada: ritmo sinusal, QRS angosto, ST en la línea de base en las doce derivaciones. Lo anormal es un intervalo, y los intervalos no saltan a la vista, hay que medirlos. El QT va desde el comienzo del QRS hasta que termina la onda T, y acá mide 458 ms. Después hay que corregirlo por la frecuencia, porque el QT se acorta solo cuando el corazón se acelera: a 65 lpm la corrección de Bazett lo deja en 475 ms, y el umbral en una mujer son 460. La de Fridericia da 469, y que las dos coincidan no es casualidad — se separan en los extremos de frecuencia, y a 65 lpm ninguna está forzando nada.',
+      en: 'At first glance there is nothing: sinus rhythm, narrow QRS, ST on the baseline in all twelve leads. What is abnormal is an interval, and intervals do not jump out at you — they have to be measured. The QT runs from the start of the QRS to the end of the T wave, and here it is 458 ms. Then it must be corrected for rate, because the QT shortens on its own as the heart speeds up: at 65 bpm Bazett\u2019s correction gives 475 ms, and the threshold in a woman is 460. Fridericia gives 469, and the two agreeing is not a coincidence — they diverge at the extremes of rate, and at 65 bpm neither is straining.',
+      pt: 'À primeira vista não há nada: ritmo sinusal, QRS estreito, ST na linha de base nas doze derivações. O anormal é um intervalo, e intervalos não saltam à vista — é preciso medi-los. O QT vai do início do QRS até o fim da onda T, e aqui mede 458 ms. Depois há que corrigi-lo pela frequência, porque o QT encurta sozinho quando o coração acelera: a 65 bpm a correção de Bazett o deixa em 475 ms, e o limiar numa mulher é 460. A de Fridericia dá 469, e as duas coincidirem não é acaso — elas se separam nos extremos de frequência, e a 65 bpm nenhuma está forçando nada.',
+    },
+    pitfall: {
+      es: 'El error está en dónde se decide que la T terminó. La onda T no termina en un punto nítido: se va acostando sobre la línea de base. Si uno espera a que la toque, el QT sale largo siempre. Y si detrás hay una onda U —frecuente cuando el potasio está bajo— y se la incluye, lo que se midió es un QU y el número sobra decenas de milisegundos. Lo que se hace es prolongar con una regla la parte más empinada de la bajada de la T y marcar dónde esa recta cruza la línea de base. Acá la T es alta y vuelve limpia, así que el final es poco discutible; en un trazado con la T chata, el QT deja de ser un número confiable y conviene decirlo en vez de informarlo igual.',
+      en: 'The error is in deciding where the T ended. The T wave does not end at a sharp point: it lies down onto the baseline. If you wait for it to touch, the QT always comes out long. And if there is a U wave behind it — common when potassium is low — and you include it, what you measured is a QU and the number is tens of milliseconds too long. What you do is extend the steepest part of the T\u2019s downslope with a ruler and mark where that line crosses the baseline. Here the T is tall and returns cleanly, so the end is hard to argue with; on a tracing with a flat T, the QT stops being a reliable number and it is better to say so than to report it anyway.',
+      pt: 'O erro está em decidir onde a T terminou. A onda T não termina num ponto nítido: vai se deitando sobre a linha de base. Se você esperar que a toque, o QT sai sempre longo. E se atrás houver uma onda U — frequente quando o potássio está baixo — e você a incluir, o que mediu foi um QU e o número sobra dezenas de milissegundos. O que se faz é prolongar com uma régua a parte mais íngreme da descida da T e marcar onde essa reta cruza a linha de base. Aqui a T é alta e volta limpa, então o final é pouco discutível; num traçado com a T achatada, o QT deixa de ser um número confiável e convém dizê-lo em vez de informá-lo assim mesmo.',
+    },
+    action: {
+      es: 'Lo primero es la lista de medicamentos, y en este caso alcanza con leerla: citalopram, azitromicina y ondansetrón prolongan el QT los tres, y acá están los tres juntos. Suspender lo que se pueda —el ondansetrón y el antibiótico son los agregados recientes— y consultar por el citalopram antes de tocarlo. Pedir potasio, magnesio y calcio, porque un electrolito bajo multiplica el efecto de los fármacos. Y repetir el electro: lo que importa no es sólo el número de hoy sino si baja al sacar las drogas. Un desmayo con el QT prolongado no es un desmayo cualquiera; puede haber sido una torsades que cedió sola.',
+      en: 'The first step is the medication list, and in this case reading it is enough: citalopram, azithromycin and ondansetron all prolong the QT, and here all three are together. Stop what can be stopped — the ondansetron and the antibiotic are the recent additions — and consult before touching the citalopram. Check potassium, magnesium and calcium, because a low electrolyte multiplies the drugs\u2019 effect. And repeat the ECG: what matters is not only today\u2019s number but whether it falls once the drugs are removed. A faint with a prolonged QT is not an ordinary faint; it may have been a torsades that stopped on its own.',
+      pt: 'O primeiro passo é a lista de medicamentos, e neste caso basta lê-la: citalopram, azitromicina e ondansetrona prolongam o QT, e aqui estão os três juntos. Suspender o que for possível — a ondansetrona e o antibiótico são os acréscimos recentes — e consultar antes de mexer no citalopram. Pedir potássio, magnésio e cálcio, porque um eletrólito baixo multiplica o efeito dos fármacos. E repetir o ECG: o que importa não é só o número de hoje, mas se ele cai ao retirar as drogas. Um desmaio com QT prolongado não é um desmaio qualquer; pode ter sido uma torsades que cedeu sozinha.',
+    },
+  },
+
+  {
+    id: 'digitalis',
+    record: '15985',
+    age: 84, sex: 'F',
+    vitals: { bp: '126/72', spo2: 96, rr: 16 },
+    highlight: ['II', 'III', 'aVF', 'V4', 'V5', 'V6'],
+    answer: 'digital',
+    metrics: { kind: 'st', leads: ['II', 'aVF', 'V4', 'V5', 'V6'], sag: ['V5', 'V6', 'aVF'] },
+    // Medido: ST II −171, aVF −150, V4 −175, V5 −198, V6 −164 µV, con la cubeta
+    // hundiéndose 100 µV bajo el punto J en V5 y 87 en V6. Ritmo irregular
+    // (variación del RR 0,199), QRS de 76 ms, R dominante en V5 y V6.
+    findings: {
+      irregular: true,
+      qrsMs: [60, 110],
+      stDepression: { leads: ['II', 'aVF', 'V4', 'V5', 'V6'], min: 0.12 },
+      stSag: { leads: ['V5', 'V6', 'aVF'], min: 0.07 },
+      tInversion: { leads: ['II', 'aVF', 'V4', 'V5', 'V6'], min: 0.18 },
+      dominantR: ['V4', 'V5', 'V6'],
+    },
+    stem: {
+      es: 'Mujer de 84 años con fibrilación auricular conocida, en control de rutina. No tiene dolor torácico ni disnea. El médico que la ve mira el electro, encuentra descenso del ST en seis derivaciones y se pregunta si hay que estudiarla por enfermedad coronaria.',
+      en: '84-year-old woman with known atrial fibrillation, at a routine check-up. She has no chest pain or breathlessness. The doctor seeing her looks at the ECG, finds ST depression in six leads, and wonders whether she should be worked up for coronary disease.',
+      pt: 'Mulher de 84 anos com fibrilação atrial conhecida, em consulta de rotina. Não tem dor torácica nem dispneia. O médico que a atende vê o ECG, encontra infradesnivelamento do ST em seis derivações e se pergunta se deve investigá-la por doença coronariana.',
+    },
+    options: [
+      { id: 'digital', label: { es: 'Efecto digitálico sobre fibrilación auricular', en: 'Digitalis effect on atrial fibrillation', pt: 'Efeito digitálico sobre fibrilação atrial' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica extensa', en: 'Extensive subendocardial ischemia', pt: 'Isquemia subendocárdica extensa' } },
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'LV hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'intoxicacion', label: { es: 'Intoxicación digitálica', en: 'Digitalis toxicity', pt: 'Intoxicação digitálica' } },
+    ],
+    explain: {
+      es: 'Dos cosas, y la segunda explica a la primera. El ritmo es irregularmente irregular y sin ondas P: fibrilación auricular. Y el ST está descendido en II, III, aVF y de V4 a V6, pero con una forma particular: no baja derecho ni se queda plano, se hunde por debajo del punto J —un milímetro en V5— y vuelve a subir hacia la T. Esa concavidad es lo que se llama cubeta, y es la marca del efecto digitálico. La pregunta que la ordena todo no es del electro sino de la historia: ¿por qué está en fibrilación auricular una mujer de 84 años? Porque la tiene hace años. ¿Y con qué se le controla la frecuencia? Con digoxina.',
+      en: 'Two things, and the second explains the first. The rhythm is irregularly irregular with no P waves: atrial fibrillation. And the ST is depressed in II, III, aVF and V4 to V6, but with a particular shape: it does not slope straight down nor stay flat — it dips below the J point, a millimetre in V5, and rises again towards the T. That concavity is what is called the sag, or scoop, and it is the mark of digitalis effect. The question that orders everything is not on the ECG but in the history: why is an 84-year-old woman in atrial fibrillation? Because she has had it for years. And what controls her rate? Digoxin.',
+      pt: 'Duas coisas, e a segunda explica a primeira. O ritmo é irregularmente irregular e sem ondas P: fibrilação atrial. E o ST está infradesnivelado em II, III, aVF e de V4 a V6, mas com uma forma peculiar: não desce reto nem fica plano, afunda abaixo do ponto J — um milímetro em V5 — e volta a subir rumo à T. Essa concavidade é a chamada cubeta, e é a marca do efeito digitálico. A pergunta que ordena tudo não está no ECG, mas na história: por que uma mulher de 84 anos está em fibrilação atrial? Porque a tem há anos. E com o que se controla a frequência? Com digoxina.',
+    },
+    pitfall: {
+      es: 'Acá hay dos trampas, y conviene ser franco con la segunda. La primera: «efecto» no es «intoxicación». La cubeta aparece con dosis correctas, es esperable en quien toma digoxina y no indica suspenderla ni pedir una digoxinemia. La intoxicación se ve de otra manera —náuseas, alteraciones visuales, y sobre todo arritmias: taquicardia auricular con bloqueo, extrasístoles, taquicardia ventricular bidireccional—, y el grado de cubeta no dice nada del nivel en sangre. La segunda trampa es más incómoda: esta forma NO descarta isquemia. Se midió sobre la base entera, y los registros con digital se hunden 35 µV bajo el punto J contra 25 de los de isquemia lateral, con mucha superposición. La forma orienta; lo que decide es la lista de medicamentos y el cuadro clínico, no el trazado.',
+      en: 'There are two traps here, and the second deserves candour. The first: "effect" is not "toxicity". The sag appears at correct doses, is expected in anyone taking digoxin, and does not call for stopping the drug or checking a level. Toxicity looks different — nausea, visual disturbance, and above all arrhythmias: atrial tachycardia with block, ectopy, bidirectional ventricular tachycardia — and the degree of sag says nothing about the blood level. The second trap is less comfortable: this shape does NOT rule out ischemia. Measured across the whole dataset, digitalis records dip 35 µV below the J point against 25 for lateral ischemia, with heavy overlap. The shape points; what decides is the medication list and the clinical picture, not the tracing.',
+      pt: 'Aqui há duas armadilhas, e com a segunda convém ser franco. A primeira: «efeito» não é «intoxicação». A cubeta aparece com doses corretas, é esperável em quem toma digoxina e não indica suspendê-la nem pedir dosagem. A intoxicação se apresenta de outro modo — náuseas, alterações visuais e sobretudo arritmias: taquicardia atrial com bloqueio, extrassístoles, taquicardia ventricular bidirecional — e o grau de cubeta nada diz sobre o nível sanguíneo. A segunda armadilha é mais incômoda: esta forma NÃO afasta isquemia. Medido sobre toda a base, os registros com digital afundam 35 µV abaixo do ponto J contra 25 dos de isquemia lateral, com muita superposição. A forma orienta; quem decide é a lista de medicamentos e o quadro clínico, não o traçado.',
+    },
+    action: {
+      es: 'Ninguna conducta por el electro. Una paciente sin dolor, en fibrilación conocida y con la frecuencia controlada, con un patrón compatible con la medicación que toma, no necesita un estudio coronario por este trazado. Lo que sí corresponde es revisar la digoxinemia si hay síntomas, la función renal —la digoxina se elimina por riñón y en una persona de 84 años ese margen se estrecha— y el potasio, porque la hipopotasemia favorece la intoxicación. Y guardar el electro: si algún día consulta por dolor, este trazado es lo que va a permitir decir qué es nuevo y qué estaba desde antes.',
+      en: 'No action because of the ECG. A patient with no pain, in known fibrillation with a controlled rate, showing a pattern compatible with the medication she takes, does not need a coronary workup on the strength of this tracing. What is appropriate is to check a digoxin level if she has symptoms, renal function — digoxin is cleared by the kidney and at 84 that margin narrows — and potassium, because hypokalemia predisposes to toxicity. And to file the ECG: if she ever comes in with pain, this tracing is what will let you say what is new and what was already there.',
+      pt: 'Nenhuma conduta pelo ECG. Uma paciente sem dor, em fibrilação conhecida e com frequência controlada, com um padrão compatível com a medicação que toma, não precisa de investigação coronariana por causa deste traçado. O que cabe é verificar a digoxinemia se houver sintomas, a função renal — a digoxina é eliminada pelo rim e aos 84 anos essa margem se estreita — e o potássio, porque a hipocalemia favorece a intoxicação. E guardar o ECG: se um dia ela consultar por dor, este traçado é o que permitirá dizer o que é novo e o que já estava.',
+    },
+  },
+
+  {
+    id: 'rbbb',
+    record: '2017',
+    age: 82, sex: 'F',
+    vitals: { bp: '138/78', spo2: 97, rr: 15 },
+    highlight: ['V1', 'V2', 'I', 'V6'],
+    answer: 'brder',
+    metrics: { kind: 'qrs', secondR: ['V1', 'V2'], sDepth: ['I', 'V6'] },
+    // Medido: QRS 136 ms. En V1 el complejo es rsR' — r de 429 µV, S de 455,
+    // y una segunda R de 882. La misma fuerza tardía cava una S de 260 µV en I
+    // y 235 en V6. T invertida en V1 (−258 µV), que es el cambio secundario.
+    findings: {
+      qrsMs: [125, 165],
+      secondR: { leads: ['V1', 'V2'], min: 0.40 },
+      dominantR: ['V1'],
+      sDepth: { leads: ['I', 'V6'], min: 0.15 },
+      tInversion: { leads: ['V1'], min: 0.15 },
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 82 años, sin síntomas, en evaluación previa a una cirugía de cadera. El electro lo mira alguien que ve el QRS ancho y frena el trámite: quiere saber si esto es un bloqueo de rama y si cambia algo antes de operar.',
+      en: '82-year-old woman, asymptomatic, being assessed before hip surgery. The ECG is read by someone who sees the wide QRS and pauses the paperwork: they want to know whether this is a bundle branch block and whether it changes anything before operating.',
+      pt: 'Mulher de 82 anos, sem sintomas, em avaliação pré-operatória de cirurgia de quadril. O ECG é visto por alguém que nota o QRS largo e interrompe o trâmite: quer saber se isto é um bloqueio de ramo e se muda algo antes de operar.',
+    },
+    options: [
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha', en: 'Complete right bundle branch block', pt: 'Bloqueio completo de ramo direito' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'posterior', label: { es: 'IAM posterior', en: 'Posterior STEMI', pt: 'IAM posterior' } },
+      { id: 'hvd', label: { es: 'Hipertrofia ventricular derecha', en: 'Right ventricular hypertrophy', pt: 'Hipertrofia ventricular direita' } },
+    ],
+    explain: {
+      es: 'El QRS dura 136 ms: hay un ventrículo que se despolariza tarde. La pregunta es cuál, y la contesta V1, que es la derivación que mira de frente al ventrículo derecho. Ahí el complejo tiene tres partes: una r chica, una S, y después una SEGUNDA R más alta que la primera, de casi 9 mm. Eso es el rsR’, las orejas de conejo, y esa segunda onda es el ventrículo derecho despolarizándose solo, cuando el izquierdo ya terminó. La otra cara está en I y V6: miran desde la izquierda, esa misma fuerza tardía se aleja de ellas, y les cava una onda S ancha. Y la T invertida de V1 no es isquemia: es el cambio de repolarización que acompaña a cualquier despolarización anormal.',
+      en: 'The QRS lasts 136 ms: one ventricle is depolarizing late. Which one is answered by V1, the lead that faces the right ventricle head-on. There the complex has three parts: a small r, an S, and then a SECOND R, taller than the first, at almost 9 mm. That is the rsR’ — the rabbit ears — and that second wave is the right ventricle depolarizing alone, after the left has finished. The other face of it is in I and V6: they look from the left, that same late force moves away from them, and it carves a broad S. And the inverted T in V1 is not ischemia: it is the repolarization change that accompanies any abnormal depolarization.',
+      pt: 'O QRS dura 136 ms: há um ventrículo que se despolariza tarde. Qual deles é respondido por V1, a derivação que olha de frente o ventrículo direito. Ali o complexo tem três partes: uma r pequena, uma S, e depois uma SEGUNDA R mais alta que a primeira, de quase 9 mm. Isso é o rsR’, as orelhas de coelho, e essa segunda onda é o ventrículo direito se despolarizando sozinho, quando o esquerdo já terminou. A outra face está em I e V6: olham desde a esquerda, essa mesma força tardia se afasta delas e cava uma onda S larga. E a T invertida de V1 não é isquemia: é a alteração de repolarização que acompanha qualquer despolarização anormal.',
+    },
+    pitfall: {
+      es: 'Con un QRS ancho, la pregunta que ordena todo es cuál de las dos ramas está bloqueada, y se contesta mirando V1 y nada más: si hay una segunda R alta, es la derecha; si hay una S profunda y ancha, es la izquierda. Vale la pena comparar este trazado con el del caso de rama izquierda, porque los dos son anchos y en V1 son opuestos. La otra confusión es con una R alta en V1 sin bloqueo —infarto posterior, hipertrofia derecha—: ahí la R es alta pero es UNA sola, y el QRS es angosto. Y un dato que separa a las dos ramas en la práctica: el bloqueo derecho deja el ST legible fuera de V1-V3, así que un infarto se puede diagnosticar igual; el izquierdo no.',
+      en: 'With a wide QRS, the question that orders everything is which of the two branches is blocked, and it is answered by looking at V1 and nothing else: a tall second R means the right; a deep broad S means the left. It is worth comparing this tracing with the left bundle branch block case, because both are wide and in V1 they are opposites. The other confusion is a tall R in V1 without a block — posterior infarct, right ventricular hypertrophy: there the R is tall but there is only ONE, and the QRS is narrow. And one practical point that separates the two branches: right bundle branch block leaves the ST readable outside V1-V3, so an infarct can still be diagnosed; the left one does not.',
+      pt: 'Com um QRS largo, a pergunta que ordena tudo é qual dos dois ramos está bloqueado, e se responde olhando V1 e nada mais: se há uma segunda R alta, é o direito; se há uma S profunda e larga, é o esquerdo. Vale comparar este traçado com o do caso de ramo esquerdo, porque os dois são largos e em V1 são opostos. A outra confusão é com uma R alta em V1 sem bloqueio — infarto posterior, hipertrofia direita: ali a R é alta mas é UMA só, e o QRS é estreito. E um dado que separa os dois ramos na prática: o bloqueio direito deixa o ST legível fora de V1-V3, então um infarto ainda pode ser diagnosticado; o esquerdo não.',
+    },
+    action: {
+      es: 'Ninguna conducta, y la cirugía sigue. Un bloqueo de rama derecha aislado, en una persona sin síntomas, es un hallazgo frecuente que aumenta con la edad y no contraindica nada por sí solo. Lo que sí conviene es buscar un electro previo —si el bloqueo ya estaba, la tranquilidad es mayor— y mirar si viene acompañado: un hemibloqueo anterior izquierdo junto al bloqueo derecho es un bloqueo bifascicular, y eso, con síncope, ya es otra conversación. Acá no lo hay.',
+      en: 'No action, and the surgery proceeds. An isolated right bundle branch block in someone without symptoms is a common finding that increases with age and does not contraindicate anything on its own. What is worth doing is finding a previous ECG — if the block was already there, the reassurance is greater — and checking whether it comes with company: a left anterior fascicular block alongside the right bundle block is bifascicular block, and that, with syncope, is a different conversation. There is none here.',
+      pt: 'Nenhuma conduta, e a cirurgia segue. Um bloqueio de ramo direito isolado, numa pessoa sem sintomas, é um achado frequente que aumenta com a idade e não contraindica nada por si só. O que convém é procurar um ECG anterior — se o bloqueio já existia, a tranquilidade é maior — e ver se vem acompanhado: um hemibloqueio anterior esquerdo junto ao bloqueio direito é um bloqueio bifascicular, e isso, com síncope, é outra conversa. Aqui não há.',
+    },
+  },
+
+  {
+    id: 'lafb',
+    record: '41',
+    age: 42, sex: 'M',
+    vitals: { bp: '124/78', spo2: 98, rr: 14 },
+    highlight: ['I', 'aVL', 'II', 'III', 'aVF'],
+    answer: 'hemibloqueo',
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'] },
+    // Medido: eje −70°, QRS de 96 ms. En I y aVL el complejo es neto positivo;
+    // en II, III y aVF, neto negativo, con una r inicial de 581, 430 y 466 µV
+    // —hay r, no una Q— y una S de 1299, 1526 y 1416.
+    findings: {
+      axisDeg: [-85, -55],
+      qrsMs: [80, 115],
+      dominantR: ['I', 'aVL'],
+      rsPattern: ['II', 'III', 'aVF'],
+      rHeight: { leads: ['II', 'III', 'aVF'], min: 0.30 },
+      // El ST plano se afirma sólo de las derivaciones de los miembros, que es
+      // donde vive el hallazgo. En V2 y V3 hay 2,2 y 1,8 mm de elevación, que en
+      // un hombre de 42 años están dentro de lo normal — y el texto lo dice, en
+      // vez de callarlo y dejar que el lector desconfíe.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.06 },
+      rate: [62, 85],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 42 años, sin síntomas, electro de control laboral. El informe automático del equipo dice «ueberdrehter Linkstyp» —eje desviado a la izquierda— y el resto, normal. Le preguntan si eso significa algo.',
+      en: '42-year-old man, asymptomatic, ECG for an occupational check-up. The machine\u2019s report reads "left axis deviation" and otherwise normal. He asks whether that means anything.',
+      pt: 'Homem de 42 anos, sem sintomas, ECG de controle ocupacional. O laudo automático do aparelho diz «desvio do eixo para a esquerda» e o resto, normal. Ele pergunta se isso significa algo.',
+    },
+    options: [
+      { id: 'hemibloqueo', label: { es: 'Hemibloqueo anterior izquierdo', en: 'Left anterior fascicular block', pt: 'Hemibloqueio anterior esquerdo' } },
+      { id: 'inferior', label: { es: 'IAM inferior antiguo', en: 'Old inferior infarct', pt: 'IAM inferior antigo' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'normal', label: { es: 'Variante normal sin significado', en: 'Normal variant of no significance', pt: 'Variante normal sem significado' } },
+    ],
+    explain: {
+      es: 'El eje es hacia dónde apunta, en promedio, la despolarización del ventrículo, y acá vale −70°: bien por encima de la horizontal, arriba y a la izquierda. Se lee sin calcular nada, mirando qué complejos son netos positivos y cuáles negativos: I y aVL hacia arriba, II, III y aVF hacia abajo. El vector va hacia donde apuntan las positivas. La explicación está en la anatomía: la rama izquierda se divide en dos fascículos, y si el anterior no conduce, el ventrículo izquierdo se activa desde el posterior, o sea desde abajo y atrás, y el frente de despolarización sale hacia arriba y a la izquierda. Fijate también en el ancho: 96 ms, angosto. Falló un fascículo, no la rama entera, y por eso el complejo no se ensancha.',
+      en: 'The axis is the average direction of ventricular depolarization, and here it is −70°: well above the horizontal, up and to the left. You read it without calculating anything, by looking at which complexes are net positive and which negative: I and aVL point up, II, III and aVF point down. The vector heads towards the positive ones. The explanation is anatomical: the left bundle splits into two fascicles, and if the anterior one does not conduct, the left ventricle is activated from the posterior one — from below and behind — and the depolarization front comes out up and to the left. Note the width too: 96 ms, narrow. One fascicle failed, not the whole branch, and that is why the complex does not widen.',
+      pt: 'O eixo é a direção média da despolarização do ventrículo, e aqui vale −70°: bem acima da horizontal, para cima e para a esquerda. Lê-se sem calcular nada, vendo quais complexos são líquidos positivos e quais negativos: I e aVL para cima, II, III e aVF para baixo. O vetor vai na direção das positivas. A explicação é anatômica: o ramo esquerdo se divide em dois fascículos, e se o anterior não conduz, o ventrículo esquerdo é ativado pelo posterior — de baixo e de trás — e a frente de despolarização sai para cima e para a esquerda. Repare também na largura: 96 ms, estreito. Falhou um fascículo, não o ramo inteiro, e por isso o complexo não se alarga.',
+    },
+    pitfall: {
+      es: 'Una desviación del eje a la izquierda no es por sí sola un hemibloqueo: también la dan un infarto inferior antiguo, una hipertrofia ventricular izquierda, un corazón horizontalizado. El que más se confunde es el infarto inferior, porque también deja complejos negativos en II, III y aVF. La diferencia está en cómo EMPIEZAN esos complejos: acá arrancan con una r pequeña —de 4 a 6 décimas de milivoltio en las tres— y después cae la S. En un infarto inferior antiguo no hay nada positivo delante: empiezan con una Q. Esa r chiquita es toda la diferencia entre «hallazgo sin importancia» y «tuvo un infarto y no lo sabe». Y un detalle que salta a la vista y no hay que sobreleer: en V2 y V3 hay 2,2 y 1,8 mm de elevación del ST. En un hombre de 42 años sin síntomas eso está dentro de lo normal —el límite superior en esas derivaciones es más alto en varones jóvenes— y no cambia nada de lo anterior.',
+      en: 'Left axis deviation is not by itself a fascicular block: an old inferior infarct, left ventricular hypertrophy or a horizontal heart all produce it too. The one most often confused is the inferior infarct, because it also leaves negative complexes in II, III and aVF. The difference is in how those complexes BEGIN: here they start with a small r — four to six tenths of a millivolt in all three — and the S follows. In an old inferior infarct there is nothing positive in front: they start with a Q. That tiny r is the whole difference between "a finding of no importance" and "he had an infarct and does not know it". And one detail that catches the eye and should not be over-read: V2 and V3 show 2.2 and 1.8 mm of ST elevation. In a 42-year-old man without symptoms that is within normal limits — the upper limit in those leads is higher in young men — and it changes nothing above.',
+      pt: 'Um desvio do eixo para a esquerda não é por si só um hemibloqueio: um infarto inferior antigo, uma hipertrofia ventricular esquerda ou um coração horizontalizado também o produzem. O que mais se confunde é o infarto inferior, porque também deixa complexos negativos em II, III e aVF. A diferença está em como esses complexos COMEÇAM: aqui começam com uma r pequena — de quatro a seis décimos de milivolt nas três — e depois cai a S. Num infarto inferior antigo não há nada positivo antes: começam com uma Q. Essa r pequenininha é toda a diferença entre «achado sem importância» e «teve um infarto e não sabe». E um detalhe que salta à vista e não deve ser sobrelido: em V2 e V3 há 2,2 e 1,8 mm de elevação do ST. Num homem de 42 anos sem sintomas isso está dentro do normal — o limite superior nessas derivações é maior em homens jovens — e não muda nada do anterior.',
+    },
+    action: {
+      es: 'Ninguna, y el apto se firma. Un hemibloqueo anterior izquierdo aislado, en alguien de 42 años sin síntomas, es un hallazgo frecuente y sin consecuencias por sí solo. Lo que cambia la lectura es la compañía: junto a un bloqueo de rama derecha es un bloqueo bifascicular, y si además aparecen síncopes, ahí sí hay que estudiar la conducción. Guardá el electro, que es lo que va a permitir saber si el eje se desvió más adelante.',
+      en: 'None, and the clearance is signed. An isolated left anterior fascicular block in a 42-year-old without symptoms is a common finding with no consequences on its own. What changes the reading is its company: alongside a right bundle branch block it is bifascicular block, and if syncope appears as well, then conduction does need investigating. File the ECG — it is what will let you know whether the axis shifted later on.',
+      pt: 'Nenhuma, e o atestado se assina. Um hemibloqueio anterior esquerdo isolado, em alguém de 42 anos sem sintomas, é um achado frequente e sem consequências por si só. O que muda a leitura é a companhia: junto a um bloqueio de ramo direito é um bloqueio bifascicular, e se ainda surgirem síncopes, aí sim há que investigar a condução. Guarde o ECG — é o que permitirá saber se o eixo se desviou mais adiante.',
+    },
+  },
+
+  {
+    id: 'bifascicular',
+    record: '16389',
+    age: 75, sex: 'F',
+    vitals: { bp: '142/80', spo2: 97, rr: 16 },
+    highlight: ['V1', 'I', 'aVL', 'II', 'III', 'aVF'],
+    answer: 'bifascicular',
+    // El panel muestra el eje Y la segunda R porque el caso son dos bloqueos a
+    // la vez: mostrar uno solo sería enseñar la mitad del trazado.
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'], secondR: ['V1'] },
+    // Medido: QRS 136 ms, eje −68°. En V1 el complejo es rsR' — r de 172 µV,
+    // s de 257 y segunda R de 637— y en V2 la segunda R llega a 702. En II, III
+    // y aVF hay rS, con r inicial de 115, 246 y 181 µV antes de una S de 744,
+    // 1624 y 1189. La S de V6 mide 438 µV. T invertida en V1 (−222) y V2 (−176),
+    // que es el cambio secundario del bloqueo de rama. FC 76, RR regular
+    // (cv 0,003), QTc 433 ms.
+    findings: {
+      qrsMs: [125, 165],
+      axisDeg: [-80, -55],
+      secondR: { leads: ['V1', 'V2'], min: 0.40 },
+      dominantR: ['V1'],
+      rsPattern: ['II', 'III', 'aVF'],
+      // La r inicial de II es chica —115 µV— pero existe, y es lo que separa el
+      // hemibloqueo de un infarto inferior antiguo. El umbral se pone por debajo
+      // de lo medido a propósito: la prueba vigila que la r NO desaparezca, no
+      // que mida exactamente esto.
+      rHeight: { leads: ['II', 'III', 'aVF'], min: 0.08 },
+      sDepth: { leads: ['V6'], min: 0.30 },
+      tInversion: { leads: ['V1', 'V2'], min: 0.15 },
+      rate: [65, 90],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 75 años en la guardia después de un síncope: estaba parada haciendo una cola, se desvaneció sin aviso ninguno y volvió en sí sola en menos de un minuto. No hubo convulsión ni confusión después. Ahora está lúcida, sin dolor y estable. Éste es el electro.',
+      en: '75-year-old woman in the emergency department after a syncope: she was standing in a queue, blacked out with no warning at all and came round on her own in under a minute. No convulsion, no confusion afterwards. She is now alert, pain-free and stable. This is the ECG.',
+      pt: 'Mulher de 75 anos no pronto-socorro após um síncope: estava de pé numa fila, desmaiou sem aviso nenhum e voltou a si sozinha em menos de um minuto. Não houve convulsão nem confusão depois. Agora está lúcida, sem dor e estável. Este é o ECG.',
+    },
+    options: [
+      { id: 'bifascicular', label: { es: 'Bloqueo bifascicular: rama derecha + hemibloqueo anterior izquierdo', en: 'Bifascicular block: right bundle + left anterior fascicle', pt: 'Bloqueio bifascicular: ramo direito + hemibloqueio anterior esquerdo' } },
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha aislado', en: 'Isolated complete right bundle branch block', pt: 'Bloqueio completo de ramo direito isolado' } },
+      { id: 'hemibloqueo', label: { es: 'Hemibloqueo anterior izquierdo aislado', en: 'Isolated left anterior fascicular block', pt: 'Hemibloqueio anterior esquerdo isolado' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+    ],
+    explain: {
+      es: 'Hay dos bloqueos acá, y hay que leer los dos. El primero salta en V1: el complejo es rsR’ —una r chiquita, una s, y después una segunda R de 6,4 mm— y el QRS mide 136 ms. Ésa es la rama derecha: el ventrículo derecho no recibe el estímulo por su camino, le llega tarde desde el izquierdo, y esa despolarización final ya sola apunta hacia adelante y a la derecha, justo contra V1. La misma fuerza tardía, vista desde la izquierda, cava la S de V6 y arrastra la S de I, que es poco profunda pero ancha. El segundo bloqueo está en el eje: −68°, arriba y a la izquierda, con I y aVL netos positivos y II, III y aVF netos negativos. Eso es el fascículo anterior izquierdo. Y acá está lo que importa: el haz de His se reparte en tres caminos —la rama derecha y los dos fascículos de la izquierda, el anterior y el posterior—. Dos de esos tres no conducen. Todo el corazón se está despolarizando por el fascículo posterior izquierdo, solo. Eso es un bloqueo bifascicular, y no es la suma de dos rarezas del trazado: es un sistema de conducción al que le queda una sola vía.',
+      en: 'There are two blocks here, and both have to be read. The first jumps out in V1: the complex is rsR’ — a small r, an s, then a second R of 6.4 mm — and the QRS measures 136 ms. That is the right bundle: the right ventricle does not get the impulse down its own path, it arrives late from the left, and that final depolarization, now travelling alone, points forward and to the right, straight at V1. The same late force, seen from the left, digs the S in V6 and drags out the S in I, which is shallow but wide. The second block is in the axis: −68°, up and to the left, with I and aVL net positive and II, III and aVF net negative. That is the left anterior fascicle. And here is what matters: the bundle of His splits into three paths — the right bundle and the two left fascicles, anterior and posterior. Two of those three are not conducting. The whole heart is depolarizing through the left posterior fascicle, alone. That is bifascicular block, and it is not the sum of two oddities on a tracing: it is a conduction system down to a single remaining route.',
+      pt: 'Há dois bloqueios aqui, e os dois têm de ser lidos. O primeiro salta em V1: o complexo é rsR’ — uma r pequenininha, uma s, e depois uma segunda R de 6,4 mm — e o QRS mede 136 ms. Esse é o ramo direito: o ventrículo direito não recebe o estímulo pelo seu caminho, chega-lhe tarde a partir do esquerdo, e essa despolarização final, já sozinha, aponta para a frente e para a direita, bem contra V1. A mesma força tardia, vista da esquerda, cava a S de V6 e arrasta a S de I, que é pouco profunda mas larga. O segundo bloqueio está no eixo: −68°, para cima e para a esquerda, com I e aVL líquidos positivos e II, III e aVF líquidos negativos. Esse é o fascículo anterior esquerdo. E aqui está o que importa: o feixe de His reparte-se em três caminhos — o ramo direito e os dois fascículos do esquerdo, o anterior e o posterior. Dois desses três não conduzem. Todo o coração está a despolarizar-se pelo fascículo posterior esquerdo, sozinho. Isso é um bloqueio bifascicular, e não é a soma de duas esquisitices do traçado: é um sistema de condução com uma única via restante.',
+    },
+    pitfall: {
+      es: 'La trampa es frenar en el primer bloqueo que se ve. El QRS ancho con rsR’ en V1 es tan llamativo que uno escribe «bloqueo de rama derecha» y pasa a otra cosa — y el eje, que es el hallazgo que cambia la conducta, queda sin mirar. Regla práctica: delante de un bloqueo de rama derecha, mirá siempre el eje antes de cerrar el informe. La segunda confusión es al revés: leer II, III y aVF negativos como un infarto inferior antiguo. No lo son, y se ve en cómo EMPIEZAN esos complejos: acá arrancan con una r —de 1 a 2,5 décimas de milivoltio en las tres— y recién después cae la S. En un infarto antiguo no hay nada positivo delante, empiezan con una Q. Y una tercera, que hace pedir estudios de más: las T invertidas de V1 y V2 no son isquemia. Son el cambio secundario obligado del bloqueo de rama: si el ventrículo se despolariza mal, se repolariza mal, y esas T negativas vienen con el paquete. También vas a escuchar llamar a esto «bloqueo trifascicular» cuando además el PR está largo. El nombre es malo —el PR largo puede estar en el nodo y no en el fascículo que queda— y no cambia lo que hay que hacer.',
+      en: 'The trap is stopping at the first block you see. The wide QRS with rsR’ in V1 is so striking that one writes "right bundle branch block" and moves on — and the axis, which is the finding that changes management, never gets looked at. Practical rule: in front of a right bundle branch block, always check the axis before closing the report. The second confusion runs the other way: reading II, III and aVF as an old inferior infarct. They are not, and it shows in how those complexes BEGIN: here they start with an r — one to two and a half tenths of a millivolt in all three — and only then does the S fall. In an old infarct there is nothing positive in front, they start with a Q. And a third one, which leads to unnecessary workups: the inverted T waves in V1 and V2 are not ischaemia. They are the obligatory secondary change of the bundle branch block: if the ventricle depolarizes abnormally it repolarizes abnormally, and those negative T waves come with the package. You will also hear this called "trifascicular block" when the PR is long as well. The name is a poor one — a long PR may sit in the node rather than in the surviving fascicle — and it does not change what has to be done.',
+      pt: 'A armadilha é parar no primeiro bloqueio que se vê. O QRS largo com rsR’ em V1 é tão chamativo que se escreve «bloqueio de ramo direito» e passa-se a outra coisa — e o eixo, que é o achado que muda a conduta, fica por olhar. Regra prática: diante de um bloqueio de ramo direito, veja sempre o eixo antes de fechar o laudo. A segunda confusão é ao contrário: ler II, III e aVF negativos como um infarto inferior antigo. Não são, e vê-se em como esses complexos COMEÇAM: aqui começam com uma r — de um a dois e meio décimos de milivolt nas três — e só depois cai a S. Num infarto antigo não há nada positivo antes, começam com uma Q. E uma terceira, que leva a pedir exames a mais: as T invertidas de V1 e V2 não são isquemia. São a alteração secundária obrigatória do bloqueio de ramo: se o ventrículo se despolariza mal, repolariza-se mal, e essas T negativas vêm no pacote. Também vai ouvir chamar a isto «bloqueio trifascicular» quando o PR está longo por cima. O nome é mau — um PR longo pode estar no nó e não no fascículo que resta — e não muda o que há para fazer.',
+    },
+    action: {
+      es: 'No se va a la casa. Un bloqueo bifascicular encontrado por casualidad, en alguien sin síntomas, se sigue de lejos y no necesita nada: progresa a bloqueo completo en menos del 2 % por año. Lo que cambia todo es el síncope que la trajo. Un desvanecimiento sin aviso, sin pródromos, estando de pie, en alguien a quien le queda un solo fascículo, se asume bloqueo AV paroxístico hasta demostrar lo contrario — y ese ritmo no se va a ver en un electro de diez segundos, porque el paciente no está bloqueado ahora. Entonces: internación con monitoreo, y de ahí a estudio electrofisiológico o a un registrador de eventos según qué se vea. Si el bloqueo AV se documenta, o el estudio muestra un His-ventrículo largo, es marcapasos. Mientras tanto, revisá la medicación: betabloqueantes, verapamilo, diltiazem, antiarrítmicos, cualquier cosa que frene la conducción tiene que salir.',
+      en: 'She does not go home. A bifascicular block found by chance in someone without symptoms is followed at a distance and needs nothing: it progresses to complete block in under 2 % per year. What changes everything is the syncope that brought her in. A blackout with no warning, no prodrome, while standing, in someone left with a single fascicle, is assumed to be paroxysmal AV block until proven otherwise — and that rhythm will not show up on a ten-second ECG, because the patient is not blocked right now. So: admission with monitoring, and from there an electrophysiological study or an event recorder depending on what turns up. If AV block is documented, or the study shows a long His-ventricle interval, it is a pacemaker. In the meantime, review the medication: beta blockers, verapamil, diltiazem, antiarrhythmics — anything that slows conduction has to go.',
+      pt: 'Não vai para casa. Um bloqueio bifascicular encontrado por acaso, em alguém sem sintomas, segue-se de longe e não precisa de nada: progride para bloqueio completo em menos de 2 % ao ano. O que muda tudo é o síncope que a trouxe. Um desmaio sem aviso, sem pródromos, estando de pé, em alguém a quem resta um único fascículo, assume-se bloqueio AV paroxístico até prova em contrário — e esse ritmo não vai aparecer num ECG de dez segundos, porque o paciente não está bloqueado agora. Então: internação com monitorização, e daí a estudo eletrofisiológico ou a um registrador de eventos conforme o que se veja. Se o bloqueio AV for documentado, ou o estudo mostrar um His-ventrículo longo, é marca-passo. Entretanto, reveja a medicação: betabloqueadores, verapamil, diltiazem, antiarrítmicos — tudo o que trave a condução tem de sair.',
+    },
+  },
+
+  {
+    id: 'lpfb',
+    record: '13052',
+    age: 35, sex: 'M',
+    vitals: { bp: '118/72', spo2: 99, rr: 14 },
+    highlight: ['I', 'aVL', 'II', 'III', 'aVF', 'V1'],
+    answer: 'lpfb',
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'] },
+    // Medido: eje +100°, QRS de 84 ms. R dominante en II, III y aVF (710, 754
+    // y 724 µV de R contra 196, 88 y 29 de S); rS en I y aVL, con r inicial de
+    // 245 y 155 µV; rS en V1 (R de 11 µV contra S de 489). ST de los miembros
+    // dentro de 86 µV. FC 69, RR regular (cv 0,041).
+    //
+    // Las tres exclusiones del caso son las tres mediciones: V1 descarta la
+    // hipertrofia derecha, la r inicial de I y aVL descarta el infarto lateral,
+    // y los 84 ms descartan el bloqueo de rama. Lo que NO se puede excluir
+    // midiendo —la contextura física— es de lo que habla el texto.
+    findings: {
+      axisDeg: [85, 120],
+      qrsMs: [60, 115],
+      dominantR: ['II', 'III', 'aVF'],
+      rsPattern: ['I', 'aVL', 'V1'],
+      rHeight: { leads: ['I', 'aVL'], min: 0.10 },
+      // El ST plano se afirma sólo de los miembros y de V5-V6. En V2 y V3 hay
+      // 2,4 y 2,1 mm de elevación, que en un hombre de 35 años son
+      // repolarización precoz y están dentro de lo normal — y el texto lo dice.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.12 },
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 35 años, delgado, sin síntomas. Electro prelaboral. El informe automático del equipo dice «ueberdrehter Rechtstyp» —eje muy desviado a la derecha— y agrega «linksposteriorer Hemiblock». Le preguntan qué hay que hacer con eso.',
+      en: '35-year-old man, thin build, no symptoms. Pre-employment ECG. The machine\u2019s report reads "marked right axis deviation" and adds "left posterior hemiblock". He asks what should be done about that.',
+      pt: 'Homem de 35 anos, magro, sem sintomas. ECG ocupacional. O laudo automático do aparelho diz «desvio acentuado do eixo para a direita» e acrescenta «hemibloqueio posterior esquerdo». Ele pergunta o que fazer com isso.',
+    },
+    options: [
+      { id: 'lpfb', label: { es: 'Patrón de hemibloqueo posterior izquierdo', en: 'Left posterior fascicular block pattern', pt: 'Padrão de hemibloqueio posterior esquerdo' } },
+      { id: 'hvd', label: { es: 'Hipertrofia ventricular derecha', en: 'Right ventricular hypertrophy', pt: 'Hipertrofia ventricular direita' } },
+      { id: 'lateral', label: { es: 'Infarto lateral antiguo', en: 'Old lateral infarct', pt: 'Infarto lateral antigo' } },
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha', en: 'Complete right bundle branch block', pt: 'Bloqueio completo de ramo direito' } },
+    ],
+    explain: {
+      es: 'El eje mide +100°: desviado a la derecha. Se lee a ojo igual que siempre, mirando qué complejos son netos positivos y cuáles negativos, sólo que acá está todo dado vuelta respecto del hemibloqueo anterior: II, III y aVF hacia arriba, I y aVL hacia abajo. El vector va hacia abajo y a la derecha. La anatomía explica por qué: la rama izquierda se divide en dos fascículos, y si el que falla es el POSTERIOR, el ventrículo izquierdo se activa desde el anterior —desde arriba y adelante— y el frente de despolarización sale hacia abajo y a la derecha. Y como en el hemibloqueo anterior, el QRS sigue angosto: 84 ms. Falló un fascículo, no la rama. Ahora bien, el eje derecho solo no alcanza, porque lo dan varias cosas más. Lo que el trazado SÍ puede hacer es sacar las otras del medio, y acá las saca a las tres: V1 es rS —R de apenas 0,1 mm contra una S de 4,9—, o sea que no hay hipertrofia del ventrículo derecho, que daría una R alta ahí; I y aVL empiezan con una r —2,5 y 1,6 mm— y no con una Q, o sea que no hay un infarto lateral antiguo; y el QRS de 84 ms descarta un bloqueo de rama. Queda el patrón de hemibloqueo posterior izquierdo.',
+      en: 'The axis measures +100°: deviated to the right. You read it by eye as always, looking at which complexes are net positive and which negative — only here everything is flipped relative to the anterior fascicular block: II, III and aVF point up, I and aVL point down. The vector heads down and to the right. The anatomy explains why: the left bundle splits into two fascicles, and if the one that fails is the POSTERIOR one, the left ventricle is activated from the anterior fascicle — from above and in front — and the depolarization front comes out downward and to the right. And as in the anterior fascicular block, the QRS stays narrow: 84 ms. One fascicle failed, not the branch. Now, a right axis on its own is not enough, because several other things produce it. What the tracing CAN do is rule the others out, and here it rules out all three: V1 is rS — an R of barely 0.1 mm against an S of 4.9 — so there is no right ventricular hypertrophy, which would give a tall R there; I and aVL begin with an r — 2.5 and 1.6 mm — and not with a Q, so there is no old lateral infarct; and the 84 ms QRS excludes a bundle branch block. What is left is the left posterior fascicular block pattern.',
+      pt: 'O eixo mede +100°: desviado para a direita. Lê-se a olho como sempre, vendo quais complexos são líquidos positivos e quais negativos — só que aqui está tudo invertido em relação ao hemibloqueio anterior: II, III e aVF para cima, I e aVL para baixo. O vetor vai para baixo e para a direita. A anatomia explica porquê: o ramo esquerdo divide-se em dois fascículos, e se o que falha é o POSTERIOR, o ventrículo esquerdo é ativado pelo anterior — de cima e da frente — e a frente de despolarização sai para baixo e para a direita. E como no hemibloqueio anterior, o QRS continua estreito: 84 ms. Falhou um fascículo, não o ramo. Agora, um eixo direito sozinho não basta, porque várias outras coisas o produzem. O que o traçado PODE fazer é tirar as outras do meio, e aqui tira as três: V1 é rS — uma R de apenas 0,1 mm contra uma S de 4,9 —, ou seja, não há hipertrofia do ventrículo direito, que daria uma R alta ali; I e aVL começam com uma r — 2,5 e 1,6 mm — e não com uma Q, ou seja, não há infarto lateral antigo; e o QRS de 84 ms exclui um bloqueio de ramo. Resta o padrão de hemibloqueio posterior esquerdo.',
+    },
+    pitfall: {
+      es: 'Fijate que la opción correcta dice PATRÓN, y no «tiene un hemibloqueo posterior izquierdo». La diferencia no es una sutileza de redacción: el hemibloqueo posterior es un diagnóstico por descarte, y hay un descarte que el electro no puede hacer. Este hombre tiene 35 años y es delgado. En una persona flaca el corazón cuelga vertical dentro del tórax, y un corazón vertical da eje derecho sin que haya nada roto: es la causa más común de este trazado, y no se ve en el papel, se ve mirando al paciente. Lo mismo con el EPOC y con cualquier cosa que sobrecargue el ventrículo derecho. Por eso el fascículo posterior casi nunca se bloquea solo: es corto, ancho y tiene doble irrigación, y hace falta bastante daño para sacarlo de circulación. La propia base lo muestra: PTB-XL trae este registro etiquetado a la vez como NORMAL —con probabilidad 100— y como hemibloqueo posterior izquierdo. No es un error de la base. Es el problema. Y un detalle chico que no hay que sobreleer: en V2 y V3 hay 2,4 y 2,1 mm de elevación del ST, y la T de III está levemente invertida. En un hombre de 35 años sin síntomas eso es repolarización precoz y una variante normal: no cambia nada.',
+      en: 'Note that the correct option says PATTERN, not "he has a left posterior fascicular block". The difference is not a wording nicety: posterior fascicular block is a diagnosis of exclusion, and there is one exclusion the ECG cannot make. This man is 35 and thin. In a thin person the heart hangs vertically inside the chest, and a vertical heart gives a right axis with nothing broken at all: it is the commonest cause of this tracing, and it is not visible on the paper — it is visible by looking at the patient. The same goes for COPD and anything that loads the right ventricle. That is why the posterior fascicle almost never blocks on its own: it is short, wide and doubly supplied with blood, and it takes considerable damage to put it out of action. The database itself shows this: PTB-XL labels this record simultaneously as NORMAL — with likelihood 100 — and as left posterior fascicular block. That is not a mistake in the database. That is the problem. And one small detail not to over-read: V2 and V3 show 2.4 and 2.1 mm of ST elevation, and the T in III is slightly inverted. In a 35-year-old man without symptoms that is early repolarization and a normal variant: it changes nothing.',
+      pt: 'Repare que a opção correta diz PADRÃO, e não «tem um hemibloqueio posterior esquerdo». A diferença não é uma sutileza de redação: o hemibloqueio posterior é um diagnóstico por exclusão, e há uma exclusão que o ECG não consegue fazer. Este homem tem 35 anos e é magro. Numa pessoa magra o coração fica vertical dentro do tórax, e um coração vertical dá eixo direito sem que haja nada quebrado: é a causa mais comum deste traçado, e não se vê no papel — vê-se olhando para o paciente. O mesmo vale para a DPOC e para qualquer coisa que sobrecarregue o ventrículo direito. Por isso o fascículo posterior quase nunca se bloqueia sozinho: é curto, largo e tem dupla irrigação, e é preciso bastante dano para o pôr fora de circulação. A própria base mostra isso: o PTB-XL traz este registro etiquetado ao mesmo tempo como NORMAL — com probabilidade 100 — e como hemibloqueio posterior esquerdo. Não é um erro da base. É o problema. E um detalhe pequeno que não se deve sobreler: em V2 e V3 há 2,4 e 2,1 mm de elevação do ST, e a T de III está levemente invertida. Num homem de 35 anos sem sintomas isso é repolarização precoce e uma variante normal: não muda nada.',
+    },
+    action: {
+      es: 'El apto se firma. No hay nada que estudiar a partir de este electro en alguien de 35 años, sin síntomas y con un examen normal: el patrón aislado, sin síncope, sin disnea y sin cardiopatía conocida, no cambia ninguna conducta ni necesita seguimiento especial. Lo que sí vale es escribir bien el informe: «eje desviado a la derecha, patrón compatible con hemibloqueo posterior izquierdo; sin criterios de hipertrofia derecha ni de necrosis lateral; correlacionar con la contextura física». Eso es honesto y le sirve al que lo lea dentro de diez años. Y guardá el trazado: si algún día aparece con un bloqueo de rama derecha encima, ese eje pasa a ser la mitad de un bloqueo bifascicular, y entonces sí importa. La única situación que cambia todo es la misma de siempre: síncope. Con síncope, ningún trastorno de conducción es un hallazgo casual.',
+      en: 'The clearance is signed. There is nothing to investigate off this ECG in someone aged 35, without symptoms and with a normal examination: the isolated pattern, with no syncope, no breathlessness and no known heart disease, changes no management and needs no special follow-up. What is worth doing is writing the report properly: "right axis deviation, pattern compatible with left posterior fascicular block; no criteria for right ventricular hypertrophy or lateral necrosis; correlate with body habitus." That is honest and it serves whoever reads it ten years from now. And file the tracing: if he ever turns up with a right bundle branch block on top, that axis becomes half of a bifascicular block, and then it does matter. The one situation that changes everything is the usual one: syncope. With syncope, no conduction abnormality is an incidental finding.',
+      pt: 'O atestado assina-se. Não há nada a investigar a partir deste ECG em alguém de 35 anos, sem sintomas e com exame normal: o padrão isolado, sem síncope, sem dispneia e sem cardiopatia conhecida, não muda nenhuma conduta nem precisa de seguimento especial. O que vale a pena é escrever bem o laudo: «eixo desviado para a direita, padrão compatível com hemibloqueio posterior esquerdo; sem critérios de hipertrofia direita nem de necrose lateral; correlacionar com a compleição física». Isso é honesto e serve a quem o ler daqui a dez anos. E guarde o traçado: se um dia aparecer com um bloqueio de ramo direito por cima, esse eixo passa a ser metade de um bloqueio bifascicular, e aí sim importa. A única situação que muda tudo é a de sempre: síncope. Com síncope, nenhum distúrbio de condução é um achado casual.',
+    },
+  },
+
+  {
+    id: 'low-voltage',
+    record: '4215',
+    age: 62, sex: 'M',
+    vitals: { bp: '128/78', spo2: 97, rr: 15 },
+    highlight: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'],
+    answer: 'periferico',
+    metrics: {
+      kind: 'voltage',
+      limb: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'],
+      chest: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6'],
+    },
+    // Medido, de pico a pico: los miembros dan 3,1 · 4,3 · 2,6 · 3,6 · 1,8 y
+    // 3,0 mm — las seis por debajo de 5, y la más alta, II, se queda en 4,3—.
+    // Las precordiales dan 7,0 · 12,4 · 15,2 · 20,1 · 10,8 y 4,7. El corazón
+    // genera 20 mm en V4 y no llega a 5 en ningún miembro: ahí está el caso.
+    //
+    // FC 70, RR regular (cv 0,007), QRS 96 ms, eje +66°, QTc 416, ruido 19 µV
+    // —el trazado más limpio de la sección—. La amplitud no alterna latido a
+    // latido: en V4 los pares miden 19,5 mm y los impares 19,7.
+    findings: {
+      qrsAmplitude: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'], max: 0.5 },
+      // La otra mitad del hallazgo, y la que descarta el bajo voltaje
+      // generalizado: las precordiales NO son bajas. Con que una sola pase los
+      // 10 mm alcanza, y acá la R de V4 sola mide 13,5.
+      rHeight: { leads: ['V4'], min: 1.00 },
+      sDepth: { leads: ['V2'], min: 0.80 },
+      qrsMs: [80, 110],
+      axisDeg: [45, 90],
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 62 años, con sobrepeso, sin síntomas. Electro de rutina antes de una cirugía programada. El informe automático dice «periphere Niederspannung» —bajo voltaje periférico— y el residente que lo recibe quiere pedir un ecocardiograma para descartar derrame pericárdico antes de dar el apto.',
+      en: '62-year-old man, overweight, no symptoms. Routine ECG before scheduled surgery. The machine\u2019s report reads "peripheral low voltage", and the resident who receives it wants to order an echocardiogram to rule out a pericardial effusion before signing off.',
+      pt: 'Homem de 62 anos, com sobrepeso, sem sintomas. ECG de rotina antes de uma cirurgia programada. O laudo automático diz «baixa voltagem periférica» e o residente que o recebe quer pedir um ecocardiograma para descartar derrame pericárdico antes de liberar.',
+    },
+    options: [
+      { id: 'periferico', label: { es: 'Bajo voltaje en las derivaciones de los miembros', en: 'Low voltage in the limb leads', pt: 'Baixa voltagem nas derivações dos membros' } },
+      { id: 'generalizado', label: { es: 'Bajo voltaje generalizado', en: 'Generalized low voltage', pt: 'Baixa voltagem generalizada' } },
+      { id: 'derrame', label: { es: 'Derrame pericárdico con taponamiento', en: 'Pericardial effusion with tamponade', pt: 'Derrame pericárdico com tamponamento' } },
+      { id: 'anterior', label: { es: 'Infarto anterior antiguo con pérdida de la onda R', en: 'Old anterior infarct with loss of the R wave', pt: 'Infarto anterior antigo com perda da onda R' } },
+    ],
+    explain: {
+      es: 'El voltaje se mide de pico a pico: lo que sube la R más lo que baja la S, en la misma derivación. Y la palabra que decide el criterio es TODAS: hay bajo voltaje cuando NINGUNA de las seis derivaciones de los miembros llega a 5 mm. Acá miden 3,1 · 4,3 · 2,6 · 3,6 · 1,8 y 3,0 mm: la más alta es II y se queda en 4,3. Se cumple. Ahora mirá las precordiales, que es donde está el caso: 7,0 · 12,4 · 15,2 · 20,1 · 10,8 y 4,7 mm. V4 mide 20 milímetros. El mismo corazón que no consigue 5 mm en ningún miembro genera 20 en el pecho. Y eso resuelve la pregunta: el problema no es el músculo. Si el miocardio estuviera infiltrado, atrofiado o rodeado de líquido, las precordiales caerían con las demás — están más cerca del corazón, no más lejos. Lo que falla está en el CAMINO hacia los electrodos de los miembros. El voltaje que llega a la piel depende de cuánta señal genera el músculo y de cuánto se pierde en el trayecto, y acá se pierde en el trayecto: grasa, edema, un tórax en tonel, o simplemente electrodos apoyados donde no van.',
+      en: 'Voltage is measured peak to peak: how far the R goes up plus how far the S goes down, in the same lead. And the word that decides the criterion is ALL: there is low voltage when NONE of the six limb leads reaches 5 mm. Here they measure 3.1 · 4.3 · 2.6 · 3.6 · 1.8 and 3.0 mm: the tallest is II and it stops at 4.3. The criterion is met. Now look at the chest leads, which is where the case lives: 7.0 · 12.4 · 15.2 · 20.1 · 10.8 and 4.7 mm. V4 measures 20 millimetres. The same heart that cannot manage 5 mm in any limb lead generates 20 on the chest. And that settles the question: the problem is not the muscle. If the myocardium were infiltrated, atrophied or surrounded by fluid, the chest leads would fall along with the rest — they are closer to the heart, not further away. What fails is in the PATH to the limb electrodes. The voltage reaching the skin depends on how much signal the muscle generates and how much is lost on the way, and here it is lost on the way: fat, oedema, a barrel chest, or simply electrodes placed where they do not belong.',
+      pt: 'A voltagem mede-se de pico a pico: o que a R sobe mais o que a S desce, na mesma derivação. E a palavra que decide o critério é TODAS: há baixa voltagem quando NENHUMA das seis derivações dos membros chega a 5 mm. Aqui medem 3,1 · 4,3 · 2,6 · 3,6 · 1,8 e 3,0 mm: a mais alta é II e fica em 4,3. Cumpre-se. Agora olhe as precordiais, que é onde está o caso: 7,0 · 12,4 · 15,2 · 20,1 · 10,8 e 4,7 mm. V4 mede 20 milímetros. O mesmo coração que não consegue 5 mm em nenhum membro gera 20 no peito. E isso resolve a pergunta: o problema não é o músculo. Se o miocárdio estivesse infiltrado, atrofiado ou rodeado de líquido, as precordiais cairiam junto com as outras — estão mais perto do coração, não mais longe. O que falha está no CAMINHO até os elétrodos dos membros. A voltagem que chega à pele depende de quanto sinal o músculo gera e de quanto se perde no trajeto, e aqui perde-se no trajeto: gordura, edema, um tórax em tonel, ou simplesmente elétrodos apoiados onde não devem.',
+    },
+    pitfall: {
+      es: 'El error es el que estaba por cometer el residente: leer «bajo voltaje» y pedir el eco buscando derrame. Bajo voltaje PERIFÉRICO y bajo voltaje GENERALIZADO no son el mismo hallazgo ni tienen la misma lista de causas, y lo que los separa está en el mismo papel: las precordiales. Acá V4 mide 20 mm, o sea que el criterio generalizado —ninguna precordial por encima de 10— no se cumple ni de lejos. El derrame pericárdico importante, además, no suele venir solo: trae taquicardia, y este hombre está a 70 por minuto; y cuando el corazón se balancea dentro del líquido aparece alternancia eléctrica, complejos que cambian de tamaño latido a latido. Acá no hay: en V4 los latidos pares miden 19,5 mm y los impares 19,7. Segundo error, el opuesto: dar por normal un electro porque «no se ve nada». Los complejos chiquitos no son ausencia de hallazgo, son el hallazgo, y hay que escribirlo. Y tercero, no confundir complejos chicos con ondas R perdidas: la R crece bien de V1 a V4 —de 0,8 a 13,5 mm— así que no hay infarto anterior antiguo por ningún lado.',
+      en: 'The mistake is the one the resident was about to make: read "low voltage" and order the echo looking for an effusion. PERIPHERAL low voltage and GENERALIZED low voltage are not the same finding and do not have the same list of causes, and what separates them is on the same sheet of paper: the chest leads. Here V4 measures 20 mm, so the generalized criterion — no chest lead above 10 — is not remotely met. A significant pericardial effusion, moreover, rarely comes alone: it brings tachycardia, and this man is at 70 per minute; and when the heart swings inside the fluid, electrical alternans appears — complexes that change size from beat to beat. There is none here: in V4 the even beats measure 19.5 mm and the odd ones 19.7. The second mistake is the opposite one: calling an ECG normal because "there is nothing to see". Small complexes are not the absence of a finding, they are the finding, and it has to be written down. And third, do not confuse small complexes with lost R waves: the R grows properly from V1 to V4 — from 0.8 to 13.5 mm — so there is no old anterior infarct anywhere.',
+      pt: 'O erro é o que o residente estava prestes a cometer: ler «baixa voltagem» e pedir o eco à procura de derrame. Baixa voltagem PERIFÉRICA e baixa voltagem GENERALIZADA não são o mesmo achado nem têm a mesma lista de causas, e o que as separa está no mesmo papel: as precordiais. Aqui V4 mede 20 mm, ou seja, o critério generalizado — nenhuma precordial acima de 10 — não se cumpre nem de longe. Um derrame pericárdico importante, além disso, raramente vem sozinho: traz taquicardia, e este homem está a 70 por minuto; e quando o coração balança dentro do líquido aparece alternância elétrica, complexos que mudam de tamanho batimento a batimento. Aqui não há: em V4 os batimentos pares medem 19,5 mm e os ímpares 19,7. Segundo erro, o oposto: dar como normal um ECG porque «não se vê nada». Os complexos pequenos não são ausência de achado, são o achado, e têm de ser escritos. E terceiro, não confundir complexos pequenos com ondas R perdidas: a R cresce bem de V1 a V4 — de 0,8 a 13,5 mm — portanto não há infarto anterior antigo em lado nenhum.',
+    },
+    action: {
+      es: 'El apto se firma y el eco no se pide por esto. En alguien de 62 años, con sobrepeso, sin síntomas y con el resto del electro normal, un bajo voltaje limitado a los miembros se explica mirando al paciente, no pidiéndole estudios: contextura, edema en las piernas, un tórax enfisematoso. Vale la pena, eso sí, revisar dónde estaban los electrodos: apoyarlos en el tronco en vez de en los miembros baja el voltaje de las seis derivaciones y es la causa más barata de corregir. Y el informe se escribe completo —«bajo voltaje en las derivaciones de los miembros, precordiales de amplitud normal»—, porque la próxima vez que alguien vea este trazado va a querer saber si esto es nuevo. Lo que sí cambia todo es el contexto: bajo voltaje con disnea, hipotensión o ingurgitación yugular es un eco urgente, y bajo voltaje generalizado en alguien con insuficiencia cardíaca y paredes gruesas en el eco —voltaje chico con músculo grande— es amiloidosis hasta que se demuestre lo contrario.',
+      en: 'The clearance is signed and the echo is not ordered for this. In someone aged 62, overweight, without symptoms and with an otherwise normal ECG, low voltage confined to the limb leads is explained by looking at the patient, not by ordering tests: build, leg oedema, an emphysematous chest. It is worth checking where the electrodes were, though: placing them on the torso instead of on the limbs lowers the voltage in all six leads and is the cheapest cause to correct. And the report is written in full — "low voltage in the limb leads, chest leads of normal amplitude" — because the next person to see this tracing will want to know whether it is new. What does change everything is the context: low voltage with breathlessness, hypotension or a raised JVP is an urgent echo, and generalized low voltage in someone with heart failure and thick walls on the echo — small voltage with big muscle — is amyloidosis until proven otherwise.',
+      pt: 'O atestado assina-se e o eco não se pede por isto. Em alguém de 62 anos, com sobrepeso, sem sintomas e com o resto do ECG normal, uma baixa voltagem limitada aos membros explica-se olhando para o paciente, não pedindo exames: compleição, edema nas pernas, um tórax enfisematoso. Vale a pena, isso sim, verificar onde estavam os elétrodos: apoiá-los no tronco em vez de nos membros baixa a voltagem das seis derivações e é a causa mais barata de corrigir. E o laudo escreve-se completo — «baixa voltagem nas derivações dos membros, precordiais de amplitude normal» —, porque a próxima pessoa que vir este traçado vai querer saber se isto é novo. O que muda tudo é o contexto: baixa voltagem com dispneia, hipotensão ou ingurgitação jugular é um eco urgente, e baixa voltagem generalizada em alguém com insuficiência cardíaca e paredes espessas no eco — voltagem pequena com músculo grande — é amiloidose até prova em contrário.',
+    },
+  },
+
+  {
+    id: 'aneurysm',
+    record: '7953',
+    age: 76, sex: 'F',
+    vitals: { bp: '124/76', spo2: 95, rr: 18 },
+    highlight: ['V1', 'V2', 'V3', 'V4'],
+    answer: 'aneurisma',
+    // Mismo panel y mismas derivaciones que el caso 2, el infarto anteroseptal
+    // agudo, a propósito: los dos casos se miran uno al lado del otro.
+    metrics: { kind: 'st', leads: ['V1', 'V2', 'V3', 'V4', 'II', 'aVF'] },
+    // Medido: ST de +218, +246 y +240 µV en V2, V3 y V4 (+82 en V1); las seis
+    // derivaciones de los miembros, dentro de 37 µV. La R de V1, V2 y V3 mide
+    // 0,7 · 1,6 y 2,1 mm —contra medianas de 4,8 y 8,3 mm en V2 y V3 sobre los
+    // registros normales de la base— y debajo caen S de 18,9 y 20,5 mm: el
+    // complejo es casi un QS. FC 89, QRS 92 ms, eje +37°, QTc 407, cv 0,006.
+    findings: {
+      stElevation: { leads: ['V2', 'V3', 'V4'], min: 0.18 },
+      // La R perdida es la otra mitad: sin músculo no hay vector inicial.
+      rLoss: { leads: ['V1', 'V2', 'V3'], max: 0.30 },
+      sDepth: { leads: ['V2', 'V3'], min: 1.50 },
+      // Confinada adelante. Una pericarditis la da difusa, y eso se mide.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'], max: 0.06 },
+      qrsMs: [70, 110],
+      rate: [75, 100],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 76 años que viene a la consulta por disnea de esfuerzo que fue empeorando en los últimos meses. NO tiene dolor de pecho, ni lo tuvo. Tuvo un infarto anterior extenso hace cuatro años. En la historia hay un electro del año pasado, y es igual a éste.',
+      en: '76-year-old woman attending clinic for exertional breathlessness that has worsened over recent months. She has NO chest pain, and has had none. She had an extensive anterior infarct four years ago. There is an ECG from last year in her notes, and it is identical to this one.',
+      pt: 'Mulher de 76 anos que vem à consulta por dispneia de esforço que piorou nos últimos meses. NÃO tem dor no peito, nem teve. Teve um infarto anterior extenso há quatro anos. No prontuário há um ECG do ano passado, e é igual a este.',
+    },
+    options: [
+      { id: 'aneurisma', label: { es: 'Infarto anterior antiguo con elevación persistente del ST', en: 'Old anterior infarct with persistent ST elevation', pt: 'Infarto anterior antigo com elevação persistente do ST' } },
+      { id: 'agudo', label: { es: 'IAM anterior agudo', en: 'Acute anterior STEMI', pt: 'IAM anterior agudo' } },
+      { id: 'pericarditis', label: { es: 'Pericarditis aguda', en: 'Acute pericarditis', pt: 'Pericardite aguda' } },
+      { id: 'precoz', label: { es: 'Repolarización precoz', en: 'Early repolarization', pt: 'Repolarização precoce' } },
+    ],
+    explain: {
+      es: 'Hay dos cosas en las precordiales y las dos cuentan. La primera: la onda R no está. En V1, V2 y V3 mide 0,7 · 1,6 y 2,1 mm, cuando la mediana de los registros normales de la base es de 4,8 mm en V2 y 8,3 en V3; debajo caen unas S de 18,9 y 20,5 mm, así que el complejo es casi un QS, baja sin nada positivo delante. Eso es músculo que no está: la pared anterior se infartó y no quedó quién genere el vector inicial. La segunda: encima de esos complejos el ST está elevado 2,2 · 2,5 y 2,4 mm. Y ahí está el hallazgo, porque esas dos cosas juntas no deberían convivir. Después de un infarto el ST vuelve a la línea de base en dos semanas; si a los cuatro años sigue arriba, es porque la pared cicatrizal quedó fina y discinética —en sístole, en vez de empujar, se abomba hacia afuera— y esa pared mantiene una corriente de lesión permanente. Eso es un aneurisma ventricular, y el electro le pone nombre al patrón. Mirá también dónde NO está la elevación: las seis derivaciones de los miembros quedan dentro de 0,4 mm. Está confinada adelante, que es lo que la separa de una pericarditis, donde el ST sube en casi todas.',
+      en: 'There are two things in the chest leads and both count. The first: the R wave is gone. In V1, V2 and V3 it measures 0.7 · 1.6 and 2.1 mm, where the median in the database\u2019s normal records is 4.8 mm in V2 and 8.3 in V3; below them fall S waves of 18.9 and 20.5 mm, so the complex is almost a QS — it goes down with nothing positive in front. That is muscle that is not there: the anterior wall infarcted and nothing is left to generate the initial vector. The second: on top of those complexes the ST is elevated by 2.2 · 2.5 and 2.4 mm. And that is the finding, because those two things should not coexist. After an infarct the ST returns to baseline within two weeks; if four years later it is still up, it is because the scarred wall became thin and dyskinetic — in systole, instead of pushing, it bulges outward — and that wall maintains a permanent injury current. That is a ventricular aneurysm, and the ECG names the pattern. Note also where the elevation is NOT: the six limb leads stay within 0.4 mm. It is confined to the front, which is what separates it from pericarditis, where the ST rises almost everywhere.',
+      pt: 'Há duas coisas nas precordiais e as duas contam. A primeira: a onda R não está. Em V1, V2 e V3 mede 0,7 · 1,6 e 2,1 mm, quando a mediana dos registros normais da base é de 4,8 mm em V2 e 8,3 em V3; debaixo caem ondas S de 18,9 e 20,5 mm, portanto o complexo é quase um QS, desce sem nada positivo à frente. Isso é músculo que não está: a parede anterior infartou e não sobrou quem gere o vetor inicial. A segunda: por cima desses complexos o ST está elevado 2,2 · 2,5 e 2,4 mm. E aí está o achado, porque essas duas coisas juntas não deveriam conviver. Depois de um infarto o ST volta à linha de base em duas semanas; se quatro anos depois continua em cima, é porque a parede cicatricial ficou fina e discinética — na sístole, em vez de empurrar, abaúla-se para fora — e essa parede mantém uma corrente de lesão permanente. Isso é um aneurisma ventricular, e o ECG dá nome ao padrão. Repare também onde a elevação NÃO está: as seis derivações dos membros ficam dentro de 0,4 mm. Está confinada à frente, que é o que a separa de uma pericardite, onde o ST sobe em quase todas.',
+    },
+    pitfall: {
+      es: 'Acá hay que ser honesto, y es lo más importante del caso: este trazado, solo, NO permite descartar un infarto agudo. Se probaron tres discriminadores sobre la base, midiendo los 57 registros etiquetados como aneurisma contra 46 infartos anteriores agudos, y ninguno separa. La razón T/QRS —la regla que dice que por debajo de 0,22 el ST elevado es viejo— da mediana 0,18 en los aneurismas y 0,20 en los agudos: 38 de 57 aneurismas quedan por debajo del umbral, pero también 25 de 46 agudos. Este trazado da 0,17, y el caso 2 de esta misma sección, que es un infarto anteroseptal agudo de verdad, da 0,07: más «aneurismático» que el aneurisma. Lo mismo con las otras dos: el complejo QS con ST elevado no lo cumple ninguno de los 57, y el descenso recíproco, que el libro adjudica al agudo, aparece más seguido en los aneurismas (16 de 53) que en los agudos (6 de 43). Ojo con cómo se lee esto: no dice que la regla de Smith esté mal, dice que medida sobre estos registros y con este método no discrimina. Lo que decide, entonces, no está en el papel: es que esta mujer no tiene dolor y que hay un electro del año pasado igual a éste. Sin esas dos cosas, esto se trata como un infarto agudo y se activa la sala de hemodinamia. El error que mata es el opuesto al que parece: mirar un ST elevado, acordarse del aneurisma y mandar a la paciente a la casa.',
+      en: 'Here one has to be honest, and it is the most important part of the case: this tracing, on its own, does NOT rule out an acute infarct. Three discriminators were tested against the database, measuring the 57 records labelled as aneurysm against 46 acute anterior infarcts, and none of them separates. The T/QRS ratio — the rule that says ST elevation below 0.22 is old — gives a median of 0.18 in the aneurysms and 0.20 in the acute ones: 38 of 57 aneurysms fall below the threshold, but so do 25 of 46 acute infarcts. This tracing gives 0.17, and case 2 of this very section, which is a genuine acute anteroseptal infarct, gives 0.07: more "aneurysmal" than the aneurysm. The same with the other two: not one of the 57 meets the QS-with-ST-elevation combination, and reciprocal depression, which the textbook assigns to the acute case, turns up more often in the aneurysms (16 of 53) than in the acute ones (6 of 43). Mind how this is read: it does not say Smith\u2019s rule is wrong, it says that measured on these records with this method it does not discriminate. What decides, then, is not on the paper: it is that this woman has no pain and that there is an ECG from last year identical to this one. Without those two things, this is treated as an acute infarct and the cath lab is activated. The mistake that kills is the opposite of the one it looks like: seeing ST elevation, remembering the aneurysm and sending the patient home.',
+      pt: 'Aqui é preciso ser honesto, e é o mais importante do caso: este traçado, sozinho, NÃO permite descartar um infarto agudo. Testaram-se três discriminadores sobre a base, medindo os 57 registros etiquetados como aneurisma contra 46 infartos anteriores agudos, e nenhum separa. A razão T/QRS — a regra que diz que abaixo de 0,22 o ST elevado é antigo — dá mediana 0,18 nos aneurismas e 0,20 nos agudos: 38 de 57 aneurismas ficam abaixo do limiar, mas também 25 de 46 agudos. Este traçado dá 0,17, e o caso 2 desta mesma seção, que é um infarto anterosseptal agudo de verdade, dá 0,07: mais «aneurismático» que o aneurisma. O mesmo com os outros dois: o complexo QS com ST elevado não é cumprido por nenhum dos 57, e o descenso recíproco, que o livro atribui ao agudo, aparece mais vezes nos aneurismas (16 de 53) do que nos agudos (6 de 43). Atenção a como se lê isto: não diz que a regra de Smith esteja errada, diz que medida sobre estes registros e com este método não discrimina. O que decide, então, não está no papel: é que esta mulher não tem dor e que há um ECG do ano passado igual a este. Sem essas duas coisas, isto trata-se como um infarto agudo e ativa-se a hemodinâmica. O erro que mata é o oposto do que parece: ver um ST elevado, lembrar-se do aneurisma e mandar a paciente para casa.',
+    },
+    action: {
+      es: 'El electro no diagnostica un aneurisma: sugiere el patrón. El aneurisma es un diagnóstico de movimiento de pared, y eso se ve en el ecocardiograma — que además es lo que hay que pedir por la disnea, que es el síntoma que la trajo. Tres cosas se buscan ahí y las tres cambian la conducta. Primero, cuánto quedó de función ventricular: una fracción de eyección baja abre la puerta al tratamiento de la insuficiencia cardíaca y a discutir un desfibrilador. Segundo, trombo dentro del aneurisma: la sangre se estanca en esa bolsa que no se contrae, y si hay trombo hay que anticoagular. Tercero, el tamaño y si hay insuficiencia mitral. Y lo más barato y más útil de todo: conseguir los electros viejos y guardarlos con la historia. Este trazado, comparado con el del año pasado, resuelve en diez segundos una pregunta que sin él necesita una troponina seriada y una guardia entera.',
+      en: 'The ECG does not diagnose an aneurysm: it suggests the pattern. An aneurysm is a wall-motion diagnosis, and that is seen on the echocardiogram — which is also what should be ordered for the breathlessness that brought her in. Three things are looked for there and all three change management. First, how much ventricular function is left: a low ejection fraction opens the door to heart-failure treatment and to discussing a defibrillator. Second, thrombus inside the aneurysm: blood stagnates in that pouch that does not contract, and if there is thrombus, anticoagulation is needed. Third, the size, and whether there is mitral regurgitation. And the cheapest and most useful thing of all: get hold of the old ECGs and keep them with the notes. This tracing, compared with last year\u2019s, settles in ten seconds a question that without it needs serial troponins and a whole shift.',
+      pt: 'O ECG não diagnostica um aneurisma: sugere o padrão. O aneurisma é um diagnóstico de movimento de parede, e isso vê-se no ecocardiograma — que além disso é o que há que pedir pela dispneia, que é o sintoma que a trouxe. Três coisas se procuram ali e as três mudam a conduta. Primeiro, quanto sobrou de função ventricular: uma fração de ejeção baixa abre a porta ao tratamento da insuficiência cardíaca e a discutir um desfibrilador. Segundo, trombo dentro do aneurisma: o sangue estagna nessa bolsa que não se contrai, e se há trombo há que anticoagular. Terceiro, o tamanho e se há insuficiência mitral. E o mais barato e mais útil de tudo: conseguir os ECGs antigos e guardá-los com o prontuário. Este traçado, comparado com o do ano passado, resolve em dez segundos uma pergunta que sem ele precisa de troponinas seriadas e de um plantão inteiro.',
+    },
+  },
+
+  {
+    id: 'first-degree-av-block',
+    record: '9619',
+    age: 76, sex: 'M',
+    vitals: { bp: '134/80', spo2: 97, rr: 15 },
+    highlight: ['II', 'V1'],
+    answer: 'primer-grado',
+    metrics: { kind: 'pr' },
+    // Medido: PR de 292 ms, FC 74, QRS 92 ms, eje +49°, QTc 393, variación del
+    // RR 0,010, ruido 13 µV —el trazado más limpio de la sección—.
+    //
+    // El PR se comprobó a mano sobre el latido promedio, en dos derivaciones:
+    // en V1 el segmento queda plano entre −192 y −36 ms y el QRS arranca a los
+    // −32; en II la P empieza a −352 y el QRS a −44, o sea 308 ms. Las dos
+    // dicen lo mismo: cerca de tres décimas de segundo.
+    findings: {
+      prMs: [250, 340],
+      // Sin esto la medición del PR no se sostiene, y además es la mitad del
+      // razonamiento del caso: si el RR es regular, no falta ningún QRS.
+      irregular: false,
+      qrsMs: [70, 110],
+      rate: [65, 85],
+      // El informe del equipo habla de isquemia inferolateral. Se midió: lo más
+      // grande es V6 con −60 µV. Nada llega al milímetro, y el caso lo dice.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.08 },
+    },
+    stem: {
+      es: 'Hombre de 76 años, sin síntomas, electro previo a una operación de cataratas. El informe automático dice «A-V Block I». El anestesista lo lee, ve la palabra «bloqueo» y quiere suspender hasta que lo vea un cardiólogo.',
+      en: '76-year-old man, no symptoms, ECG before cataract surgery. The machine\u2019s report reads "AV block I". The anaesthetist reads it, sees the word "block" and wants to postpone until a cardiologist has seen him.',
+      pt: 'Homem de 76 anos, sem sintomas, ECG antes de uma cirurgia de catarata. O laudo automático diz «A-V Block I». O anestesista lê, vê a palavra «bloqueio» e quer suspender até que um cardiologista o veja.',
+    },
+    options: [
+      { id: 'primer-grado', label: { es: 'Bloqueo AV de primer grado', en: 'First degree AV block', pt: 'Bloqueio AV de primeiro grau' } },
+      { id: 'mobitz', label: { es: 'Bloqueo AV de segundo grado, Mobitz I', en: 'Second degree AV block, Mobitz I', pt: 'Bloqueio AV de segundo grau, Mobitz I' } },
+      { id: 'completo', label: { es: 'Bloqueo AV completo', en: 'Complete AV block', pt: 'Bloqueio AV completo' } },
+      { id: 'nodal', label: { es: 'Ritmo de la unión', en: 'Junctional rhythm', pt: 'Ritmo juncional' } },
+    ],
+    explain: {
+      es: 'El PR mide 292 ms: casi tres décimas de segundo, siete cuadraditos y medio, cuando el techo normal son cinco. Eso es un bloqueo AV de primer grado, y todo el caso está en entender qué quiere decir ese nombre. El PR es lo que tarda el estímulo desde que sale del nodo sinusal, cruza la aurícula y atraviesa el nodo AV, hasta que empieza a despolarizar el ventrículo. Cuando se alarga, casi siempre el freno está en el nodo AV, que conduce despacio. Pero conduce. Y acá está lo que hay que ver: TODAS las P bajan. Ninguna se pierde. La prueba está en el RR, que es regular —la variación mide 0,010—: si algún QRS faltara, el ritmo tendría un hueco, y no lo tiene. Por eso el nombre es malo: no hay nada bloqueado, hay algo demorado. De paso, eso mismo descarta las otras tres opciones. No es un Mobitz I, porque en un Mobitz el PR se va alargando latido a latido hasta que una P no conduce, y ahí aparece el hueco en el RR que acá no existe. No es un bloqueo completo, porque en ése las aurículas y los ventrículos van cada uno por su lado, el PR no es constante y el ventrículo late a 35 o 45 por un ritmo de escape: éste late a 74 y cada QRS tiene su P a la misma distancia. Y no es un ritmo de la unión, porque hay P delante de cada QRS.',
+      en: 'The PR measures 292 ms: almost three tenths of a second, seven and a half small squares, where the normal ceiling is five. That is first degree AV block, and the whole case is in understanding what that name means. The PR is the time the impulse takes from leaving the sinus node, crossing the atrium and passing through the AV node, until it starts to depolarize the ventricle. When it lengthens, the brake is almost always in the AV node, which conducts slowly. But it does conduct. And here is what to look at: EVERY P gets through. None is lost. The proof is in the RR, which is regular — the variation measures 0.010: if a QRS were missing, the rhythm would have a gap, and it has none. That is why the name is a poor one: nothing is blocked, something is delayed. That also rules out the other three options. It is not Mobitz I, because in a Mobitz the PR lengthens beat by beat until a P fails to conduct, and then the gap appears in the RR — which is not here. It is not complete block, because there the atria and ventricles each go their own way, the PR is not constant and the ventricle beats at 35 or 45 on an escape rhythm: this one beats at 74 and every QRS has its P at the same distance. And it is not a junctional rhythm, because there is a P in front of every QRS.',
+      pt: 'O PR mede 292 ms: quase três décimos de segundo, sete quadradinhos e meio, quando o teto normal são cinco. Isso é um bloqueio AV de primeiro grau, e todo o caso está em entender o que esse nome quer dizer. O PR é o que o estímulo demora desde que sai do nó sinusal, atravessa o átrio e passa pelo nó AV, até começar a despolarizar o ventrículo. Quando se alarga, quase sempre o freio está no nó AV, que conduz devagar. Mas conduz. E aqui está o que há que ver: TODAS as P descem. Nenhuma se perde. A prova está no RR, que é regular — a variação mede 0,010: se algum QRS faltasse, o ritmo teria um buraco, e não tem. Por isso o nome é mau: não há nada bloqueado, há algo atrasado. De passagem, isso mesmo descarta as outras três opções. Não é um Mobitz I, porque num Mobitz o PR vai-se alargando batimento a batimento até que uma P não conduz, e aí aparece o buraco no RR que aqui não existe. Não é um bloqueio completo, porque nesse os átrios e os ventrículos vão cada um para seu lado, o PR não é constante e o ventrículo bate a 35 ou 45 por um ritmo de escape: este bate a 74 e cada QRS tem a sua P à mesma distância. E não é um ritmo juncional, porque há P à frente de cada QRS.',
+    },
+    pitfall: {
+      es: 'El error del caso es el del anestesista, y es de vocabulario: la palabra «bloqueo» asusta más de lo que el hallazgo merece. Un bloqueo AV de primer grado aislado, en alguien sin síntomas, no suspende ninguna cirugía ni necesita cardiólogo. El error técnico es otro y aparece cuando el PR se alarga mucho: la P se va corriendo hacia atrás y termina montada sobre la onda T del latido anterior, donde no se la reconoce. Ahí uno cree que no hay P, y el mismo trazado pasa a leerse como un ritmo de la unión o como un bloqueo de segundo grado. La maniobra es simple: en vez de buscar la P antes del QRS, mirá la T del latido anterior y fijate si tiene una joroba que las demás no tienen. Y el tercero, que es el que cambia conductas: antes de decir «sólo primer grado», mirá el ANCHO del QRS. Un PR largo con un QRS angosto —92 ms acá— dice que el retraso está en el nodo AV, que es benigno. Un PR largo con un bloqueo de rama es otra cosa: la enfermedad está abajo, en el sistema His-Purkinje, y ese sí progresa. Por último, el informe del equipo menciona isquemia inferolateral. Se midió: el descenso más grande es el de V6, con 0,6 mm, y le siguen II y V5 con 0,5. Ninguno llega al milímetro que hace falta para llamarlo significativo.',
+      en: 'The mistake in this case is the anaesthetist\u2019s, and it is one of vocabulary: the word "block" frightens more than the finding deserves. An isolated first degree AV block in someone without symptoms postpones no surgery and needs no cardiologist. The technical mistake is a different one, and it appears when the PR gets very long: the P drifts backwards and ends up sitting on top of the previous beat\u2019s T wave, where it goes unrecognised. Then one believes there is no P, and the same tracing gets read as a junctional rhythm or as second degree block. The manoeuvre is simple: instead of looking for the P before the QRS, look at the previous T wave and check whether it has a hump the others do not. And the third, which is the one that changes management: before saying "only first degree", look at the WIDTH of the QRS. A long PR with a narrow QRS — 92 ms here — says the delay is in the AV node, which is benign. A long PR with a bundle branch block is another matter: the disease is lower down, in the His-Purkinje system, and that one does progress. Finally, the machine\u2019s report mentions inferolateral ischaemia. It was measured: the largest depression is V6 at 0.6 mm, followed by II and V5 at 0.5. None reaches the millimetre needed to call it significant.',
+      pt: 'O erro do caso é o do anestesista, e é de vocabulário: a palavra «bloqueio» assusta mais do que o achado merece. Um bloqueio AV de primeiro grau isolado, em alguém sem sintomas, não suspende nenhuma cirurgia nem precisa de cardiologista. O erro técnico é outro e aparece quando o PR se alarga muito: a P vai-se deslocando para trás e acaba montada sobre a onda T do batimento anterior, onde não se reconhece. Aí julga-se que não há P, e o mesmo traçado passa a ler-se como ritmo juncional ou como bloqueio de segundo grau. A manobra é simples: em vez de procurar a P antes do QRS, olhe a T do batimento anterior e veja se tem uma corcova que as outras não têm. E o terceiro, que é o que muda condutas: antes de dizer «só primeiro grau», olhe a LARGURA do QRS. Um PR longo com um QRS estreito — 92 ms aqui — diz que o atraso está no nó AV, que é benigno. Um PR longo com um bloqueio de ramo é outra coisa: a doença está mais abaixo, no sistema His-Purkinje, e essa progride. Por fim, o laudo do aparelho menciona isquemia inferolateral. Mediu-se: o maior desnível é o de V6, com 0,6 mm, seguido de II e V5 com 0,5. Nenhum chega ao milímetro necessário para o chamar significativo.',
+    },
+    action: {
+      es: 'Se opera. Un bloqueo AV de primer grado aislado, con QRS angosto y sin síntomas, no contraindica una anestesia ni justifica una interconsulta ni monitoreo especial: es un hallazgo frecuente a los 76 años y no progresa por sí solo. Lo único que vale la pena hacer es revisar la medicación, porque acá está la causa reversible: betabloqueantes, verapamilo, diltiazem, digoxina y amiodarona alargan el PR, y si además hubiera bradicardia o síntomas, ahí sí habría algo que ajustar. Dos situaciones cambian la conducta y conviene tenerlas presentes. Una: primer grado JUNTO a un bloqueo bifascicular, que ya no es un nodo lento sino tres caminos en problemas. Otra, rara pero real: cuando el PR pasa de 300 ms, la aurícula puede terminar contrayéndose contra una válvula mitral ya cerrada, y eso da fatiga y disnea —el llamado síndrome de pseudomarcapasos—; si el paciente tiene síntomas y el PR es así de largo, hay que pensarlo en vez de mandarlo a la casa. Éste no tiene síntomas.',
+      en: 'The operation goes ahead. An isolated first degree AV block, with a narrow QRS and no symptoms, contraindicates no anaesthetic and justifies neither a referral nor special monitoring: it is a common finding at 76 and does not progress on its own. The one thing worth doing is reviewing the medication, because that is where the reversible cause lies: beta blockers, verapamil, diltiazem, digoxin and amiodarone all lengthen the PR, and if there were bradycardia or symptoms as well, then there would be something to adjust. Two situations change management and are worth keeping in mind. One: first degree ALONGSIDE a bifascicular block, which is no longer a slow node but three pathways in trouble. The other, rare but real: when the PR exceeds 300 ms, the atrium can end up contracting against an already closed mitral valve, which causes fatigue and breathlessness — so-called pseudo-pacemaker syndrome; if the patient has symptoms and the PR is that long, it is worth considering rather than sending them home. This man has no symptoms.',
+      pt: 'Opera-se. Um bloqueio AV de primeiro grau isolado, com QRS estreito e sem sintomas, não contraindica nenhuma anestesia nem justifica interconsulta ou monitorização especial: é um achado frequente aos 76 anos e não progride por si só. O único que vale a pena fazer é rever a medicação, porque aí está a causa reversível: betabloqueadores, verapamil, diltiazem, digoxina e amiodarona alargam o PR, e se houvesse ainda bradicardia ou sintomas, aí sim haveria algo a ajustar. Duas situações mudam a conduta e convém tê-las presentes. Uma: primeiro grau JUNTO a um bloqueio bifascicular, que já não é um nó lento mas três caminhos com problemas. A outra, rara mas real: quando o PR passa de 300 ms, o átrio pode acabar a contrair-se contra uma válvula mitral já fechada, e isso dá fadiga e dispneia — a chamada síndrome de pseudo-marca-passo; se o paciente tiver sintomas e o PR for assim tão longo, há que pensá-lo em vez de o mandar para casa. Este não tem sintomas.',
     },
   },
 

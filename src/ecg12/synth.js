@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // GENERADOR SINTÉTICO DE 12 DERIVACIONES — BANCO DE PRUEBAS
 // ═══════════════════════════════════════════════════════════════
-// OJO: esto ya NO produce los trazados de la sección. Los ocho casos usan
+// OJO: esto ya NO produce los trazados de la sección. Los casos usan
 // electrocardiogramas reales de PTB-XL (ver records.js). Lo que este módulo hace
 // ahora es generar señales de las que se conoce la respuesta de antemano, para
 // validar contra ellas el medidor de measure.js: si le pedimos 0,35 mV de
@@ -62,7 +62,7 @@ const TAU = Math.PI * 2;
 
 // Vector cardíaco en el instante t dentro de un latido (t en segundos desde la P).
 function beatVector(t, opts) {
-  const { stVector = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0, atrial = 'sinus' } = opts;
+  const { stVector = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0, atrial = 'sinus', qtStretch = 1 } = opts;
 
   const qrsW = 0.013 * (1 + wide * 1.6);   // el QRS se ensancha en bloqueos y ritmos ventriculares
   const rC = 0.41;
@@ -86,9 +86,12 @@ function beatVector(t, opts) {
     v = add(v, scale(stVector, -g(t, rC - 0.020, 0.012, qWave)));
   }
 
-  // Onda T, que puede invertirse (isquemia evolucionada).
+  // Onda T, que puede invertirse (isquemia evolucionada). qtStretch corre la T
+  // más tarde y la ensancha, alargando el QT: existe para poder probar el
+  // medidor contra un QT largo conocido, que es lo que no se puede comprobar
+  // con un trazado normal.
   const tAmp = 0.35 * (1 - 2 * tInvert);
-  v = add(v, scale(DIR.t, g(t, 0.58, 0.045, tAmp)));
+  v = add(v, scale(DIR.t, g(t, rC + (0.58 - rC) * qtStretch, 0.045 * qtStretch, tAmp)));
 
   // Corriente de lesión: desplaza el segmento ST completo, desde el final del
   // QRS hasta el inicio de la T. Es un escalón, no una campana.
@@ -146,16 +149,17 @@ const fibVector = (t) => {
  * @param {number} o.wide       0 = QRS angosto, 1 = ensanchado
  * @param {number} o.irregular  variabilidad del RR (0 = regular, 1 = fibrilación auricular)
  * @param {string} o.atrial     'sinus' (con onda P) o 'fib' (sin P, con ondas f)
+ * @param {number} o.qtStretch  1 = QT normal; >1 corre y ensancha la T (QT largo)
  * @returns {{fs:number, leads:Object<string, Float32Array>, labels:string[]}}
  */
 export function synth12({
   rate = 72, fs = 250, duration = 10,
   infarct = null, stAmp = 0, qWave = 0, tInvert = 0, wide = 0, irregular = 0,
-  atrial = 'sinus',
+  atrial = 'sinus', qtStretch = 1,
 } = {}) {
   const n = Math.round(fs * duration);
   const stVector = infarct ? INFARCT_VECTORS[infarct] : null;
-  const opts = { stVector, stAmp, qWave, tInvert, wide, atrial };
+  const opts = { stVector, stAmp, qWave, tInvert, wide, atrial, qtStretch };
 
   // Tiempos de inicio de cada latido. Con irregular > 0 el RR varía como en una
   // fibrilación auricular, con un generador determinista para que el mismo caso
