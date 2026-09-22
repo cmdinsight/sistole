@@ -1,4 +1,6 @@
-# Sístole — Brief técnico para despliegue
+# Sístole — Brief técnico
+
+> Última actualización: septiembre 2026. En producción en **https://sistole.cmdtech.uy**
 
 ## Qué es
 
@@ -21,7 +23,7 @@ Está en **español, inglés y portugués**, con el idioma seleccionable desde l
 
 **Volumen de contenido:** 228 nodos de decisión, 320 decisiones clínicas posibles, todas con retroalimentación razonada y traducidas a tres idiomas.
 
-**Sistema de progreso:** cuentas de usuario locales, 10 niveles, 41 logros, mapa de dominio por ritmo, estadísticas de efectividad y bitácora de errores con práctica dirigida.
+**Sistema de progreso:** cuentas de usuario con sincronización entre dispositivos, 10 niveles, 41 logros, mapa de dominio por ritmo, estadísticas de efectividad y bitácora de errores con práctica dirigida.
 
 ---
 
@@ -29,67 +31,116 @@ Está en **español, inglés y portugués**, con el idioma seleccionable desde l
 
 | | |
 |---|---|
-| **Stack** | React 18 + Vite 5 + Tailwind CSS 3 |
-| **Dependencias** | Solo `react`, `react-dom` y `lucide-react` (iconos) |
-| **Backend** | **Ninguno.** Aplicación 100% cliente |
-| **Base de datos** | Ninguna. Persistencia en `localStorage` del navegador |
-| **Autenticación** | Sin servidor: las cuentas viven en el dispositivo |
-| **Build** | Estático (`dist/`), servible desde cualquier CDN u hosting |
-| **Tamaño** | ~1.3 MB de JS, ~360 KB comprimido con gzip |
+| **Frontend** | React 18 + Vite 5 + Tailwind CSS 3 |
+| **Backend** | Funciones serverless de Vercel (`api/`), Node 20 |
+| **Base de datos** | **Neon** (Postgres serverless), vía `@neondatabase/serverless` |
+| **Autenticación** | Propia: contraseñas con `bcryptjs`, sesiones en cookie `HttpOnly` de 180 días |
+| **Dependencias de UI** | `react`, `react-dom`, `lucide-react` (iconos) |
+| **App móvil** | Capacitor 8 (iOS, App Store) + TWA (Android, Google Play) |
+| **Build** | `dist/` estático + funciones serverless, desplegado en Vercel |
+| **Tamaño** | ~1,3 MB de JS (~412 KB gzip) y ~37 KB de CSS (~7 KB gzip) |
 
 **Todo el ECG se genera por código**, no son imágenes: hay generadores matemáticos de forma de onda (suma de gaussianas) que se dibujan sobre un `<canvas>` a 60 fps, con audio sintetizado vía Web Audio API. La frecuencia del trazado se escala dinámicamente según los signos vitales de cada escenario.
 
+### Cómo persiste el progreso
+
+Modelo híbrido, pensado para que la app siga siendo usable sin conexión:
+
+1. Todo se escribe primero en `localStorage`, con espacio de nombres por cuenta (`sistole_progress_v2::<id>`, etc.). La app funciona completa aunque la API falle.
+2. Si hay sesión iniciada, el cliente **empuja** el estado completo (`{progress, srData, adaptData, errors, mistakes}`) a `PUT /api/progress` cada 20 segundos cuando hay cambios, al ocultarse la pestaña, y con `navigator.sendBeacon` al cerrarla.
+3. Al iniciar sesión o restaurar la sesión, el servidor **devuelve** ese estado y se fusiona con el local. Eso es lo que permite empezar en el celular y seguir en la computadora.
+
+### Esquema de la base de datos
+
+El esquema se crea y migra solo, con `CREATE TABLE IF NOT EXISTS` en `server/db.js` (`ensureSchema()`), invocado al inicio de cada función. No hay herramienta de migraciones aparte.
+
+| Tabla | Contenido |
+|---|---|
+| `users` | id, email, `password_hash`, nombre, rol (`medico` / `estudiante` / `otro`), país, fecha de alta |
+| `sessions` | token, usuario, vencimiento (180 días) |
+| `progress` | una fila por usuario, con todo el progreso en una columna `JSONB` |
+| `feedback` | reportes de error y sugerencias enviados desde la app |
+
+### Endpoints
+
+| Ruta | Qué hace |
+|---|---|
+| `POST /api/auth/register` | Alta de cuenta (mínimo 8 caracteres de contraseña) |
+| `POST /api/auth/login` | Inicio de sesión; devuelve el progreso guardado |
+| `POST /api/auth/logout` | Cierra la sesión y borra el token |
+| `GET / PATCH /api/me` | Lee o actualiza nombre y rol del usuario |
+| `GET / PUT / POST /api/progress` | Lee y guarda el progreso (POST existe solo por `sendBeacon`) |
+| `POST /api/feedback` | Envía un reporte o sugerencia (máx. 2000 caracteres) |
+| `POST /api/admin/login` · `logout` | Acceso al panel de administración |
+| `GET /api/admin/stats` · `feedback` | Métricas y bandeja de feedback — **solo lectura** |
+
+### Panel de administración
+
+En `/admin` (`admin.html` + `src/admin-main.jsx`). Entra con una clave única (`ADMIN_SECRET`), sin cuenta de usuario: cookie firmada con HMAC-SHA256, válida 12 horas y **separada** de la sesión normal de usuarios. Muestra altas por día, desglose por rol y por país, actividad a 24 h / 7 d / 30 d, activación, profundidad de uso y los reportes recibidos. Las dos rutas de datos son de solo lectura: no insertan, actualizan ni borran nada.
+
 ---
 
-## Qué necesito desplegar
-
-La aplicación está lista para producción. El paquete contiene:
+## Cómo se construye y despliega
 
 ```
 sistole/
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
-├── vercel.json
-└── src/
-    ├── App.jsx      ← toda la aplicación (~11.500 líneas)
-    ├── main.jsx
-    └── index.css
+├── index.html            ← la aplicación
+├── admin.html            ← el panel de administración
+├── src/
+│   ├── App.jsx           ← toda la aplicación (~11.800 líneas)
+│   ├── admin-main.jsx
+│   ├── main.jsx
+│   └── index.css
+├── api/                  ← funciones serverless (Vercel)
+├── server/               ← código compartido: db.js, auth.js, adminAuth.js
+├── public/               ← manifest PWA, iconos, privacidad.html, assetlinks.json
+├── ios/                  ← proyecto Xcode (Capacitor)
+├── codemagic.yaml        ← compilación y publicación de iOS en la nube
+└── vercel.json
 ```
 
-**Para construir:**
+**Construir y probar:**
 
 ```bash
 npm install
 npm run build      # genera dist/
+npm run dev        # servidor local de desarrollo
 ```
 
-**Para probar en local:**
+**Despliegue:** Vercel, conectado al repositorio. Cada push a `main` despliega solo. Ya no es un sitio puramente estático: las funciones de `api/` necesitan un hosting que ejecute funciones serverless de Node (Vercel, Netlify Functions o equivalente); un CDN sin backend solo serviría la parte cliente, sin cuentas ni sincronización.
 
-```bash
-npm run dev
-```
+**Variables de entorno requeridas:**
 
-**Despliegue:** al ser una SPA estática funciona en Vercel, Netlify, Cloudflare Pages, o cualquier servidor web sirviendo la carpeta `dist/`.
+| Variable | Para qué |
+|---|---|
+| `DATABASE_URL` | Cadena de conexión de Neon |
+| `ADMIN_SECRET` | Clave de acceso al panel `/admin` |
 
-**Único requisito de configuración:** redirigir todas las rutas a `index.html` (ya viene resuelto en `vercel.json` para Vercel; en Nginx o Apache hay que añadir la regla equivalente).
+**Rutas:** `vercel.json` manda `/admin` a `admin.html` y todo lo demás a `index.html`, dejando afuera `api/`, `assets/`, `manifest.json`, `privacidad.html`, `icons/` y `.well-known/`. En Nginx o Apache hay que escribir la regla equivalente.
 
 ---
 
-## Lo que quiero
+## Apps móviles
 
-Publicarlo en un dominio propio, accesible desde cualquier dispositivo por un enlace único. Debe funcionar bien en móvil: la interfaz es responsive y está pensada para usarse desde el celular.
+- **iOS** — Capacitor con `appId` `uy.cmdtech.sistole`. Ojo con un detalle importante: `capacitor.config.json` apunta a `https://sistole.cmdtech.uy`, así que la app **carga el sitio en vivo** en lugar de servir el `dist/` empaquetado. Consecuencia práctica: los cambios en la web llegan a la app publicada sin pasar por la revisión de App Store. La compilación y subida a TestFlight las hace Codemagic (`codemagic.yaml`) en cada push a `main`.
+- **Android** — TWA (Trusted Web Activity), paquete `uy.cmdtech.sistole.twa`, verificado con `public/.well-known/assetlinks.json`. Mismo principio: envuelve el sitio en vivo.
+- **PWA** — `public/manifest.json` en modo `standalone`, orientación vertical, iconos de 192 y 512 px. Instalable desde el navegador sin pasar por ninguna tienda.
+
+---
+
+## Privacidad y datos
+
+- Se guardan: correo, nombre, rol, código de país y progreso de aprendizaje. Las contraseñas solo como hash bcrypt.
+- **No se guarda la IP.** El país sale del header `x-vercel-ip-country` que Vercel ya resuelve en cada request; se persiste únicamente el código ISO de dos letras.
+- Política de privacidad publicada en `/privacidad.html` (requisito del listado en Google Play).
+- **Sin analítica de terceros ni rastreo.** Las métricas del panel salen de la propia base de datos.
 
 ---
 
 ## Notas para tener en cuenta
 
-**El progreso es por dispositivo.** Como no hay backend, si un usuario entra desde el celular y después desde la computadora, no encuentra su cuenta ni su avance. Es una decisión consciente para esta primera versión.
+**El archivo `App.jsx` es grande** (~11.800 líneas) porque contiene todo el contenido clínico embebido: casos, escenarios, traducciones y datos de ondas. Se puede dividir en módulos; hoy no es un impedimento, pero sí es lo que más pesa a la hora de tocar la aplicación.
 
-**Si más adelante se quiere sincronización entre dispositivos**, el camino natural es Supabase o Firebase: la aplicación ya guarda el progreso separado por cuenta, así que migrar de `localStorage` a una base remota es un cambio acotado, no una reescritura.
+**El progreso viaja como un solo blob JSON.** Es simple y funciona, pero no permite consultar el detalle por usuario desde SQL sin navegar el JSONB, y dos dispositivos abiertos al mismo tiempo se pisan: gana el último que sincroniza.
 
-**Sin analítica ni rastreo** en la versión actual. Si se quiere medir uso, hay que añadirlo.
-
-**El archivo `App.jsx` es grande** (~11.500 líneas) porque contiene todo el contenido clínico embebido: casos, escenarios, traducciones y datos de ondas. Se puede dividir en módulos, pero no es necesario para desplegar.
+**El esquema se crea en caliente.** `ensureSchema()` corre en cada invocación (cacheado por instancia). Va bien a esta escala; un cambio de esquema realmente destructivo pediría migraciones de verdad.
