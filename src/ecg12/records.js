@@ -119,6 +119,11 @@ export const RECORDS = {
     report: 'sinus rhythm. tiny r waves in v2,3. q waves in i, avl, v4,5,6. t waves are low or flat '
       + 'in i, avl, v5,6. consistent with anterior and lateral myocardial infarction.',
   },
+  9619: {
+    age: 76, sex: 'M', scp: ['NORM', '1AVB'],
+    report: 'sinusrhythmus a-v block i lagetyp normal st & t abnorm, wahrscheinlich inferolaterale '
+      + 'ischÄmie oder linksbelastung 4.46 unbestÄtigter bericht',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -126,4 +131,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '595'];

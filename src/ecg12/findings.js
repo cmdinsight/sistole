@@ -133,6 +133,23 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => max - (q.r[l] - q.s[l]))),
   }),
 
+  // Intervalo PR, en milisegundos. Por encima de 200 hay bloqueo AV de primer
+  // grado. Devuelve null cuando la P no se puede medir, y entonces la regla
+  // falla: mejor que un caso no encuentre registro a que se afirme un PR que
+  // nadie midió.
+  //
+  // ADVERTENCIA para quien use esta regla en un caso nuevo: en fibrilación
+  // auricular la medición no sirve. Sobre 70 registros de FA no devolvió nada
+  // en 51 —que es lo correcto, ahí no hay P— pero en los otros 19 encontró algo
+  // y le puso número. Un caso que hable del PR tiene que pedir además
+  // `irregular: false`.
+  prMs: ([lo, hi], q) => ({
+    label: `PR entre ${lo} y ${hi} ms`,
+    fallos: q.prMs !== null && q.prMs >= lo && q.prMs <= hi
+      ? [] : [q.prMs === null ? 'no medible' : `${Math.round(q.prMs)} ms`],
+    margen: q.prMs === null ? -1 : Math.min(q.prMs - lo, hi - q.prMs) / 100,
+  }),
+
   rProgression: ([a, b], q) => ({
     label: `la onda R crece de ${a} a ${b}`,
     fallos: q.r[b] > q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],

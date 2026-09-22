@@ -96,6 +96,12 @@ const L = {
   },
   limbGroup: { es: 'miembros', en: 'limb', pt: 'membros' },
   chestGroup: { es: 'precordiales', en: 'chest', pt: 'precordiais' },
+  prLabel: { es: 'PR', en: 'PR', pt: 'PR' },
+  prNote: {
+    es: 'El PR va del comienzo de la onda P al comienzo del QRS: lo que tarda el estímulo en cruzar la aurícula y el nodo AV. Se mide sobre un latido promedio, que es lo que permite ver una P de una o dos décimas de milivoltio. Normal entre 120 y 200 ms; por encima de 200, bloqueo AV de primer grado.',
+    en: 'The PR runs from the start of the P wave to the start of the QRS: the time the impulse takes to cross the atrium and the AV node. It is measured on an averaged beat, which is what makes a P of one or two tenths of a millivolt visible. Normal between 120 and 200 ms; above 200, first degree AV block.',
+    pt: 'O PR vai do começo da onda P ao começo do QRS: o que o estímulo demora a atravessar o átrio e o nó AV. Mede-se sobre um batimento médio, que é o que permite ver uma P de um ou dois décimos de milivolt. Normal entre 120 e 200 ms; acima de 200, bloqueio AV de primeiro grau.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -264,6 +270,21 @@ function Measured({ q, metrics, lang, gain }) {
       ...grupo(metrics.chest ?? [], 1.0, L.chestGroup[lang]),
     ];
     note = L.voltageNote[lang];
+  } else if (metrics.kind === 'pr') {
+    if (q.prMs === null) return null;
+    const largo = q.prMs > 200;
+    chips = [
+      chip('pr', L.prLabel[lang], `${Math.round(q.prMs)} ms`,
+           largo ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                 : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('rr', L.rrVar[lang], num(q.rrCv, 3, lang),
+           q.rrCv > 0.08 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                         : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.prNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);

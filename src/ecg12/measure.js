@@ -274,6 +274,104 @@ function segundaR(beat, base, desde, hasta, fs) {
  * @returns {{hr:number, rr:number[], rrCv:number, beats:number[], st:Object<string,number>, qrsMs:number}}
  *   st está en mV: positivo = supradesnivel, negativo = infradesnivel.
  */
+// ── EL INTERVALO PR ───────────────────────────────────────────────────────
+// Del comienzo de la onda P al comienzo del QRS: lo que tarda el estímulo en
+// cruzar la aurícula y el nodo AV. Por encima de 200 ms hay bloqueo AV de
+// primer grado.
+//
+// Se mide sobre el LATIDO PROMEDIO, y ahí hay una asimetría que conviene
+// entender porque decide qué se puede y qué no se puede medir así. Promediar
+// los latidos alineados por la R conserva la P cuando la conducción es 1:1
+// —la P cae siempre a la misma distancia de la R, así que se suma consigo
+// misma y el ruido se divide por la raíz del número de latidos— y la DESTRUYE
+// cuando la aurícula va por su cuenta. Por eso este camino sirve para el
+// bloqueo de primer grado y no sirve para el completo.
+//
+// La P de estos registros mide una o dos décimas de milivoltio, así que se
+// prueba en varias derivaciones y se queda la que la muestra más alta. Por
+// debajo de 0,3 mm no se mide nada: se devuelve null antes que un número
+// inventado.
+const LEADS_P = ['II', 'I', 'aVF', 'V1', 'III'];
+
+function intervaloPR(leads, beats, fs, onset) {
+  // Promedio propio, más ancho hacia atrás que el que usan el QT y la segunda
+  // R: la P puede caer a un tercio de segundo de la R y aquel llega sólo a una
+  // décima. Se arma acá en vez de ensanchar el otro, que está afinado para
+  // derivadas limpias sobre la T y no conviene tocar.
+  const antes = Math.round(0.42 * fs);
+  const despues = Math.round(0.02 * fs);
+  const promedioAncho = (sig) => {
+    const tpl = new Float64Array(antes + despues + 1);
+    let n = 0;
+    for (const r0 of beats) {
+      if (r0 - antes < 0 || r0 + despues >= sig.length) continue;
+      for (let k = 0; k <= antes + despues; k++) tpl[k] += sig[r0 - antes + k];
+      n++;
+    }
+    if (n < 3) return null;
+    for (let k = 0; k < tpl.length; k++) tpl[k] /= n;
+    return { tpl, rIdx: antes };
+  };
+
+  const salidas = [];
+  for (const lead of LEADS_P) {
+    if (!leads[lead]) continue;
+    const prom = promedioAncho(leads[lead]);
+    if (!prom) continue;
+    const { tpl, rIdx } = prom;
+    const iQRS = rIdx + onset;                       // comienzo del QRS
+    const desde = Math.max(1, rIdx - Math.round(0.33 * fs));
+    const hasta = iQRS - Math.round(0.010 * fs);
+    if (hasta - desde < 3) continue;
+    // Línea de base: el tramo anterior a la P, antes de que empiece a subir.
+    let base = 0;
+    const b0 = Math.max(0, desde - Math.round(0.05 * fs));
+    for (let k = b0; k < desde; k++) base += tpl[k];
+    base = desde > b0 ? base / (desde - b0) : tpl[desde];
+
+    let iP = -1, amp = 0;
+    for (let k = desde; k <= hasta; k++) {
+      const v = Math.abs(tpl[k] - base);
+      if (v > amp) { amp = v; iP = k; }
+    }
+    if (iP < 0 || amp < 0.03) continue;              // P de menos de 0,3 mm
+    const signo = Math.sign(tpl[iP] - base);
+    // Comienzo y final de la P: hacia atrás y hacia adelante hasta caer al 20 %
+    // de su altura.
+    let iP0 = iP;
+    while (iP0 > desde && signo * (tpl[iP0] - base) > 0.20 * amp) iP0--;
+    let iP1 = iP;
+    while (iP1 < hasta && signo * (tpl[iP1] - base) > 0.20 * amp) iP1++;
+
+    // Entre el final de la P y el comienzo del QRS tiene que haber un segmento
+    // ISOELÉCTRICO. Sin esta condición, lo que se mide no es siempre una P: en
+    // el registro normal de control daba 88 ms —imposible en ritmo sinusal—
+    // porque agarraba la cola de la T, y en fibrilación y en aleteo, donde no
+    // hay P ninguna, devolvía números de aspecto respetable. Un hallazgo que
+    // aparece donde no existe es peor que uno que falta.
+    const seg = iQRS - iP1;
+    if (seg < Math.round(0.02 * fs)) continue;
+    // La tolerancia no puede ser sólo proporcional a la P: con una P de 84 µV,
+    // el 35 % son 29 µV, menos que la deriva normal de la línea de base, y se
+    // rechazaban derivaciones buenas por unos pocos microvoltios de corrimiento.
+    // Se le pone un piso absoluto de 35 µV, que sigue siendo muy inferior a la
+    // cola de una onda T, que es lo que hay que dejar afuera.
+    const tolera = Math.max(0.35 * amp, 0.035);
+    let fuera = 0;
+    for (let k = iP1; k < iQRS; k++) if (Math.abs(tpl[k] - base) > tolera) fuera++;
+    if (fuera > 0.35 * seg) continue;
+
+    const pr = ((iQRS - iP0) / fs) * 1000;
+    // Por debajo de 100 ms no es un PR corto: es una medición equivocada. La
+    // preexcitación, que sí los da, no se mide con esto y queda fuera.
+    if (pr < 100 || pr > 420) continue;
+    salidas.push({ lead, pr, amp });
+  }
+  if (!salidas.length) return { prMs: null, pAmp: null, pLead: null };
+  salidas.sort((a, b) => b.amp - a.amp);
+  return { prMs: salidas[0].pr, pAmp: salidas[0].amp, pLead: salidas[0].lead };
+}
+
 export function measure(signal) {
   const { fs, leads } = signal;
   const det = detectionSignal(leads, fs);
@@ -326,6 +424,10 @@ export function measure(signal) {
     for (let k = 0; k < tpl.length; k++) tpl[k] /= n;
     return { tpl, rIdx: antes };
   };
+
+  // El PR necesita el latido promedio y el comienzo del QRS, así que se mide
+  // acá, una vez que los dos existen.
+  const { prMs, pAmp, pLead } = intervaloPR(leads, usable, fs, onset);
 
   const areaQRS = {};   // área neta del complejo, para el eje
   const st = {};
@@ -507,5 +609,11 @@ export function measure(signal) {
     s: sw,
     span,
     qrsMs: ((offset - onset) / fs) * 1000,
+    // Intervalo PR en milisegundos, null si la P no se puede medir. pAmp es la
+    // altura de la P en la derivación que se usó: sirve para exigir, en un caso
+    // que hable del PR, que la P se VEA.
+    prMs,
+    pAmp,
+    pLead,
   };
 }
