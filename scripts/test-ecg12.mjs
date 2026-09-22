@@ -1,4 +1,6 @@
 import { synth12 } from '../src/ecg12/synth.js';
+import { drawEcg } from '../src/ecg12/draw.js';
+import { LAYOUT_3x4, LEAD_ORDER } from '../src/ecg12/leads.js';
 
 let pass=0, fail=0;
 const check=(n,c,e='')=>{c?(pass++,console.log(`  ✓ ${n}`)):(fail++,console.log(`  ✗ ${n}  ${e}`));};
@@ -183,6 +185,52 @@ const sinMean=sinRrs.reduce((a,b)=>a+b,0)/sinRrs.length;
 const sinSd=Math.sqrt(sinRrs.reduce((a,b)=>a+(b-sinMean)**2,0)/sinRrs.length);
 check('en cambio el sinusal es regular', sinSd/sinMean<0.02, `(CV=${(sinSd/sinMean*100).toFixed(1)}%)`);
 check('las identidades se mantienen en fibrilación', (()=>{for(let i=0;i<fib.II.length;i+=13){if(Math.abs(fib.II[i]-(fib.I[i]+fib.III[i]))>1e-5)return false;}return true;})());
+
+console.log('\n[Dibujo] Cada derivación se dibuja donde dice su etiqueta');
+{
+  // Un contexto 2D de mentira que sólo anota qué texto se escribió y dónde. No
+  // hace falta un navegador para comprobar lo que importa acá.
+  const textos = [];
+  const ctx = new Proxy({}, {
+    get: (_, k) => {
+      if (k === 'fillText') return (t, x, y) => textos.push({ t, x, y });
+      if (k === 'canvas') return { width: 1200, height: 700 };
+      return () => {};
+    },
+    set: () => true,
+  });
+
+  const señal = synth12({ rate: 72, fs: 250, duration: 10 });
+  const cajas = drawEcg(ctx, { signal: señal, cssW: 1200 });
+
+  // Las zonas de clic dicen qué derivación se dibujó en cada rectángulo. Si el
+  // orden se desalineara del formato 3×4, alguien estaría mirando V5 creyendo
+  // que mira V6 — y en un electro eso cambia el diagnóstico.
+  const porFila = new Map();
+  for (const c of cajas) {
+    const clave = Math.round(c.y);
+    if (!porFila.has(clave)) porFila.set(clave, []);
+    porFila.get(clave).push(c);
+  }
+  const filas = [...porFila.entries()].sort((a, b) => a[0] - b[0])
+    .map(([, cs]) => cs.sort((a, b) => a.x - b.x).map((c) => c.lead));
+
+  LAYOUT_3x4.forEach((esperada, i) => {
+    check(`fila ${i + 1} dibuja ${esperada.join(', ')}`,
+          filas[i] && filas[i].join(',') === esperada.join(','),
+          `(dibujó ${filas[i] ? filas[i].join(', ') : 'nada'})`);
+  });
+  check('la tira de ritmo va última y es la derivación II',
+        filas[3] && filas[3].join(',') === 'II', `(${filas[3]})`);
+
+  // Y que cada etiqueta escrita exista de verdad como derivación.
+  const etiquetas = textos.map((t) => t.t).filter((t) => LEAD_ORDER.includes(t));
+  check('no se escribe ninguna etiqueta que no sea una derivación',
+        etiquetas.length === cajas.length, `(${etiquetas.length} de ${cajas.length})`);
+  check('la escala queda escrita en el pie',
+        textos.some((t) => /25 mm\/s/.test(t.t) && /10 mm\/mV/.test(t.t)),
+        `(${textos.map((t) => t.t).filter((t) => t.includes('mm')).join(' | ')})`);
+}
 
 console.log(`\n${'─'.repeat(44)}\n${pass} pasaron, ${fail} fallaron\n`);
 process.exit(fail?1:0);
