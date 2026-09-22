@@ -152,7 +152,8 @@ npm run search:ptbxl -- --report "posterior"       # por lo que escribió el car
 Los ordena por lo CLARO que se vea el hallazgo, no por lo grande: cuenta el
 margen con que se cumple la regla más ajustada y penaliza el ruido entre latidos.
 Un infarto espectacular sobre un trazado sucio enseña peor que uno moderado sobre
-uno limpio.
+uno limpio. Baja de a ocho registros en paralelo, así una búsqueda de trescientos
+tarda un par de minutos la primera vez y segundos después, con el caché ya hecho.
 
 **3. Mirarlos.** Este paso no se saltea aunque los números den bien:
 

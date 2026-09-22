@@ -84,6 +84,25 @@ const REGLAS = {
     fallos: q.r[b] <= q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],
     margen: q.r[a] - q.r[b],
   }),
+  // Índice de Sokolow-Lyon: la S más profunda de V1 más la R más alta de V5 o
+  // V6. Es el criterio de voltaje clásico de hipertrofia ventricular izquierda,
+  // y el umbral son 35 mm, o sea 3,5 mV.
+  //
+  // Suma DOS derivaciones opuestas a propósito. Un ventrículo izquierdo grande
+  // despolariza más masa hacia la izquierda y atrás: eso agranda la R de las
+  // laterales y, por el mismo vector visto de frente, agranda la S de V1. Sumar
+  // las dos mide el vector entero en vez de una de sus dos caras, y por eso el
+  // índice aguanta mejor las variaciones de posición del corazón que cualquier
+  // derivación sola.
+  sokolowLyon: ({ min }, q) => {
+    const suma = -q.s.V1 + Math.max(q.r.V5, q.r.V6);
+    return {
+      label: `índice de Sokolow-Lyon ≥ ${mmStr(min)} (S de V1 + R de V5 o V6)`,
+      fallos: suma >= min ? [] : [`${mmStr(suma)}`],
+      margen: suma - min,
+    };
+  },
+
   // Relación entre el desnivel del ST y la profundidad de la S, en las
   // derivaciones donde el QRS es negativo. Es el criterio con que hoy se busca
   // un infarto ESCONDIDO detrás de un bloqueo de rama izquierda (Sgarbossa

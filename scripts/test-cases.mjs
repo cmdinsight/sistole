@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { decodeRecord } from '../src/ecg12/record.js';
 import { measure } from '../src/ecg12/measure.js';
 import { checkFindings } from '../src/ecg12/findings.js';
+import { suggestGain, gainFor } from '../src/ecg12/draw.js';
 import { CASES, shuffledOptions } from '../src/ecg12/cases.js';
 import { RECORD_IDS, RECORDS, SOURCE } from '../src/ecg12/records.js';
 import { LEAD_LABELS } from '../src/ecg12/record.js';
@@ -64,11 +65,19 @@ for (const c of CASES) {
         LEAD_LABELS.every((l) => s.leads[l] && s.leads[l].length === s.fs * 10));
   check(`${tag}: ruido entre latidos por debajo de 0,2 mV`, q.noise < 0.20, `(${uv(q.noise)} µV)`);
   check(`${tag}: el QRS medido es plausible`, q.qrsMs >= 50 && q.qrsMs <= 130, `(${q.qrsMs.toFixed(0)} ms)`);
-  // En la grilla 3×4 una derivación con mucho voltaje invade la fila de al lado.
-  // Pasa también en el papel de cualquier equipo y se lee igual, así que el
-  // límite acá es generoso: sólo atrapa lo que sería ilegible.
-  const span = Math.max(...LEAD_LABELS.map((l) => q.span[l]));
-  check(`${tag}: la amplitud entra en la hoja`, span < 3.2, `(${span.toFixed(2)} mV)`);
+  // Cuánto ocupa el trazado EN LA HOJA, que es lo que decide si se puede leer.
+  // Se mide en milímetros de papel y no en milivoltios, porque desde que la
+  // ganancia se elige sola un registro de mucho voltaje se dibuja a la mitad y
+  // entonces entra. Medirlo en milivoltios rechazaba trazados que en pantalla
+  // se ven perfectos.
+  //
+  // Media fila son 17 mm. Se permite el doble: invadir la fila de al lado pasa
+  // también en el papel de cualquier equipo y se lee igual; atravesarla entera
+  // no.
+  const gain = suggestGain(s);
+  const mmPapel = Math.max(...LEAD_LABELS.map((l) => q.span[l] * gainFor(gain, l)));
+  check(`${tag}: la amplitud entra en la hoja`, mmPapel < 34,
+        `(${mmPapel.toFixed(0)} mm con ${JSON.stringify(gain)})`);
 }
 
 console.log('\n[3] Cada caso enseña lo que su electro muestra');

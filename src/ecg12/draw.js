@@ -90,7 +90,7 @@ export function suggestGain(signal) {
 }
 
 /** Acepta un número (una sola ganancia) o {limb, chest}. */
-function gainFor(gain, lead) {
+export function gainFor(gain, lead) {
   if (typeof gain === 'number') return gain;
   return (LIMB.includes(lead) ? gain.limb : gain.chest) ?? MM_PER_MV;
 }

@@ -92,15 +92,37 @@ const aMedir = universo.slice(0, o.limit);
 console.log(`\n${universo.length} registros pasan el prefiltro; se miden ${aMedir.length}.`);
 if (universo.length > aMedir.length) console.log('(subí --limit para abarcar más)');
 
-const hallados = [];
-let n = 0;
-for (const r of aMedir) {
-  n++;
+// Bajar y medir de a uno cuesta unos cinco segundos por registro, casi todo
+// esperando a la red, y una búsqueda de trescientos se va a veinte minutos. Con
+// unas pocas descargas en paralelo baja a uno o dos, porque mientras una espera
+// respuesta las otras avanzan. Ocho es un techo prudente: PhysioNet es un
+// servicio público y gratuito, y no hay motivo para castigarlo.
+const EN_PARALELO = 8;
+
+async function medirTodos(registros, alAvanzar) {
+  const resultados = new Array(registros.length);
+  let siguiente = 0, hechos = 0;
+  await Promise.all(Array.from({ length: Math.min(EN_PARALELO, registros.length) }, async () => {
+    while (siguiente < registros.length) {
+      const i = siguiente++;
+      try {
+        resultados[i] = measure(decodeRecord(prepareRecord(await fetchRecord(registros[i].id))));
+      } catch { resultados[i] = null; }
+      alAvanzar(++hechos);
+    }
+  }));
+  return resultados;
+}
+
+const mediciones = await medirTodos(aMedir, (n) => {
   if (n % 25 === 0) process.stderr.write(`  medidos ${n}/${aMedir.length}\r`);
-  let q;
-  try {
-    q = measure(decodeRecord(prepareRecord(await fetchRecord(r.id))));
-  } catch (e) { continue; }
+});
+
+const hallados = [];
+for (let i = 0; i < aMedir.length; i++) {
+  const r = aMedir[i];
+  const q = mediciones[i];
+  if (!q) continue;
 
   // Descartes de confiabilidad, antes de mirar los hallazgos. Un QRS fuera de
   // este rango casi siempre significa que la detección falló, y entonces

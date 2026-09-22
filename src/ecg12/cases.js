@@ -389,6 +389,56 @@ export const CASES = [
   },
 
   {
+    id: 'lvh-strain',
+    record: '1451',
+    age: 69, sex: 'F',
+    vitals: { bp: '168/94', spo2: 97, rr: 16 },
+    highlight: ['I', 'V5', 'V6', 'V1', 'V2'],
+    answer: 'hvi',
+    metrics: { kind: 'st', leads: ['I', 'V5', 'V6', 'V1', 'V2'] },
+    // Medido: Sokolow-Lyon 52,4 mm (S de V1 27,8 + R de V5 24,7). QRS 92 ms.
+    // I −97, V5 −134, V6 −145 µV con T invertida; V1 +203, V2 +237 µV con T
+    // positiva, que es la misma sobrecarga vista desde el lado opuesto.
+    findings: {
+      qrsMs: [70, 110],
+      sokolowLyon: { min: 3.5 },
+      rsPattern: ['V1', 'V2', 'V3'],
+      dominantR: ['V5', 'V6'],
+      stDepression: { leads: ['I', 'V5', 'V6'], min: 0.08 },
+      tInversion: { leads: ['I', 'V5', 'V6'], min: 0.15 },
+      stElevation: { leads: ['V1', 'V2'], min: 0.15 },
+      rate: [75, 95],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 69 años, hipertensa de largo tiempo y mal controlada. Consulta por disnea al esfuerzo que fue empeorando en los últimos meses. No tiene dolor torácico. Le piden un electro antes de derivarla a cardiología.',
+      en: '69-year-old woman with long-standing, poorly controlled hypertension. She presents with exertional breathlessness that has worsened over recent months. She has no chest pain. An ECG is requested before referring her to cardiology.',
+      pt: 'Mulher de 69 anos, hipertensa de longa data e mal controlada. Consulta por dispneia aos esforços que piorou nos últimos meses. Não tem dor torácica. Pedem um ECG antes de encaminhá-la à cardiologia.',
+    },
+    options: [
+      { id: 'hvi', label: { es: 'Hipertrofia ventricular izquierda con sobrecarga', en: 'Left ventricular hypertrophy with strain', pt: 'Hipertrofia ventricular esquerda com sobrecarga' } },
+      { id: 'isquemia', label: { es: 'Isquemia subendocárdica lateral', en: 'Lateral subendocardial ischemia', pt: 'Isquemia subendocárdica lateral' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'anterior', label: { es: 'IAM anterior con supradesnivel', en: 'Anterior STEMI', pt: 'IAM anterior com supradesnivelamento' } },
+    ],
+    explain: {
+      es: 'Empezá por el pie de la hoja: las precordiales están dibujadas a 5 mm/mV y no a 10, porque a escala normal no entraban. Eso ya es el primer dato. El voltaje se mide con el índice de Sokolow-Lyon, que suma la S de V1 y la R de V5: 27,8 más 24,7 son 52 mm, y el umbral son 35. Suma dos derivaciones opuestas a propósito, porque un ventrículo grande manda su vector hacia la izquierda y atrás, y eso agranda la R de las laterales y la S de V1 al mismo tiempo: son las dos caras de lo mismo. Sobre ese voltaje viene lo segundo: descenso del ST con la onda T invertida en I, V5 y V6, que es el patrón de sobrecarga. Y en V1 y V2 el ST está elevado con T positiva, que es esa misma sobrecarga vista desde el lado contrario.',
+      en: 'Start at the foot of the sheet: the precordial leads are drawn at 5 mm/mV instead of 10, because at normal scale they did not fit. That is already the first finding. Voltage is measured with the Sokolow-Lyon index, which adds the S in V1 to the R in V5: 27.8 plus 24.7 is 52 mm, and the threshold is 35. It deliberately adds two opposite leads, because an enlarged ventricle sends its vector left and backwards, which enlarges the R in the lateral leads and the S in V1 at the same time: they are two faces of the same thing. On top of that voltage comes the second finding: ST depression with an inverted T in I, V5 and V6 — the strain pattern. And in V1 and V2 the ST is elevated with an upright T, which is that same strain seen from the opposite side.',
+      pt: 'Comece pelo rodapé da folha: as precordiais estão desenhadas a 5 mm/mV e não a 10, porque em escala normal não cabiam. Isso já é o primeiro dado. A voltagem se mede com o índice de Sokolow-Lyon, que soma a S de V1 e a R de V5: 27,8 mais 24,7 são 52 mm, e o limiar é 35. Soma duas derivações opostas de propósito, porque um ventrículo grande manda seu vetor para a esquerda e para trás, e isso aumenta a R das laterais e a S de V1 ao mesmo tempo: são as duas faces da mesma coisa. Sobre essa voltagem vem o segundo achado: infradesnivelamento do ST com onda T invertida em I, V5 e V6, o padrão de sobrecarga. E em V1 e V2 o ST está elevado com T positiva, que é essa mesma sobrecarga vista do lado contrário.',
+    },
+    pitfall: {
+      es: 'Este trazado es idéntico al de una isquemia lateral, y no hay forma de separarlos con un solo electro. Lo que inclina la balanza es que el ST-T está montado sobre un voltaje enorme, que la T es asimétrica —baja despacio y sube rápido, al revés que la T simétrica de la isquemia— y que un electro previo lo mostraría igual. Pero ojo con la trampa en el otro sentido, que es la peligrosa: la hipertrofia no protege de un infarto. En un paciente con sobrecarga de base, los cambios de una isquemia se suman a un ST-T que ya estaba alterado, y "es la hipertrofia de siempre" es exactamente la frase con la que se pasa por alto un infarto.',
+      en: 'This tracing is identical to lateral ischemia, and there is no way to separate them from a single ECG. What tips the balance is that the ST-T sits on top of enormous voltage, that the T is asymmetric — descending slowly and rising fast, unlike the symmetric T of ischemia — and that a previous ECG would look the same. But beware the trap in the other direction, which is the dangerous one: hypertrophy does not protect against infarction. In a patient with baseline strain, ischemic changes add onto an ST-T that was already abnormal, and "it is just the usual hypertrophy" is exactly the sentence with which an infarct gets missed.',
+      pt: 'Este traçado é idêntico ao de uma isquemia lateral, e não há como separá-los com um único ECG. O que inclina a balança é que o ST-T está montado sobre uma voltagem enorme, que a T é assimétrica — desce devagar e sobe rápido, ao contrário da T simétrica da isquemia — e que um ECG anterior o mostraria igual. Mas atenção à armadilha no outro sentido, que é a perigosa: a hipertrofia não protege de um infarto. Num paciente com sobrecarga de base, as alterações isquêmicas se somam a um ST-T já alterado, e "é a hipertrofia de sempre" é exatamente a frase com que se deixa passar um infarto.',
+    },
+    action: {
+      es: 'Acá no hay indicación de hemodinamia: esta paciente no tiene dolor y el electro es compatible con su hipertensión de años. Lo que corresponde es un ecocardiograma, que confirma la hipertrofia y busca la causa —hipertensión, estenosis aórtica, miocardiopatía hipertrófica—, y ajustar el tratamiento antihipertensivo. Guardá este electro: el día que consulte por dolor torácico, este trazado es lo que va a permitir decir si algo cambió.',
+      en: 'There is no indication for the cath lab here: this patient has no pain and the ECG fits her years of hypertension. What is needed is an echocardiogram, which confirms the hypertrophy and looks for the cause — hypertension, aortic stenosis, hypertrophic cardiomyopathy — and adjustment of her antihypertensive treatment. File this ECG: the day she comes in with chest pain, this tracing is what will let you say whether anything changed.',
+      pt: 'Aqui não há indicação de hemodinâmica: esta paciente não tem dor e o ECG é compatível com sua hipertensão de anos. O que cabe é um ecocardiograma, que confirma a hipertrofia e busca a causa — hipertensão, estenose aórtica, miocardiopatia hipertrófica — e ajustar o tratamento anti-hipertensivo. Guarde este ECG: no dia em que ela consultar por dor torácica, este traçado é o que vai permitir dizer se algo mudou.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',
