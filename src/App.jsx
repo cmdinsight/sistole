@@ -777,10 +777,19 @@ const deleteAccount=(email)=>{
   try{
     const e=normEmail(email), id=accountId(e);
     const accs=loadAccounts(); delete accs[e]; saveAccounts(accs);
-    for(const base of ['sistole_progress_v2','sistole_sr_v1','sistole_adaptive_v1']) localStorage.removeItem(`${base}::${id}`);
+    for(const base of ['sistole_progress_v2','sistole_sr_v1','sistole_sr12_v1','sistole_adaptive_v1','sistole_ecg12_bag_v1']) localStorage.removeItem(`${base}::${id}`);
     if(normEmail(localStorage.getItem(ACTIVE_KEY))===e){ localStorage.removeItem(ACTIVE_KEY); ACTIVE_ID='guest'; }
   }catch(e){}
 };
+
+// La recuperación de contraseña sólo se ofrece cuando el envío de correo está
+// configurado del lado del servidor. Se controla con una variable de build en
+// Vercel (VITE_PASSWORD_RESET_ENABLED=true), no tocando el código: así activarla
+// es cargar la variable y redesplegar, sin otro cambio.
+//
+// Apagada por defecto a propósito: ofrecer el enlace sin proveedor de correo
+// configurado hace que el usuario pida un enlace que nunca le va a llegar.
+const PASSWORD_RESET_ENABLED = String(import.meta.env.VITE_PASSWORD_RESET_ENABLED || '').trim().toLowerCase() === 'true';
 
 // El correo de recuperación apunta a /?reset=<token>. Se lee una sola vez al cargar
 // y se limpia de la barra de direcciones en cuanto se usa, para que el token no quede
@@ -802,7 +811,10 @@ async function apiJson(url,opts){
 const seedAccountStorage=(email,data)=>{
   if(!data) return;
   const id=accountId(email);
-  const map={progress:'sistole_progress_v2',srData:'sistole_sr_v1',adaptData:'sistole_adaptive_v1',errors:'sistole_errors_v1',mistakes:'sistole_mistakes_v1'};
+  // Toda clave que guarde progreso tiene que estar acá Y en cloudDataRef. Si
+  // falta en cualquiera de los dos, el avance queda sólo en este dispositivo:
+  // no tira error, simplemente se pierde al cambiar de teléfono.
+  const map={progress:'sistole_progress_v2',srData:'sistole_sr_v1',srData12:'sistole_sr12_v1',adaptData:'sistole_adaptive_v1',errors:'sistole_errors_v1',mistakes:'sistole_mistakes_v1'};
   Object.entries(map).forEach(([k,base])=>{
     if(data[k]!==undefined) localStorage.setItem(`${base}::${id}`,JSON.stringify(data[k]));
   });
@@ -1088,10 +1100,12 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
                   onKeyDown={e=>e.key==='Enter'&&doLogin()}
                   placeholder="••••••••"
                   className={inputCls(errors.loginPassword)}/>
-                <button onClick={()=>{setTab('forgot');setForgotEmail(loginEmail);setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
-                  className="mt-2 text-xs text-slate-500 hover:text-indigo-300 transition-colors">
-                  {L.forgotLink[lang]}
-                </button>
+                {PASSWORD_RESET_ENABLED&&(
+                  <button onClick={()=>{setTab('forgot');setForgotEmail(loginEmail);setForgotSent(false);setErrors({});clearAuthError&&clearAuthError();}}
+                    className="mt-2 text-xs text-slate-500 hover:text-indigo-300 transition-colors">
+                    {L.forgotLink[lang]}
+                  </button>
+                )}
               </div>
 
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
@@ -1297,6 +1311,12 @@ const ACHIEVEMENTS = [
   {id:'causes_hunter',   icon:'🔍', xp:60,  title:{es:'Cazador de Causas',en:'Cause Hunter',pt:'Caçador de Causas'},       desc:{es:'Revisaste 5 o más causas reversibles durante un paro',en:'Reviewed 5 or more reversible causes during an arrest',pt:'Revisou 5 ou mais causas reversíveis durante uma parada'}},
   {id:'sim_first',       icon:'🎬', xp:25,  title:{es:'Del Papel a la Camilla',en:'From Paper to Bedside',pt:'Do Papel à Maca'},   desc:{es:'Jugaste tu primer caso clínico como escenario',en:'Played your first clinical case as a scenario',pt:'Jogou seu primeiro caso clínico como cenário'}},
   {id:'sim_10',          icon:'📖', xp:80,  title:{es:'Diez Guardias',en:'Ten Shifts',pt:'Dez Plantões'},                        desc:{es:'Completaste 10 casos clínicos en el simulador',en:'Completed 10 clinical cases in the simulator',pt:'Completou 10 casos clínicos no simulador'}},
+  // ── 12 derivaciones ──
+  {id:'ecg12_first',     icon:'📈', xp:15,  title:{es:'Primer Electro',en:'First 12-Lead',pt:'Primeiro ECG'},                      desc:{es:'Leíste tu primer electro de 12 derivaciones correctamente',en:'Correctly read your first 12-lead ECG',pt:'Leu corretamente seu primeiro ECG de 12 derivações'}},
+  {id:'ecg12_streak_5',  icon:'👁️', xp:45,  title:{es:'Ojo Entrenado',en:'Trained Eye',pt:'Olho Treinado'},                        desc:{es:'5 electros de 12 derivaciones seguidos sin errar',en:'5 twelve-lead ECGs in a row without a miss',pt:'5 ECGs de 12 derivações seguidos sem errar'}},
+  {id:'ecg12_round',     icon:'🔄', xp:70,  title:{es:'Vuelta Completa',en:'Full Round',pt:'Volta Completa'},                      desc:{es:'Recorriste todos los casos de la sección de una vuelta',en:'Went through every case in the section in one round',pt:'Percorreu todos os casos da seção numa volta'}},
+  {id:'ecg12_all',       icon:'🫀', xp:130, title:{es:'Las Doce Derivaciones',en:'All Twelve Leads',pt:'As Doze Derivações'},       desc:{es:'Acertaste al menos una vez cada caso de la sección',en:'Got every case in the section right at least once',pt:'Acertou ao menos uma vez cada caso da seção'}},
+  {id:'ecg12_mastered',  icon:'🧲', xp:220, title:{es:'Trazados Dominados',en:'Tracings Mastered',pt:'Traçados Dominados'},         desc:{es:'Todos los casos con el repaso espaciado a más de 30 días',en:'Every case with spaced review beyond 30 days',pt:'Todos os casos com revisão espaçada além de 30 dias'}},
   {id:'sim_all',         icon:'🎓', xp:300, title:{es:'Los Veinticuatro',en:'All Twenty-Four',pt:'Os Vinte e Quatro'},           desc:{es:'Completaste los 24 casos clínicos en el simulador',en:'Completed all 24 clinical cases in the simulator',pt:'Completou os 24 casos clínicos no simulador'}},
   {id:'sim_first_try',   icon:'🎯', xp:60,  title:{es:'A la Primera',en:'First Try',pt:'De Primeira'},                            desc:{es:'Resolviste un caso acertando la conducta inicial y la consolidación',en:'Solved a case with the right initial and follow-up management',pt:'Resolveu um caso acertando a conduta inicial e a consolidação'}},
   {id:'sim_no_loss_5',   icon:'🛟', xp:120, title:{es:'Cinco sin Perder a Nadie',en:'Five Without a Loss',pt:'Cinco sem Perder Ninguém'}, desc:{es:'5 casos seguidos sin desenlace fatal',en:'5 cases in a row with no fatal outcome',pt:'5 casos seguidos sem desfecho fatal'}},
@@ -1304,7 +1324,7 @@ const ACHIEVEMENTS = [
 
 // ─── Persistence ───
 const PROGRESS_KEY='sistole_progress_v2';
-const DEFAULT_STATS={quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0};
+const DEFAULT_STATS={quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0,ecg12Total:0,ecg12Correct:0,ecg12Solved:[],ecg12Rounds:0,ecg12Streak:0};
 // Normaliza: el progreso puede venir de localStorage viejo o del servidor (sync entre dispositivos),
 // así que si falta algún campo (por una versión anterior o una sincronización parcial) se completa con el default
 // en vez de dejar `undefined` y romper las cuentas de logros (ej. stats.casesDone.length).
@@ -1355,6 +1375,19 @@ function useProgress(accountKey){
       }
       if(context.simFirstTry) st.firstTryCount=(st.firstTryCount||0)+1;
       if(context.rosc)        st.roscCount=(st.roscCount||0)+1;
+      // ── 12 derivaciones ──
+      if(context.ecg12Answer){
+        st.ecg12Total=(st.ecg12Total||0)+1;
+        if(context.ecg12Correct){
+          st.ecg12Correct=(st.ecg12Correct||0)+1;
+          // Se guarda el caso sólo cuando se acertó: la lista mide qué sabe
+          // leer, no por cuántos pasó.
+          if(context.ecg12Case&&!(st.ecg12Solved||[]).includes(context.ecg12Case))
+            st.ecg12Solved=[...(st.ecg12Solved||[]),context.ecg12Case];
+        }
+      }
+      if(context.ecg12Streak!=null) st.ecg12Streak=Math.max(st.ecg12Streak||0,context.ecg12Streak);
+      if(context.ecg12Round)        st.ecg12Rounds=(st.ecg12Rounds||0)+1;
 
       // Check achievements
       const unlock=[];
@@ -1402,6 +1435,15 @@ function useProgress(accountKey){
       if((st.simDone||[]).length>=CASES.length)       tryUnlock('sim_all');
       if(context.simFirstTry)                         tryUnlock('sim_first_try');
       if((st.noLossStreak||0)>=5)                     tryUnlock('sim_no_loss_5');
+      // ── 12 derivaciones ──
+      // El total de casos y el "todos dominados" llegan desde la sección, que
+      // se carga en diferido: importar su módulo acá lo metería en el bundle
+      // principal y se perdería la carga perezosa.
+      if(context.ecg12Correct&&st.ecg12Correct===1)   tryUnlock('ecg12_first');
+      if((context.ecg12Streak||0)>=5)                 tryUnlock('ecg12_streak_5');
+      if(context.ecg12Round)                          tryUnlock('ecg12_round');
+      if(context.ecg12CaseCount&&(st.ecg12Solved||[]).length>=context.ecg12CaseCount) tryUnlock('ecg12_all');
+      if(context.ecg12AllMastered)                    tryUnlock('ecg12_mastered');
       if(newLevel>=5&&prevLevel<5)                   tryUnlock('level_5');
       if(newLevel>=8&&prevLevel<8)                   tryUnlock('level_8');
       if(newLevel>=10&&prevLevel<10)                 tryUnlock('level_10');
@@ -1438,23 +1480,40 @@ function useProgress(accountKey){
 // cada acierto (max 180d). Error → vuelve a 1 día.
 // ═══════════════════════════════════════════════════════════════
 const SR_KEY='sistole_sr_v1';
-const loadSR=()=>{try{const s=localStorage.getItem(nk(SR_KEY));if(s)return JSON.parse(s);}catch(e){}return{};};
-const saveSR=(d)=>{try{localStorage.setItem(nk(SR_KEY),JSON.stringify(d));}catch(e){}};
+// El SM-2 de la sección de 12 derivaciones vive en su propia clave: se indexa
+// por CASO, no por ritmo, así que mezclarlo con el del Quiz confundiría dos
+// universos de claves distintos en el mismo objeto.
+//
+// OJO: toda clave nueva que guarde progreso hay que sumarla en dos lugares más
+// —cloudDataRef y el mapa de seedAccountStorage—, o el avance queda sólo en
+// este dispositivo y no se sincroniza. No avisa: simplemente se pierde al
+// cambiar de teléfono.
+const SR12_KEY='sistole_sr12_v1';
+// La sección calcula sus propios vencimientos (conoce sus casos), así que acá
+// no hace falta el universo de claves. Se pasa una constante y no un [] nuevo
+// en cada render, que volvería a correr el useMemo de dueRhythms sin motivo.
+const NO_SR_KEYS=[];
+const loadSRFrom=(key)=>{try{const s=localStorage.getItem(nk(key));if(s)return JSON.parse(s);}catch(e){}return{};};
+const saveSRTo=(key,d)=>{try{localStorage.setItem(nk(key),JSON.stringify(d));}catch(e){}};
+const loadSR=()=>loadSRFrom(SR_KEY);
+const saveSR=(d)=>saveSRTo(SR_KEY,d);
 
-function useSR(accountKey){
-  const [srData,setSrData]=useState(loadSR);
+// storageKey y keys se pasan para poder reutilizar el mismo algoritmo con otro
+// universo de tarjetas. Sin argumentos se comporta igual que antes.
+function useSR(accountKey,storageKey=SR_KEY,keys=RHYTHM_KEYS){
+  const [srData,setSrData]=useState(()=>loadSRFrom(storageKey));
   const srKeyRef=useRef(accountKey);
   if(srKeyRef.current!==accountKey){
     srKeyRef.current=accountKey;
-    setSrData(loadSR());
+    setSrData(loadSRFrom(storageKey));
   }
   const srDataRef=useRef(srData);
   srDataRef.current=srData;
 
   const dueRhythms=useMemo(()=>{
     const now=Date.now();
-    return RHYTHM_KEYS.filter(k=>{const d=srData[k];return d&&d.nextReview&&d.nextReview<=now;});
-  },[srData]);
+    return keys.filter(k=>{const d=srData[k];return d&&d.nextReview&&d.nextReview<=now;});
+  },[srData,keys]);
 
   // Returns the new interval for immediate display
   const updateSR=useCallback((rhythmKey,correct)=>{
@@ -1468,12 +1527,12 @@ function useSR(accountKey){
         lapses:correct?(entry.lapses||0):(entry.lapses||0)+1,
         lastAnswered:Date.now(),
       }};
-      saveSR(next);return next;
+      saveSRTo(storageKey,next);return next;
     });
     return newInterval;
-  },[]);
+  },[storageKey]);
 
-  const resetSR=useCallback(()=>{setSrData({});saveSR({});},[]);
+  const resetSR=useCallback(()=>{setSrData({});saveSRTo(storageKey,{});},[storageKey]);
 
   return{srData,dueRhythms,updateSR,resetSR};
 }
@@ -3423,8 +3482,40 @@ function FeedbackModal({lang,onClose,onSubmit}){
 
 // ── Bolsa barajada: recorre todos los casos antes de repetir ──
 const BAG_KEY='sistole_branch_bag_v2';
-const loadBag=()=>{try{const s=localStorage.getItem(nk(BAG_KEY));if(s)return JSON.parse(s);}catch(e){}return{bag:[],last:null};};
-const saveBag=(b)=>{try{localStorage.setItem(nk(BAG_KEY),JSON.stringify(b));}catch(e){}};
+// La sección de 12 derivaciones lleva su propia bolsa. A diferencia del SM-2,
+// esto NO se sincroniza con el servidor a propósito: es estado de barajado, no
+// de progreso. Perderlo al cambiar de dispositivo sólo reparte de nuevo; lo que
+// importa —cuándo toca repasar cada caso— sí viaja, en SR12_KEY.
+const BAG12_KEY='sistole_ecg12_bag_v1';
+const loadBagFrom=(key)=>{try{const s=localStorage.getItem(nk(key));if(s)return JSON.parse(s);}catch(e){}return{bag:[],last:null};};
+const saveBagTo=(key,b)=>{try{localStorage.setItem(nk(key),JSON.stringify(b));}catch(e){}};
+const loadBag=()=>loadBagFrom(BAG_KEY);
+const saveBag=(b)=>saveBagTo(BAG_KEY,b);
+
+// Bolsa de barajado: reparte el mazo entero y no repite hasta agotarlo. Con
+// Math.random() suelto un caso puede salir dos veces seguidas y otro no salir
+// nunca; con la bolsa, cada vuelta pasa por todos exactamente una vez.
+function nextFromBag(all,key){
+  let {bag,last}=loadBagFrom(key);
+  bag=(bag||[]).filter(id=>all.includes(id));
+  if(bag.length===0){
+    bag=[...all];
+    for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}
+    // Evitar que el primero de la bolsa nueva repita el último jugado
+    if(all.length>1&&last&&bag[0]===last){const t=bag[0];bag[0]=bag[1];bag[1]=t;}
+  }
+  const pick=bag.shift();
+  saveBagTo(key,{bag,last:pick});
+  return pick;
+}
+// Cuántos quedan en la vuelta actual, para poder mostrar "caso 3 de 19".
+function bagRemaining(all,key){
+  const {bag}=loadBagFrom(key);
+  const vivos=(bag||[]).filter(id=>all.includes(id));
+  return vivos.length;
+}
+function resetBag(key){saveBagTo(key,{bag:[],last:null});}
+
 function nextBlindCaseId(pool){
   const all=(pool||ALL_SIM_CASES).map(c=>c.id);
   let {bag,last}=loadBag();
@@ -11135,6 +11226,14 @@ export default function App() {
   const acctKey=user?normEmail(user.email):'guest';
   const {progress,earnXP,toasts,dismissToast,saveProgress}=useProgress(acctKey);
   const {srData,dueRhythms,updateSR,resetSR}=useSR(acctKey);
+  // Mismo algoritmo SM-2, otro mazo: acá las tarjetas son los casos de 12
+  // derivaciones, no los ritmos.
+  const {srData:srData12,updateSR:updateSR12,resetSR:resetSR12}=useSR(acctKey,SR12_KEY,NO_SR_KEYS);
+  // Con identidad estable: la sección las usa dentro de un useMemo, y una
+  // flecha nueva por render lo haría releer localStorage en cada tecla.
+  const pickFromBag12=useCallback((ids)=>nextFromBag(ids,BAG12_KEY),[]);
+  const bagLeft12=useCallback((ids)=>bagRemaining(ids,BAG12_KEY),[]);
+  const clearBag12=useCallback(()=>resetBag(BAG12_KEY),[]);
   const {adaptData,updateAdapt,getAdaptiveRhythm,getUnlockedTier,getMastery,resetAdapt}=useAdaptive(acctKey);
   const {errors,grouped:errorGroups,logError,clearRhythm,clearAll:clearErrors}=useErrors(acctKey);
   const {mistakes,logMistake,resolveMistake,clearMistakes,weakRhythms}=useMistakes(acctKey);
@@ -11142,8 +11241,11 @@ export default function App() {
   // ── Sincronización con el servidor: empuja el progreso local cuando cambia ──
   const cloudDirtyRef=useRef(false);
   const cloudDataRef=useRef(null);
-  cloudDataRef.current={progress,srData,adaptData,errors,mistakes};
-  useEffect(()=>{ if(user) cloudDirtyRef.current=true; },[user,progress,srData,adaptData,errors,mistakes]);
+  cloudDataRef.current={progress,srData,srData12,adaptData,errors,mistakes};
+  // Toda pieza de cloudDataRef tiene que estar también acá: esto es lo que
+  // marca "hay algo nuevo que subir". Si falta una, flushCloud se va por el
+  // early return y ese dato no viaja nunca — sin error, sin aviso.
+  useEffect(()=>{ if(user) cloudDirtyRef.current=true; },[user,progress,srData,srData12,adaptData,errors,mistakes]);
   const flushCloud=useCallback(()=>{
     if(!cloudDirtyRef.current) return;
     cloudDirtyRef.current=false;
@@ -11371,6 +11473,10 @@ export default function App() {
       <Activity className="w-8 h-8 text-indigo-500/60 animate-pulse"/>
     </div>
   );
+  // Esta pantalla NO se condiciona a PASSWORD_RESET_ENABLED a propósito: si la
+  // bandera se apagara después de haber enviado correos, los usuarios con un
+  // enlace válido en la bandeja quedarían sin poder usarlo. El interruptor
+  // decide si se OFRECE la recuperación, no si se honra un enlace ya emitido.
   if(resetToken) return <ResetPasswordScreen lang={lang} token={resetToken} onReset={resetPassword} onDone={()=>{clearResetTokenFromUrl();setResetToken('');setAuthError('');}} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
   if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} onForgot={requestPasswordReset} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
 
@@ -11431,7 +11537,25 @@ export default function App() {
         {/* ══ 12 DERIVACIONES ══ */}
         {mode==='twelve'&&(
           <React.Suspense fallback={<div className="py-16 text-center text-slate-500 text-sm">…</div>}>
-            <TwelveLeadSection lang={lang} onAnswer={(right)=>earnXP(right?12:3,{quizAnswer:true,...(right?{quizCorrect:true}:{})})}/>
+            <TwelveLeadSection
+              lang={lang}
+              srData={srData12}
+              pickFromBag={pickFromBag12}
+              bagLeft={bagLeft12}
+              clearBag={clearBag12}
+              onAnswer={(right,info={})=>{
+                updateSR12(info.caseId,right);
+                earnXP(right?12:3,{
+                  ecg12Answer:true,
+                  ...(right?{ecg12Correct:true}:{}),
+                  ecg12Case:info.caseId,
+                  ecg12Streak:info.streak,
+                  ecg12CaseCount:info.caseCount,
+                  ...(info.allMastered?{ecg12AllMastered:true}:{}),
+                });
+              }}
+              onRound={()=>earnXP(30,{ecg12Round:true})}
+            />
           </React.Suspense>
         )}
 
@@ -11825,7 +11949,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetAdapt();saveProgress({xp:0,achievements:[],stats:{quizTotal:0,quizCorrect:0,bestStreak:0,casesDone:[],svtConverted:0,wpwCorrect:0,naCompleted:[],atropineInCode:false,codeCount:0}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetSR12();resetAdapt();resetBag(BAG12_KEY);saveProgress({xp:0,achievements:[],stats:{...DEFAULT_STATS}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
         {showFeedback&&<FeedbackModal lang={lang} onClose={()=>setShowFeedback(false)} onSubmit={sendFeedback}/>}
     </div>
   );

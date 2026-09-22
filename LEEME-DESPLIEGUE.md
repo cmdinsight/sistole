@@ -232,6 +232,7 @@ de decir que ahí no se puede medir.
 | `RESEND_API_KEY` | Clave de Resend, para los correos de recuperación |
 | `EMAIL_FROM` | Remitente verificado, ej. `Sístole <no-reply@cmdtech.uy>` |
 | `APP_URL` | Base de los enlaces del correo (por defecto `https://sistole.cmdtech.uy`) |
+| `VITE_PASSWORD_RESET_ENABLED` | `true` muestra el enlace «¿Olvidaste tu contraseña?». Apagada por defecto |
 
 **Rutas:** `vercel.json` manda `/admin` a `admin.html` y todo lo demás a `index.html`, dejando afuera `api/`, `assets/`, `ecg12/`, `manifest.json`, `privacidad.html`, `icons/` y `.well-known/`. La exclusión de `ecg12/` es necesaria: sin ella los trazados se responderían con el HTML de la app. En Nginx o Apache hay que escribir la regla equivalente.
 
@@ -250,6 +251,7 @@ Decisiones que conviene conocer antes de tocarlo:
 - **`/forgot` responde siempre lo mismo**, exista o no la cuenta, para no revelar qué correos están registrados. Los fallos de envío quedan en el log del servidor, no en la respuesta. La única excepción es el 503 cuando falta `RESEND_API_KEY`, que no depende de la cuenta y si no sería invisible.
 - **El enlace se arma con `APP_URL`, nunca con el header `Host`** de la request: si se confiara en el header, alguien podría falsificarlo para que el correo apunte a su propio dominio y quedarse con el token.
 - **Cambiar la contraseña cierra todas las sesiones** de esa cuenta y abre una nueva. Quien tuviera la contraseña vieja queda afuera.
+- **El enlace se oculta hasta que haya proveedor de correo.** `VITE_PASSWORD_RESET_ENABLED` es una variable de build: mientras no valga `true`, la pantalla de inicio de sesión no ofrece la recuperación. Ofrecerla sin proveedor configurado haría que el usuario pida un enlace que nunca le va a llegar. La pantalla que consume el token, en cambio, funciona siempre: si la bandera se apagara después de haber enviado correos, quien ya tiene un enlace válido tiene que poder usarlo.
 - **El proveedor de correo está aislado** en `sendEmail()` dentro de `server/email.js`. Cambiar Resend por SendGrid, Postmark o SMTP es reescribir esa función; el resto del código no se entera.
 
 ---
