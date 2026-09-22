@@ -138,6 +138,11 @@ export const RECORDS = {
     report: 'sinus rhythm. low limb lead voltage. t waves are flat or slightly inverted in i, avl, '
       + 'v3-6. findings are likely to be due to ischaemia.',
   },
+  7889: {
+    age: 74, sex: 'F', scp: ['PSVT'],
+    report: 'av-tachykardie (dd:supraventr. tachykardie) linkstyp st-senkung in i,ii,v3-4 '
+      + 't hoch in v2-4',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -145,4 +150,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '595'];
