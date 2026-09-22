@@ -7,9 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node scripts/test-ecg12.mjs && node scripts/test-wfdb.mjs",
+    "test": "node scripts/test-ecg12.mjs && node scripts/test-wfdb.mjs && node scripts/test-measure.mjs && node scripts/test-cases.mjs",
     "test:ecg12": "node scripts/test-ecg12.mjs",
-    "test:wfdb": "node scripts/test-wfdb.mjs"
+    "test:wfdb": "node scripts/test-wfdb.mjs",
+    "fetch:ptbxl": "node scripts/fetch-ptbxl.mjs",
+    "test:measure": "node scripts/test-measure.mjs",
+    "test:cases": "node scripts/test-cases.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

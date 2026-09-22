@@ -1,15 +1,24 @@
 // ═══════════════════════════════════════════════════════════════
-// GENERADOR SINTÉTICO DE 12 DERIVACIONES
+// GENERADOR SINTÉTICO DE 12 DERIVACIONES — BANCO DE PRUEBAS
 // ═══════════════════════════════════════════════════════════════
+// OJO: esto ya NO produce los trazados de la sección. Los ocho casos usan
+// electrocardiogramas reales de PTB-XL (ver records.js). Lo que este módulo hace
+// ahora es generar señales de las que se conoce la respuesta de antemano, para
+// validar contra ellas el medidor de measure.js: si le pedimos 0,35 mV de
+// elevación inferior y el medidor no la encuentra en II, III y aVF, el medidor
+// está mal, y eso hay que saberlo antes de usarlo para decidir qué enseña cada
+// caso real. Lo usan scripts/test-measure.mjs y scripts/test-ecg12.mjs.
+//
 // Mismo principio que el generador de una derivación de la app (sumas de
 // gaussianas), pero cada onda es un VECTOR en 3D, no un número. La tensión de
 // cada derivación sale de proyectar ese vector sobre su eje.
 //
-// Esto no es un detalle de implementación: es lo que hace que el modelo enseñe.
-// Un infarto es una corriente de lesión que apunta hacia la zona dañada. Si se
-// modela como vector, las elevaciones del ST aparecen en las derivaciones
+// Modelar el vector, y no cada derivación por separado, es lo que hace que sirva
+// como referencia: un infarto es una corriente de lesión que apunta hacia la
+// zona dañada, y al proyectarla las elevaciones del ST caen en las derivaciones
 // correctas por geometría — II, III y aVF en un infarto inferior; V1 a V4 en uno
-// anterior — en vez de tener que escribirlas a mano derivación por derivación.
+// anterior — en vez de quedar puestas a mano, que es justo lo que no serviría
+// para comprobar nada.
 
 import { LEAD_ORDER, project } from './leads.js';
 

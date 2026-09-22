@@ -1,0 +1,287 @@
+// ═══════════════════════════════════════════════════════════════
+// MEDICIÓN AUTOMÁTICA SOBRE EL TRAZADO
+// ═══════════════════════════════════════════════════════════════
+// Con trazados reales ya no alcanza con declarar los hallazgos: hay que
+// medirlos. Este módulo detecta los QRS y mide, derivación por derivación, el
+// desnivel del segmento ST respecto de la línea de base — que es exactamente lo
+// que hace un médico contando cuadraditos, sólo que sin discutir.
+//
+// Sirve para dos cosas:
+//   1. Las pruebas verifican que cada caso enseña lo que su electro muestra de
+//      verdad. Si un registro de PTB-XL deja de tener elevación en II, III y
+//      aVF, la prueba falla y el caso no se publica con un texto falso.
+//   2. La app puede mostrar la medición al responder, que es la forma honesta
+//      de decir "esto está elevado": con un número, no con una flecha.
+//
+// Convenciones (las de la práctica clínica):
+//   · Línea de base → segmento PR, justo antes de que arranque el QRS.
+//   · Punto J       → final del QRS.
+//   · Desnivel ST   → se mide en J+60 ms.
+// Se usa la MEDIANA entre latidos, no el promedio: una extrasístole o un
+// artefacto aislado desplaza el promedio y no mueve la mediana.
+
+const median = (xs) => {
+  if (!xs.length) return 0;
+  const s = Array.from(xs).sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
+// ── Detección de QRS ──
+// Pan-Tompkins reducido a lo esencial: derivada (el QRS es lo más empinado del
+// trazado), cuadrado (todo positivo y se acentúan los picos) e integración en
+// ventana móvil (junta el complejo en una sola joroba). Sobre eso, umbral
+// adaptativo y un período refractario de 200 ms, que es el mínimo fisiológico
+// entre dos despolarizaciones ventriculares.
+export function slopeEnergy(sig, fs, windowSec = 0.10) {
+  const n = sig.length;
+  const d = new Float32Array(n);
+  for (let i = 2; i < n - 2; i++) d[i] = (2 * sig[i + 2] + sig[i + 1] - sig[i - 1] - 2 * sig[i - 2]) / 8;
+
+  const w = Math.max(1, Math.round(windowSec * fs));
+  const out = new Float32Array(n);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += d[i] * d[i];
+    if (i >= w) acc -= d[i - w] * d[i - w];
+    out[i] = acc / w;
+  }
+  return out;
+}
+
+export function detectQRS(sig, fs) {
+  const n = sig.length;
+  const integ = slopeEnergy(sig, fs);
+
+  // Umbral a partir de la mediana de la envolvente: robusto frente a un pico
+  // aislado, que es lo que rompe un umbral basado en el máximo.
+  const sorted = Array.from(integ).sort((a, b) => a - b);
+  const p50 = sorted[Math.floor(n * 0.5)];
+  const p98 = sorted[Math.floor(n * 0.98)];
+  const thr = p50 + 0.35 * (p98 - p50);
+
+  const refractory = Math.round(0.20 * fs);
+  const peaks = [];
+  let i = 0;
+  while (i < n) {
+    if (integ[i] <= thr) { i++; continue; }
+    let j = i;
+    while (j < n && integ[j] > thr) j++;
+    // Dentro de la joroba, el pico real es el máximo absoluto de la señal cruda:
+    // la integración corre el máximo unos milisegundos hacia adelante.
+    const from = Math.max(0, i - Math.round(0.06 * fs));
+    const to = Math.min(n, j + Math.round(0.02 * fs));
+    let best = from, bestV = -Infinity;
+    for (let k = from; k < to; k++) {
+      const v = Math.abs(sig[k]);
+      if (v > bestV) { bestV = v; best = k; }
+    }
+    if (!peaks.length || best - peaks[peaks.length - 1] >= refractory) peaks.push(best);
+    i = j;
+  }
+  return peaks;
+}
+
+// Señal de detección: se suma la energía de varias derivaciones en vez de
+// confiar en una sola. En un infarto una derivación puede quedar con un QRS
+// minúsculo, y detectar sobre ella sola se pierde latidos.
+function detectionSignal(leads, fs) {
+  const use = ['II', 'V2', 'V5', 'I', 'V1'].filter((l) => leads[l]);
+  const n = leads[use[0]].length;
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    let s = 0;
+    for (const l of use) s += leads[l][i] * leads[l][i];
+    out[i] = Math.sqrt(s);
+  }
+  return out;
+}
+
+// ── Límites del QRS ──
+// No se miden latido a latido sino sobre un LATIDO PROMEDIO: se superponen
+// todos los complejos alineados por el pico R y se promedian. El ruido es
+// distinto en cada latido y se cancela; el complejo, que es igual en todos, se
+// queda. Sobre esa plantilla limpia se busca dónde la energía del QRS cae al
+// nivel del segmento PR, y ese punto es el J.
+//
+// La duración del QRS es una propiedad del registro, no de cada latido: medirla
+// una vez sobre la plantilla es más estable, y además es lo correcto.
+function qrsTemplate(det, beats, fs) {
+  // Se promedia la ENERGÍA DE PENDIENTE, no la amplitud. La diferencia decide el
+  // resultado en los trazados que más importan: con un supradesnivel grande, el
+  // segmento ST queda lejos de la línea de base y una medición por amplitud lo
+  // confunde con el final del QRS que todavía no terminó, corriendo el punto J
+  // hasta dentro de la onda T. La pendiente, en cambio, vuelve a cero apenas
+  // termina el complejo, esté el ST donde esté: el ST es plano, aunque esté alto.
+  const env = slopeEnergy(det, fs, 0.03);
+  const before = Math.round(0.12 * fs);
+  const after = Math.round(0.20 * fs);
+  const tpl = new Float64Array(before + after + 1);
+  let used = 0;
+  for (const r of beats) {
+    if (r - before < 0 || r + after >= env.length) continue;
+    for (let k = 0; k <= before + after; k++) tpl[k] += env[r - before + k];
+    used++;
+  }
+  if (!used) return { onset: -Math.round(0.05 * fs), offset: Math.round(0.05 * fs) };
+  for (let k = 0; k < tpl.length; k++) tpl[k] /= used;
+
+  const rIdx = before;
+  // Nivel de referencia: la energía en el segmento PR (120 a 80 ms antes de R),
+  // donde el corazón está eléctricamente quieto.
+  let ref = 0, refN = 0;
+  for (let k = 0; k <= Math.round(0.04 * fs); k++) { ref += tpl[k]; refN++; }
+  ref /= refN;
+  let peak = 0;
+  for (let k = 0; k < tpl.length; k++) peak = Math.max(peak, tpl[k]);
+  const cut = ref + 0.06 * (peak - ref);
+
+  let on = rIdx;
+  while (on > 0 && tpl[on] > cut) on--;
+  let off = rIdx;
+  while (off < tpl.length - 1 && tpl[off] > cut) off++;
+
+  // Topes fisiológicos: un QRS no dura menos de 50 ms ni, en este contexto, más
+  // de 200 ms. Sin ellos un artefacto puede correr el punto J hasta la onda T y
+  // el ST se mediría sobre la repolarización, que es justo lo que no se quiere.
+  const minHalf = Math.round(0.025 * fs);
+  on = Math.min(on, rIdx - minHalf);
+  off = Math.max(off, rIdx + minHalf);
+  off = Math.min(off, rIdx + Math.round(0.14 * fs));
+  on = Math.max(on, rIdx - Math.round(0.09 * fs));
+
+  return { onset: on - rIdx, offset: off - rIdx };   // en muestras, relativo al pico R
+}
+
+/**
+ * Mide un registro de 12 derivaciones.
+ *
+ * @param {{fs:number, leads:Object<string,Float32Array>}} signal
+ * @returns {{hr:number, rr:number[], rrCv:number, beats:number[], st:Object<string,number>, qrsMs:number}}
+ *   st está en mV: positivo = supradesnivel, negativo = infradesnivel.
+ */
+export function measure(signal) {
+  const { fs, leads } = signal;
+  const det = detectionSignal(leads, fs);
+  const beats = detectQRS(det, fs);
+
+  const rr = [];
+  for (let i = 1; i < beats.length; i++) rr.push((beats[i] - beats[i - 1]) / fs);
+  const rrMed = median(rr) || 1;
+  // Variabilidad del RR como coeficiente de variación respecto de la mediana.
+  // En ritmo sinusal queda por debajo de ~0,08; en fibrilación auricular trepa
+  // muy por encima, y ese salto es el que separa los dos ritmos sin mirar la P.
+  const rrCv = rr.length ? median(rr.map((x) => Math.abs(x - rrMed))) / rrMed : 0;
+
+  // Se descartan el primero y el último latido: pueden quedar cortados por los
+  // bordes de los 10 segundos y falsear la medición.
+  const usable = beats.slice(1, -1);
+  const { onset, offset } = qrsTemplate(det, usable, fs);
+  const dJ60 = offset + Math.round(0.060 * fs);
+  const dB0 = onset - Math.round(0.040 * fs);
+  const dB1 = onset - Math.round(0.010 * fs);
+
+  // Ventana donde se busca la onda T: desde poco después del punto J hasta
+  // antes de que pueda aparecer la P siguiente. Se escala con el RR porque a
+  // frecuencias altas la T se adelanta — si la ventana fuera fija, a 120 lpm se
+  // estaría midiendo la P del latido siguiente y llamándola T.
+  const dT0 = offset + Math.round(0.080 * fs);
+  const dT1 = Math.min(
+    Math.round(0.60 * fs),
+    offset + Math.round(Math.max(0.16, 0.62 * Math.sqrt(rrMed)) * fs),
+  );
+
+  const st = {};
+  const t = {};
+  const r = {};   // altura de la onda R (positiva)
+  const sw = {};  // profundidad de la onda S (negativa)
+  const span = {};// excursión máxima respecto de la línea de base, para el dibujo
+  for (const lead of Object.keys(leads)) {
+    const sig = leads[lead];
+    const stVals = [];
+    const tVals = [];
+    const rVals = [];
+    const sVals = [];
+    let spanMax = 0;
+    for (const r0 of usable) {
+      if (r0 + dB0 < 0 || r0 + dT1 >= sig.length) continue;
+      let base = 0;
+      for (let k = r0 + dB0; k < r0 + dB1; k++) base += sig[k];
+      base /= (dB1 - dB0);
+      stVals.push(sig[r0 + dJ60] - base);
+
+      // De la onda T interesa la amplitud CON SIGNO: una T invertida es el
+      // hallazgo, y tomar el valor absoluto lo borraría.
+      let peak = 0;
+      for (let k = r0 + dT0; k <= r0 + dT1; k++) {
+        const v = sig[k] - base;
+        if (Math.abs(v) > Math.abs(peak)) peak = v;
+      }
+      tVals.push(peak);
+
+      // R y S dentro del complejo. La progresión de la R por las precordiales
+      // —de una r mínima en V1 a una R dominante en V6— es un hallazgo en sí
+      // mismo: cuando se pierde, hay que pensar en infarto anterior antiguo.
+      let rMax = 0, sMin = 0;
+      for (let k = r0 + onset; k <= r0 + offset; k++) {
+        const v = sig[k] - base;
+        if (v > rMax) rMax = v;
+        if (v < sMin) sMin = v;
+      }
+      rVals.push(rMax);
+      sVals.push(sMin);
+      for (let k = r0 + dB0; k <= r0 + dT1; k++) spanMax = Math.max(spanMax, Math.abs(sig[k] - base));
+    }
+    st[lead] = median(stVals);
+    t[lead] = median(tVals);
+    r[lead] = median(rVals);
+    sw[lead] = median(sVals);
+    span[lead] = spanMax;
+  }
+
+  // ── Ruido ──
+  // Se mide comparando los latidos ENTRE SÍ. Un electro limpio repite el mismo
+  // complejo latido tras latido; lo que cambia de uno a otro es ruido: temblor
+  // muscular, mal contacto del electrodo, interferencia de red. Se toma la
+  // desviación absoluta mediana entre latidos en cada instante del ciclo, y de
+  // esas la mediana. La mediana en los dos pasos hace que una extrasístole
+  // aislada —que sí es distinta, y no es ruido— no cuente como suciedad.
+  //
+  // La deriva de la línea de base entra en la cuenta, y está bien que entre: un
+  // trazado que sube y baja con la respiración es igual de difícil de medir que
+  // uno con temblor. Lo que se está midiendo no es "cuánto ruido eléctrico hay"
+  // sino "cuánto cuesta leer este electro", que es lo que importa para decidir
+  // si sirve para enseñar.
+  let noise = 0;
+  if (usable.length >= 3) {
+    for (const lead of Object.keys(leads)) {
+      const sig = leads[lead];
+      const disp = [];
+      for (let k = onset - Math.round(0.05 * fs); k <= dT1; k += Math.max(1, Math.round(0.008 * fs))) {
+        const vals = [];
+        for (const r0 of usable) {
+          if (r0 + k < 0 || r0 + k >= sig.length) continue;
+          vals.push(sig[r0 + k]);
+        }
+        if (vals.length < 3) continue;
+        const c = median(vals);
+        disp.push(median(vals.map((v) => Math.abs(v - c))));
+      }
+      noise = Math.max(noise, median(disp));
+    }
+  }
+
+  return {
+    hr: 60 / rrMed,
+    noise,
+    rr,
+    rrCv,
+    beats,
+    st,
+    t,
+    r,
+    s: sw,
+    span,
+    qrsMs: ((offset - onset) / fs) * 1000,
+  };
+}
