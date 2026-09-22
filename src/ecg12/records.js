@@ -100,6 +100,13 @@ export const RECORDS = {
     report: 'sinus rhythm. left axis deviation. left anterior fascicular block. right bundle branch block. '
       + 'bifascicular block. pr interval is normal.',
   },
+  // PTB-XL etiqueta este registro a la vez como NORM (probabilidad 100) y como
+  // LPFB. La contradicción no es un error de la base: es exactamente lo que el
+  // caso enseña, y por eso se transcribe tal cual.
+  13052: {
+    age: 35, sex: 'M', scp: ['NORM', 'LPFB'],
+    report: 'sinusrhythmus ueberdrehter rechtstyp linksposteriorer hemiblock',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -107,4 +114,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '595'];

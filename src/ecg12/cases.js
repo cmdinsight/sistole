@@ -695,6 +695,64 @@ export const CASES = [
   },
 
   {
+    id: 'lpfb',
+    record: '13052',
+    age: 35, sex: 'M',
+    vitals: { bp: '118/72', spo2: 99, rr: 14 },
+    highlight: ['I', 'aVL', 'II', 'III', 'aVF', 'V1'],
+    answer: 'lpfb',
+    metrics: { kind: 'axis', leads: ['I', 'aVL', 'II', 'III', 'aVF'] },
+    // Medido: eje +100°, QRS de 84 ms. R dominante en II, III y aVF (710, 754
+    // y 724 µV de R contra 196, 88 y 29 de S); rS en I y aVL, con r inicial de
+    // 245 y 155 µV; rS en V1 (R de 11 µV contra S de 489). ST de los miembros
+    // dentro de 86 µV. FC 69, RR regular (cv 0,041).
+    //
+    // Las tres exclusiones del caso son las tres mediciones: V1 descarta la
+    // hipertrofia derecha, la r inicial de I y aVL descarta el infarto lateral,
+    // y los 84 ms descartan el bloqueo de rama. Lo que NO se puede excluir
+    // midiendo —la contextura física— es de lo que habla el texto.
+    findings: {
+      axisDeg: [85, 120],
+      qrsMs: [60, 115],
+      dominantR: ['II', 'III', 'aVF'],
+      rsPattern: ['I', 'aVL', 'V1'],
+      rHeight: { leads: ['I', 'aVL'], min: 0.10 },
+      // El ST plano se afirma sólo de los miembros y de V5-V6. En V2 y V3 hay
+      // 2,4 y 2,1 mm de elevación, que en un hombre de 35 años son
+      // repolarización precoz y están dentro de lo normal — y el texto lo dice.
+      stFlat: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V5', 'V6'], max: 0.12 },
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 35 años, delgado, sin síntomas. Electro prelaboral. El informe automático del equipo dice «ueberdrehter Rechtstyp» —eje muy desviado a la derecha— y agrega «linksposteriorer Hemiblock». Le preguntan qué hay que hacer con eso.',
+      en: '35-year-old man, thin build, no symptoms. Pre-employment ECG. The machine\u2019s report reads "marked right axis deviation" and adds "left posterior hemiblock". He asks what should be done about that.',
+      pt: 'Homem de 35 anos, magro, sem sintomas. ECG ocupacional. O laudo automático do aparelho diz «desvio acentuado do eixo para a direita» e acrescenta «hemibloqueio posterior esquerdo». Ele pergunta o que fazer com isso.',
+    },
+    options: [
+      { id: 'lpfb', label: { es: 'Patrón de hemibloqueo posterior izquierdo', en: 'Left posterior fascicular block pattern', pt: 'Padrão de hemibloqueio posterior esquerdo' } },
+      { id: 'hvd', label: { es: 'Hipertrofia ventricular derecha', en: 'Right ventricular hypertrophy', pt: 'Hipertrofia ventricular direita' } },
+      { id: 'lateral', label: { es: 'Infarto lateral antiguo', en: 'Old lateral infarct', pt: 'Infarto lateral antigo' } },
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha', en: 'Complete right bundle branch block', pt: 'Bloqueio completo de ramo direito' } },
+    ],
+    explain: {
+      es: 'El eje mide +100°: desviado a la derecha. Se lee a ojo igual que siempre, mirando qué complejos son netos positivos y cuáles negativos, sólo que acá está todo dado vuelta respecto del hemibloqueo anterior: II, III y aVF hacia arriba, I y aVL hacia abajo. El vector va hacia abajo y a la derecha. La anatomía explica por qué: la rama izquierda se divide en dos fascículos, y si el que falla es el POSTERIOR, el ventrículo izquierdo se activa desde el anterior —desde arriba y adelante— y el frente de despolarización sale hacia abajo y a la derecha. Y como en el hemibloqueo anterior, el QRS sigue angosto: 84 ms. Falló un fascículo, no la rama. Ahora bien, el eje derecho solo no alcanza, porque lo dan varias cosas más. Lo que el trazado SÍ puede hacer es sacar las otras del medio, y acá las saca a las tres: V1 es rS —R de apenas 0,1 mm contra una S de 4,9—, o sea que no hay hipertrofia del ventrículo derecho, que daría una R alta ahí; I y aVL empiezan con una r —2,5 y 1,6 mm— y no con una Q, o sea que no hay un infarto lateral antiguo; y el QRS de 84 ms descarta un bloqueo de rama. Queda el patrón de hemibloqueo posterior izquierdo.',
+      en: 'The axis measures +100°: deviated to the right. You read it by eye as always, looking at which complexes are net positive and which negative — only here everything is flipped relative to the anterior fascicular block: II, III and aVF point up, I and aVL point down. The vector heads down and to the right. The anatomy explains why: the left bundle splits into two fascicles, and if the one that fails is the POSTERIOR one, the left ventricle is activated from the anterior fascicle — from above and in front — and the depolarization front comes out downward and to the right. And as in the anterior fascicular block, the QRS stays narrow: 84 ms. One fascicle failed, not the branch. Now, a right axis on its own is not enough, because several other things produce it. What the tracing CAN do is rule the others out, and here it rules out all three: V1 is rS — an R of barely 0.1 mm against an S of 4.9 — so there is no right ventricular hypertrophy, which would give a tall R there; I and aVL begin with an r — 2.5 and 1.6 mm — and not with a Q, so there is no old lateral infarct; and the 84 ms QRS excludes a bundle branch block. What is left is the left posterior fascicular block pattern.',
+      pt: 'O eixo mede +100°: desviado para a direita. Lê-se a olho como sempre, vendo quais complexos são líquidos positivos e quais negativos — só que aqui está tudo invertido em relação ao hemibloqueio anterior: II, III e aVF para cima, I e aVL para baixo. O vetor vai para baixo e para a direita. A anatomia explica porquê: o ramo esquerdo divide-se em dois fascículos, e se o que falha é o POSTERIOR, o ventrículo esquerdo é ativado pelo anterior — de cima e da frente — e a frente de despolarização sai para baixo e para a direita. E como no hemibloqueio anterior, o QRS continua estreito: 84 ms. Falhou um fascículo, não o ramo. Agora, um eixo direito sozinho não basta, porque várias outras coisas o produzem. O que o traçado PODE fazer é tirar as outras do meio, e aqui tira as três: V1 é rS — uma R de apenas 0,1 mm contra uma S de 4,9 —, ou seja, não há hipertrofia do ventrículo direito, que daria uma R alta ali; I e aVL começam com uma r — 2,5 e 1,6 mm — e não com uma Q, ou seja, não há infarto lateral antigo; e o QRS de 84 ms exclui um bloqueio de ramo. Resta o padrão de hemibloqueio posterior esquerdo.',
+    },
+    pitfall: {
+      es: 'Fijate que la opción correcta dice PATRÓN, y no «tiene un hemibloqueo posterior izquierdo». La diferencia no es una sutileza de redacción: el hemibloqueo posterior es un diagnóstico por descarte, y hay un descarte que el electro no puede hacer. Este hombre tiene 35 años y es delgado. En una persona flaca el corazón cuelga vertical dentro del tórax, y un corazón vertical da eje derecho sin que haya nada roto: es la causa más común de este trazado, y no se ve en el papel, se ve mirando al paciente. Lo mismo con el EPOC y con cualquier cosa que sobrecargue el ventrículo derecho. Por eso el fascículo posterior casi nunca se bloquea solo: es corto, ancho y tiene doble irrigación, y hace falta bastante daño para sacarlo de circulación. La propia base lo muestra: PTB-XL trae este registro etiquetado a la vez como NORMAL —con probabilidad 100— y como hemibloqueo posterior izquierdo. No es un error de la base. Es el problema. Y un detalle chico que no hay que sobreleer: en V2 y V3 hay 2,4 y 2,1 mm de elevación del ST, y la T de III está levemente invertida. En un hombre de 35 años sin síntomas eso es repolarización precoz y una variante normal: no cambia nada.',
+      en: 'Note that the correct option says PATTERN, not "he has a left posterior fascicular block". The difference is not a wording nicety: posterior fascicular block is a diagnosis of exclusion, and there is one exclusion the ECG cannot make. This man is 35 and thin. In a thin person the heart hangs vertically inside the chest, and a vertical heart gives a right axis with nothing broken at all: it is the commonest cause of this tracing, and it is not visible on the paper — it is visible by looking at the patient. The same goes for COPD and anything that loads the right ventricle. That is why the posterior fascicle almost never blocks on its own: it is short, wide and doubly supplied with blood, and it takes considerable damage to put it out of action. The database itself shows this: PTB-XL labels this record simultaneously as NORMAL — with likelihood 100 — and as left posterior fascicular block. That is not a mistake in the database. That is the problem. And one small detail not to over-read: V2 and V3 show 2.4 and 2.1 mm of ST elevation, and the T in III is slightly inverted. In a 35-year-old man without symptoms that is early repolarization and a normal variant: it changes nothing.',
+      pt: 'Repare que a opção correta diz PADRÃO, e não «tem um hemibloqueio posterior esquerdo». A diferença não é uma sutileza de redação: o hemibloqueio posterior é um diagnóstico por exclusão, e há uma exclusão que o ECG não consegue fazer. Este homem tem 35 anos e é magro. Numa pessoa magra o coração fica vertical dentro do tórax, e um coração vertical dá eixo direito sem que haja nada quebrado: é a causa mais comum deste traçado, e não se vê no papel — vê-se olhando para o paciente. O mesmo vale para a DPOC e para qualquer coisa que sobrecarregue o ventrículo direito. Por isso o fascículo posterior quase nunca se bloqueia sozinho: é curto, largo e tem dupla irrigação, e é preciso bastante dano para o pôr fora de circulação. A própria base mostra isso: o PTB-XL traz este registro etiquetado ao mesmo tempo como NORMAL — com probabilidade 100 — e como hemibloqueio posterior esquerdo. Não é um erro da base. É o problema. E um detalhe pequeno que não se deve sobreler: em V2 e V3 há 2,4 e 2,1 mm de elevação do ST, e a T de III está levemente invertida. Num homem de 35 anos sem sintomas isso é repolarização precoce e uma variante normal: não muda nada.',
+    },
+    action: {
+      es: 'El apto se firma. No hay nada que estudiar a partir de este electro en alguien de 35 años, sin síntomas y con un examen normal: el patrón aislado, sin síncope, sin disnea y sin cardiopatía conocida, no cambia ninguna conducta ni necesita seguimiento especial. Lo que sí vale es escribir bien el informe: «eje desviado a la derecha, patrón compatible con hemibloqueo posterior izquierdo; sin criterios de hipertrofia derecha ni de necrosis lateral; correlacionar con la contextura física». Eso es honesto y le sirve al que lo lea dentro de diez años. Y guardá el trazado: si algún día aparece con un bloqueo de rama derecha encima, ese eje pasa a ser la mitad de un bloqueo bifascicular, y entonces sí importa. La única situación que cambia todo es la misma de siempre: síncope. Con síncope, ningún trastorno de conducción es un hallazgo casual.',
+      en: 'The clearance is signed. There is nothing to investigate off this ECG in someone aged 35, without symptoms and with a normal examination: the isolated pattern, with no syncope, no breathlessness and no known heart disease, changes no management and needs no special follow-up. What is worth doing is writing the report properly: "right axis deviation, pattern compatible with left posterior fascicular block; no criteria for right ventricular hypertrophy or lateral necrosis; correlate with body habitus." That is honest and it serves whoever reads it ten years from now. And file the tracing: if he ever turns up with a right bundle branch block on top, that axis becomes half of a bifascicular block, and then it does matter. The one situation that changes everything is the usual one: syncope. With syncope, no conduction abnormality is an incidental finding.',
+      pt: 'O atestado assina-se. Não há nada a investigar a partir deste ECG em alguém de 35 anos, sem sintomas e com exame normal: o padrão isolado, sem síncope, sem dispneia e sem cardiopatia conhecida, não muda nenhuma conduta nem precisa de seguimento especial. O que vale a pena é escrever bem o laudo: «eixo desviado para a direita, padrão compatível com hemibloqueio posterior esquerdo; sem critérios de hipertrofia direita nem de necrose lateral; correlacionar com a compleição física». Isso é honesto e serve a quem o ler daqui a dez anos. E guarde o traçado: se um dia aparecer com um bloqueio de ramo direito por cima, esse eixo passa a ser metade de um bloqueio bifascicular, e aí sim importa. A única situação que muda tudo é a de sempre: síncope. Com síncope, nenhum distúrbio de condução é um achado casual.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',
