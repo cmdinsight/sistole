@@ -72,6 +72,26 @@ const REGLAS = {
     fallos: leads.filter((l) => q.r[l] >= -q.s[l]).map((l) => `${l} R=${uv(q.r[l])} S=${uv(-q.s[l])}`),
     margen: Math.min(...leads.map((l) => -q.s[l] - q.r[l])),
   }),
+  // Segunda onda R dentro del QRS: las "orejas de conejo". Es el hallazgo que
+  // convierte una R alta en V1 en un bloqueo de rama derecha, y no en un infarto
+  // posterior o una hipertrofia derecha, donde la R es alta pero única.
+  secondR: ({ leads, min }, q) => ({
+    label: `segunda onda R de al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.rPrime[l] < min).map((l) => q.rPrime[l] ? `${l}=${uv(q.rPrime[l])}` : `${l}=sin segunda R`),
+    margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
+  }),
+
+  // Profundidad mínima de la onda S. En el bloqueo de rama derecha el
+  // ventrículo derecho se despolariza tarde y su vector apunta a la derecha y
+  // adelante: eso levanta la R' de V1 y, al mismo tiempo y por lo mismo, cava
+  // una S ancha en las derivaciones que miran a la izquierda, I y V6. Las dos
+  // caras del mismo retraso.
+  sDepth: ({ leads, min }, q) => ({
+    label: `onda S de al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => -q.s[l] < min).map((l) => `${l}=${uv(-q.s[l])}`),
+    margen: Math.min(...leads.map((l) => -q.s[l] - min)),
+  }),
+
   rProgression: ([a, b], q) => ({
     label: `la onda R crece de ${a} a ${b}`,
     fallos: q.r[b] > q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],

@@ -534,6 +534,54 @@ export const CASES = [
   },
 
   {
+    id: 'rbbb',
+    record: '2017',
+    age: 82, sex: 'F',
+    vitals: { bp: '138/78', spo2: 97, rr: 15 },
+    highlight: ['V1', 'V2', 'I', 'V6'],
+    answer: 'brder',
+    metrics: { kind: 'qrs', secondR: ['V1', 'V2'], sDepth: ['I', 'V6'] },
+    // Medido: QRS 136 ms. En V1 el complejo es rsR' — r de 429 µV, S de 455,
+    // y una segunda R de 882. La misma fuerza tardía cava una S de 260 µV en I
+    // y 235 en V6. T invertida en V1 (−258 µV), que es el cambio secundario.
+    findings: {
+      qrsMs: [125, 165],
+      secondR: { leads: ['V1', 'V2'], min: 0.40 },
+      dominantR: ['V1'],
+      sDepth: { leads: ['I', 'V6'], min: 0.15 },
+      tInversion: { leads: ['V1'], min: 0.15 },
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Mujer de 82 años, sin síntomas, en evaluación previa a una cirugía de cadera. El electro lo mira alguien que ve el QRS ancho y frena el trámite: quiere saber si esto es un bloqueo de rama y si cambia algo antes de operar.',
+      en: '82-year-old woman, asymptomatic, being assessed before hip surgery. The ECG is read by someone who sees the wide QRS and pauses the paperwork: they want to know whether this is a bundle branch block and whether it changes anything before operating.',
+      pt: 'Mulher de 82 anos, sem sintomas, em avaliação pré-operatória de cirurgia de quadril. O ECG é visto por alguém que nota o QRS largo e interrompe o trâmite: quer saber se isto é um bloqueio de ramo e se muda algo antes de operar.',
+    },
+    options: [
+      { id: 'brder', label: { es: 'Bloqueo completo de rama derecha', en: 'Complete right bundle branch block', pt: 'Bloqueio completo de ramo direito' } },
+      { id: 'brizq', label: { es: 'Bloqueo completo de rama izquierda', en: 'Complete left bundle branch block', pt: 'Bloqueio completo de ramo esquerdo' } },
+      { id: 'posterior', label: { es: 'IAM posterior', en: 'Posterior STEMI', pt: 'IAM posterior' } },
+      { id: 'hvd', label: { es: 'Hipertrofia ventricular derecha', en: 'Right ventricular hypertrophy', pt: 'Hipertrofia ventricular direita' } },
+    ],
+    explain: {
+      es: 'El QRS dura 136 ms: hay un ventrículo que se despolariza tarde. La pregunta es cuál, y la contesta V1, que es la derivación que mira de frente al ventrículo derecho. Ahí el complejo tiene tres partes: una r chica, una S, y después una SEGUNDA R más alta que la primera, de casi 9 mm. Eso es el rsR’, las orejas de conejo, y esa segunda onda es el ventrículo derecho despolarizándose solo, cuando el izquierdo ya terminó. La otra cara está en I y V6: miran desde la izquierda, esa misma fuerza tardía se aleja de ellas, y les cava una onda S ancha. Y la T invertida de V1 no es isquemia: es el cambio de repolarización que acompaña a cualquier despolarización anormal.',
+      en: 'The QRS lasts 136 ms: one ventricle is depolarizing late. Which one is answered by V1, the lead that faces the right ventricle head-on. There the complex has three parts: a small r, an S, and then a SECOND R, taller than the first, at almost 9 mm. That is the rsR’ — the rabbit ears — and that second wave is the right ventricle depolarizing alone, after the left has finished. The other face of it is in I and V6: they look from the left, that same late force moves away from them, and it carves a broad S. And the inverted T in V1 is not ischemia: it is the repolarization change that accompanies any abnormal depolarization.',
+      pt: 'O QRS dura 136 ms: há um ventrículo que se despolariza tarde. Qual deles é respondido por V1, a derivação que olha de frente o ventrículo direito. Ali o complexo tem três partes: uma r pequena, uma S, e depois uma SEGUNDA R mais alta que a primeira, de quase 9 mm. Isso é o rsR’, as orelhas de coelho, e essa segunda onda é o ventrículo direito se despolarizando sozinho, quando o esquerdo já terminou. A outra face está em I e V6: olham desde a esquerda, essa mesma força tardia se afasta delas e cava uma onda S larga. E a T invertida de V1 não é isquemia: é a alteração de repolarização que acompanha qualquer despolarização anormal.',
+    },
+    pitfall: {
+      es: 'Con un QRS ancho, la pregunta que ordena todo es cuál de las dos ramas está bloqueada, y se contesta mirando V1 y nada más: si hay una segunda R alta, es la derecha; si hay una S profunda y ancha, es la izquierda. Vale la pena comparar este trazado con el del caso de rama izquierda, porque los dos son anchos y en V1 son opuestos. La otra confusión es con una R alta en V1 sin bloqueo —infarto posterior, hipertrofia derecha—: ahí la R es alta pero es UNA sola, y el QRS es angosto. Y un dato que separa a las dos ramas en la práctica: el bloqueo derecho deja el ST legible fuera de V1-V3, así que un infarto se puede diagnosticar igual; el izquierdo no.',
+      en: 'With a wide QRS, the question that orders everything is which of the two branches is blocked, and it is answered by looking at V1 and nothing else: a tall second R means the right; a deep broad S means the left. It is worth comparing this tracing with the left bundle branch block case, because both are wide and in V1 they are opposites. The other confusion is a tall R in V1 without a block — posterior infarct, right ventricular hypertrophy: there the R is tall but there is only ONE, and the QRS is narrow. And one practical point that separates the two branches: right bundle branch block leaves the ST readable outside V1-V3, so an infarct can still be diagnosed; the left one does not.',
+      pt: 'Com um QRS largo, a pergunta que ordena tudo é qual dos dois ramos está bloqueado, e se responde olhando V1 e nada mais: se há uma segunda R alta, é o direito; se há uma S profunda e larga, é o esquerdo. Vale comparar este traçado com o do caso de ramo esquerdo, porque os dois são largos e em V1 são opostos. A outra confusão é com uma R alta em V1 sem bloqueio — infarto posterior, hipertrofia direita: ali a R é alta mas é UMA só, e o QRS é estreito. E um dado que separa os dois ramos na prática: o bloqueio direito deixa o ST legível fora de V1-V3, então um infarto ainda pode ser diagnosticado; o esquerdo não.',
+    },
+    action: {
+      es: 'Ninguna conducta, y la cirugía sigue. Un bloqueo de rama derecha aislado, en una persona sin síntomas, es un hallazgo frecuente que aumenta con la edad y no contraindica nada por sí solo. Lo que sí conviene es buscar un electro previo —si el bloqueo ya estaba, la tranquilidad es mayor— y mirar si viene acompañado: un hemibloqueo anterior izquierdo junto al bloqueo derecho es un bloqueo bifascicular, y eso, con síncope, ya es otra conversación. Acá no lo hay.',
+      en: 'No action, and the surgery proceeds. An isolated right bundle branch block in someone without symptoms is a common finding that increases with age and does not contraindicate anything on its own. What is worth doing is finding a previous ECG — if the block was already there, the reassurance is greater — and checking whether it comes with company: a left anterior fascicular block alongside the right bundle block is bifascicular block, and that, with syncope, is a different conversation. There is none here.',
+      pt: 'Nenhuma conduta, e a cirurgia segue. Um bloqueio de ramo direito isolado, numa pessoa sem sintomas, é um achado frequente que aumenta com a idade e não contraindica nada por si só. O que convém é procurar um ECG anterior — se o bloqueio já existia, a tranquilidade é maior — e ver se vem acompanhado: um hemibloqueio anterior esquerdo junto ao bloqueio direito é um bloqueio bifascicular, e isso, com síncope, é outra conversa. Aqui não há.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',

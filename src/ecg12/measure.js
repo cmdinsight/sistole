@@ -201,6 +201,31 @@ function tEndTangent(beat, base, tFrom, tTo, fs) {
   return Math.min(cruce, tTo + Math.round(0.08 * fs));
 }
 
+// ── Segunda onda R dentro del QRS ──
+// Las "orejas de conejo" del bloqueo de rama derecha: en V1 el complejo es rsR',
+// con una R chica, una S, y una segunda R más alta que la primera. Esa segunda
+// onda es el ventrículo derecho despolarizándose solo y tarde, cuando el
+// izquierdo ya terminó.
+//
+// Encontrarla es contar máximos locales dentro del QRS, sobre el latido
+// promedio y separados al menos 25 ms para no confundir una muesca del ruido con
+// una onda. Devuelve la altura de la SEGUNDA, que es el hallazgo; cero si hay
+// una sola, que es lo normal.
+function segundaR(beat, base, desde, hasta, fs) {
+  const sep = Math.max(2, Math.round(0.025 * fs));
+  const picos = [];
+  for (let k = Math.max(desde, sep); k <= Math.min(hasta, beat.length - sep - 1); k++) {
+    const v = beat[k] - base;
+    if (v < 0.10) continue;                       // por debajo de 1 mm no es una onda
+    let esPico = true;
+    for (let j = k - sep; j <= k + sep; j++) if (beat[j] > beat[k]) { esPico = false; break; }
+    if (!esPico) continue;
+    if (picos.length && k - picos[picos.length - 1].k < sep) continue;
+    picos.push({ k, v });
+  }
+  return picos.length >= 2 ? picos[picos.length - 1].v : 0;
+}
+
 /**
  * Mide un registro de 12 derivaciones.
  *
@@ -264,6 +289,7 @@ export function measure(signal) {
   const st = {};
   const t = {};
   const qt = {};
+  const rPrime = {};   // altura de la segunda R del QRS, 0 si hay una sola
   const sag = {};   // hundimiento del ST bajo la cuerda J→pico de la T
   const r = {};   // altura de la onda R (positiva)
   const sw = {};  // profundidad de la onda S (negativa)
@@ -332,17 +358,20 @@ export function measure(signal) {
     t[lead] = median(tVals);
     sag[lead] = sagVals.length ? median(sagVals) : 0;
 
-    // QT de esta derivación, sobre el latido promedio.
+    // QT y segunda R de esta derivación, sobre el latido promedio.
     const prom = promedio(sig);
     if (prom) {
       const { tpl, rIdx } = prom;
       let base = 0;
       for (let k = rIdx + dB0; k < rIdx + dB1; k++) base += tpl[k];
       base /= (dB1 - dB0);
+
+      rPrime[lead] = segundaR(tpl, base, rIdx + onset, rIdx + offset, fs);
       const fin = tEndTangent(tpl, base, rIdx + dT0, Math.min(tpl.length - 2, rIdx + dT1), fs);
       qt[lead] = fin === null ? null : ((fin - (rIdx + onset)) / fs) * 1000;
     } else {
       qt[lead] = null;
+      rPrime[lead] = 0;
     }
     r[lead] = median(rVals);
     sw[lead] = median(sVals);
@@ -404,6 +433,7 @@ export function measure(signal) {
     st,
     t,
     sag,
+    rPrime,
     qt,
     // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
     // puede medir, no el promedio. Es la convención clínica y tiene su razón: la

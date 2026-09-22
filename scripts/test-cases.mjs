@@ -64,7 +64,11 @@ for (const c of CASES) {
   check(`${tag}: están las 12 derivaciones`,
         LEAD_LABELS.every((l) => s.leads[l] && s.leads[l].length === s.fs * 10));
   check(`${tag}: ruido entre latidos por debajo de 0,2 mV`, q.noise < 0.20, `(${uv(q.noise)} µV)`);
-  check(`${tag}: el QRS medido es plausible`, q.qrsMs >= 50 && q.qrsMs <= 130, `(${q.qrsMs.toFixed(0)} ms)`);
+  // El rango es amplio a propósito: un bloqueo de rama tiene el QRS ancho por
+  // definición, y esta prueba sólo busca detectar una medición imposible, no
+  // decidir qué es normal. Cuánto debe durar el QRS de cada caso lo dice su
+  // findings con la regla qrsMs.
+  check(`${tag}: el QRS medido es plausible`, q.qrsMs >= 50 && q.qrsMs <= 200, `(${q.qrsMs.toFixed(0)} ms)`);
   // Cuánto ocupa el trazado EN LA HOJA, que es lo que decide si se puede leer.
   // Se mide en milímetros de papel y no en milivoltios, porque desde que la
   // ganancia se elige sola un registro de mucho voltaje se dibuja a la mitad y

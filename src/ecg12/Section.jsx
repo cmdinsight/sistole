@@ -65,6 +65,14 @@ const L = {
   rrVar: { es: 'variación RR', en: 'RR variation', pt: 'variação RR' },
   regularRhythm: { es: 'ritmo regular', en: 'regular rhythm', pt: 'ritmo regular' },
   irregularRhythm: { es: 'irregularmente irregular', en: 'irregularly irregular', pt: 'irregularmente irregular' },
+  qrsWidth: { es: 'QRS', en: 'QRS', pt: 'QRS' },
+  secondRLabel: { es: '2ª R', en: '2nd R', pt: '2ª R' },
+  sLabel: { es: 'S', en: 'S', pt: 'S' },
+  qrsNote: {
+    es: 'Ancho del QRS sobre un latido promedio. La segunda R es un segundo pico positivo dentro del mismo complejo: en un QRS normal no existe, y su altura es la del ventrículo que se despolarizó tarde y solo.',
+    en: 'QRS width on an averaged beat. The second R is a second positive peak inside the same complex: a normal QRS has none, and its height is that of the ventricle that depolarized late and alone.',
+    pt: 'Largura do QRS sobre um batimento médio. A segunda R é um segundo pico positivo dentro do mesmo complexo: num QRS normal não existe, e sua altura é a do ventrículo que se despolarizou tarde e sozinho.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -106,6 +114,11 @@ const num = (v, d, lang) => v.toFixed(d).replace('.', lang === 'en' ? '.' : ',')
 // con el signo adelante. 0,18 mV son 1,8 mm, o sea casi dos cuadraditos. Cuando
 // redondea a cero se omite el signo: escribir "+0,0 mm" sugiere una dirección
 // que la medición no tiene.
+// Para amplitudes —la altura de una onda, la profundidad de otra— el signo no
+// aporta: una onda S mide 2,6 mm de profundidad, no "+2,6". El signo se reserva
+// para los desniveles del ST, donde la dirección ES el hallazgo.
+const mmAbs = (mv, lang) => `${num(Math.abs(mv * 10), 1, lang)} mm`;
+
 const mm = (mv, lang) => {
   const abs = Math.abs(mv * 10);
   if (abs < 0.05) return `${num(0, 1, lang)} mm`;
@@ -169,7 +182,19 @@ function Measured({ q, metrics, lang, gain }) {
   let chips = [];
   let note = '';
 
-  if (metrics.kind === 'qt') {
+  if (metrics.kind === 'qrs') {
+    chips = [
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(metrics.secondR ?? []).map((l) => chip(`r2-${l}`, `${L.secondRLabel[lang]} ${l}`, mmAbs(q.rPrime[l], lang),
+           q.rPrime[l] > 0 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60')),
+      ...(metrics.sDepth ?? []).map((l) => chip(`s-${l}`, `${L.sLabel[lang]} ${l}`, mmAbs(q.s[l], lang),
+           'text-sky-300 border-sky-900/60 bg-sky-950/30')),
+    ];
+    note = L.qrsNote[lang];
+  } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);
     // El umbral depende del sexo, así que lo decide el caso y no este bloque.
@@ -204,7 +229,7 @@ function Measured({ q, metrics, lang, gain }) {
     // Algunos casos no se juegan en cuánto bajó el ST sino en cómo bajó.
     if (metrics.sag) {
       chips = chips.concat(metrics.sag.map((l) => chip(
-        `sag-${l}`, `${L.sagLabel[lang]} ${l}`, mm(q.sag[l], lang),
+        `sag-${l}`, `${L.sagLabel[lang]} ${l}`, mmAbs(q.sag[l], lang),
         q.sag[l] >= 0.05 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
                          : 'text-slate-400 border-slate-800 bg-slate-950/60')));
       note += ` ${L.sagNote[lang]}`;

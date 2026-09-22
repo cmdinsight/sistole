@@ -86,6 +86,11 @@ export const RECORDS = {
     report: 'vorhofflimmern normokard stlt st-hebung in v4-6, ii, iii, avf st-senkung in ii, iii, avf, v4-6 '
       + 'neg. t in ii, iii, avf, v4-6 digitalisveraenderung pathologisches ekg',
   },
+  2017: {
+    age: 82, sex: 'F', scp: ['CRBBB'],
+    report: 'sinusrhythmus ueberdrehter linkstyp rechtsschenkelblock qrs(t) abnormal '
+      + 'supraventr. extrasystolen pathologisch',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -93,4 +98,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '595'];
