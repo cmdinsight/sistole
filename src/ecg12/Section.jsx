@@ -124,6 +124,12 @@ const L = {
     en: 'A beat counts as a ventricular premature beat when it meets both conditions: it arrives before 85 % of the cycle AND resembles the typical-beat template by less than 94 %. Neither is enough alone — an atrial premature beat is also early but comes out identical to the rest, and a noise-deformed beat is also different.',
     pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 94 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
   },
+  pLabel: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  pNote: {
+    es: 'Altura de la onda P sobre el latido promedio, en la derivación donde mejor se ve. Normal hasta 2,5 mm en II: por encima habla de sobrecarga de la aurícula derecha. Sobre los registros normales de la base la mediana es 1,0 mm y ninguno llega a 2,5.',
+    en: 'P wave height on an averaged beat, in the lead where it shows best. Normal up to 2.5 mm in II: above that it speaks of right atrial overload. In the database\u2019s normal records the median is 1.0 mm and none reaches 2.5.',
+    pt: 'Altura da onda P sobre um batimento médio, na derivação onde melhor se vê. Normal até 2,5 mm em II: acima disso fala de sobrecarga da aurícula direita. Nos registros normais da base a mediana é 1,0 mm e nenhum chega a 2,5.',
+  },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -335,6 +341,18 @@ function Measured({ q, metrics, lang, gain }) {
       chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
     ];
     note = L.pvcNote[lang];
+  } else if (metrics.kind === 'p') {
+    if (q.pAmp === null) return null;
+    chips = [
+      chip('p', `${L.pLabel[lang]} ${q.pLead}`, mmAbs(q.pAmp, lang),
+           q.pAmp >= 0.25 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ...(metrics.leads ?? []).map((l) => chip(`st-${l}`, l, mm(q.st[l], lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60')),
+    ];
+    note = L.pNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);

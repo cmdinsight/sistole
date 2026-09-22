@@ -157,6 +157,17 @@ const REGLAS = {
     margen: q.prMs === null ? -1 : Math.min(q.prMs - lo, hi - q.prMs) / 100,
   }),
 
+  // Altura de la onda P. Por encima de 2,5 mm en II es sobrecarga de la
+  // aurícula derecha —la P «pulmonale»—, y el umbral está comprobado sobre la
+  // base: los registros normales dan 1,0 mm de mediana y NINGUNO de 25 llega a
+  // 2,5, mientras que los etiquetados con crecimiento derecho dan 2,4.
+  pHeight: ({ min, lead }, q) => ({
+    label: `onda P de al menos ${mmStr(min)}${lead ? ` en ${lead}` : ''}`,
+    fallos: q.pAmp !== null && q.pAmp >= min && (!lead || q.pLead === lead)
+      ? [] : [q.pAmp === null ? 'no medible' : `${uv(q.pAmp)} en ${q.pLead}`],
+    margen: q.pAmp === null ? -1 : q.pAmp - min,
+  }),
+
   // Latidos prematuros de forma distinta: extrasístoles ventriculares.
   // Se pide un rango y no un mínimo, porque "cuántas hay" es parte del
   // hallazgo: una es un hallazgo banal, y muchas cambian la conducta.
