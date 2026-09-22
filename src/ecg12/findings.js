@@ -103,6 +103,23 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => -q.s[l] - min)),
   }),
 
+  // Amplitud del QRS de pico a pico: lo que sube la R más lo que baja la S, en
+  // la misma derivación. Es la medida con la que está definido el bajo voltaje,
+  // y no se parece a ninguna de las otras: acá no interesa si el complejo es
+  // positivo o negativo, interesa cuánto MIDE de punta a punta.
+  //
+  // Los umbrales son los clásicos y no son arbitrarios: 5 mm en las seis
+  // derivaciones de los miembros, 10 mm en las seis precordiales. Y la palabra
+  // que importa es TODAS: alcanza con que una sola derivación de los miembros
+  // pase los 5 mm para que no haya bajo voltaje. Por eso la regla exige el
+  // máximo en cada una de las derivaciones de la lista, y el margen es el de la
+  // derivación MÁS ALTA, que es la que decide.
+  qrsAmplitude: ({ leads, max }, q) => ({
+    label: `QRS de pico a pico ≤ ${mmStr(max)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.r[l] - q.s[l] > max).map((l) => `${l}=${uv(q.r[l] - q.s[l])}`),
+    margen: Math.min(...leads.map((l) => max - (q.r[l] - q.s[l]))),
+  }),
+
   rProgression: ([a, b], q) => ({
     label: `la onda R crece de ${a} a ${b}`,
     fallos: q.r[b] > q.r[a] ? [] : [`${a}=${uv(q.r[a])} ${b}=${uv(q.r[b])}`],

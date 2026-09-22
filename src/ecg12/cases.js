@@ -753,6 +753,66 @@ export const CASES = [
   },
 
   {
+    id: 'low-voltage',
+    record: '4215',
+    age: 62, sex: 'M',
+    vitals: { bp: '128/78', spo2: 97, rr: 15 },
+    highlight: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'],
+    answer: 'periferico',
+    metrics: {
+      kind: 'voltage',
+      limb: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'],
+      chest: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6'],
+    },
+    // Medido, de pico a pico: los miembros dan 3,1 · 4,3 · 2,6 · 3,6 · 1,8 y
+    // 3,0 mm — las seis por debajo de 5, y la más alta, II, se queda en 4,3—.
+    // Las precordiales dan 7,0 · 12,4 · 15,2 · 20,1 · 10,8 y 4,7. El corazón
+    // genera 20 mm en V4 y no llega a 5 en ningún miembro: ahí está el caso.
+    //
+    // FC 70, RR regular (cv 0,007), QRS 96 ms, eje +66°, QTc 416, ruido 19 µV
+    // —el trazado más limpio de la sección—. La amplitud no alterna latido a
+    // latido: en V4 los pares miden 19,5 mm y los impares 19,7.
+    findings: {
+      qrsAmplitude: { leads: ['I', 'II', 'III', 'aVR', 'aVL', 'aVF'], max: 0.5 },
+      // La otra mitad del hallazgo, y la que descarta el bajo voltaje
+      // generalizado: las precordiales NO son bajas. Con que una sola pase los
+      // 10 mm alcanza, y acá la R de V4 sola mide 13,5.
+      rHeight: { leads: ['V4'], min: 1.00 },
+      sDepth: { leads: ['V2'], min: 0.80 },
+      qrsMs: [80, 110],
+      axisDeg: [45, 90],
+      rate: [60, 80],
+      irregular: false,
+    },
+    stem: {
+      es: 'Hombre de 62 años, con sobrepeso, sin síntomas. Electro de rutina antes de una cirugía programada. El informe automático dice «periphere Niederspannung» —bajo voltaje periférico— y el residente que lo recibe quiere pedir un ecocardiograma para descartar derrame pericárdico antes de dar el apto.',
+      en: '62-year-old man, overweight, no symptoms. Routine ECG before scheduled surgery. The machine\u2019s report reads "peripheral low voltage", and the resident who receives it wants to order an echocardiogram to rule out a pericardial effusion before signing off.',
+      pt: 'Homem de 62 anos, com sobrepeso, sem sintomas. ECG de rotina antes de uma cirurgia programada. O laudo automático diz «baixa voltagem periférica» e o residente que o recebe quer pedir um ecocardiograma para descartar derrame pericárdico antes de liberar.',
+    },
+    options: [
+      { id: 'periferico', label: { es: 'Bajo voltaje en las derivaciones de los miembros', en: 'Low voltage in the limb leads', pt: 'Baixa voltagem nas derivações dos membros' } },
+      { id: 'generalizado', label: { es: 'Bajo voltaje generalizado', en: 'Generalized low voltage', pt: 'Baixa voltagem generalizada' } },
+      { id: 'derrame', label: { es: 'Derrame pericárdico con taponamiento', en: 'Pericardial effusion with tamponade', pt: 'Derrame pericárdico com tamponamento' } },
+      { id: 'anterior', label: { es: 'Infarto anterior antiguo con pérdida de la onda R', en: 'Old anterior infarct with loss of the R wave', pt: 'Infarto anterior antigo com perda da onda R' } },
+    ],
+    explain: {
+      es: 'El voltaje se mide de pico a pico: lo que sube la R más lo que baja la S, en la misma derivación. Y la palabra que decide el criterio es TODAS: hay bajo voltaje cuando NINGUNA de las seis derivaciones de los miembros llega a 5 mm. Acá miden 3,1 · 4,3 · 2,6 · 3,6 · 1,8 y 3,0 mm: la más alta es II y se queda en 4,3. Se cumple. Ahora mirá las precordiales, que es donde está el caso: 7,0 · 12,4 · 15,2 · 20,1 · 10,8 y 4,7 mm. V4 mide 20 milímetros. El mismo corazón que no consigue 5 mm en ningún miembro genera 20 en el pecho. Y eso resuelve la pregunta: el problema no es el músculo. Si el miocardio estuviera infiltrado, atrofiado o rodeado de líquido, las precordiales caerían con las demás — están más cerca del corazón, no más lejos. Lo que falla está en el CAMINO hacia los electrodos de los miembros. El voltaje que llega a la piel depende de cuánta señal genera el músculo y de cuánto se pierde en el trayecto, y acá se pierde en el trayecto: grasa, edema, un tórax en tonel, o simplemente electrodos apoyados donde no van.',
+      en: 'Voltage is measured peak to peak: how far the R goes up plus how far the S goes down, in the same lead. And the word that decides the criterion is ALL: there is low voltage when NONE of the six limb leads reaches 5 mm. Here they measure 3.1 · 4.3 · 2.6 · 3.6 · 1.8 and 3.0 mm: the tallest is II and it stops at 4.3. The criterion is met. Now look at the chest leads, which is where the case lives: 7.0 · 12.4 · 15.2 · 20.1 · 10.8 and 4.7 mm. V4 measures 20 millimetres. The same heart that cannot manage 5 mm in any limb lead generates 20 on the chest. And that settles the question: the problem is not the muscle. If the myocardium were infiltrated, atrophied or surrounded by fluid, the chest leads would fall along with the rest — they are closer to the heart, not further away. What fails is in the PATH to the limb electrodes. The voltage reaching the skin depends on how much signal the muscle generates and how much is lost on the way, and here it is lost on the way: fat, oedema, a barrel chest, or simply electrodes placed where they do not belong.',
+      pt: 'A voltagem mede-se de pico a pico: o que a R sobe mais o que a S desce, na mesma derivação. E a palavra que decide o critério é TODAS: há baixa voltagem quando NENHUMA das seis derivações dos membros chega a 5 mm. Aqui medem 3,1 · 4,3 · 2,6 · 3,6 · 1,8 e 3,0 mm: a mais alta é II e fica em 4,3. Cumpre-se. Agora olhe as precordiais, que é onde está o caso: 7,0 · 12,4 · 15,2 · 20,1 · 10,8 e 4,7 mm. V4 mede 20 milímetros. O mesmo coração que não consegue 5 mm em nenhum membro gera 20 no peito. E isso resolve a pergunta: o problema não é o músculo. Se o miocárdio estivesse infiltrado, atrofiado ou rodeado de líquido, as precordiais cairiam junto com as outras — estão mais perto do coração, não mais longe. O que falha está no CAMINHO até os elétrodos dos membros. A voltagem que chega à pele depende de quanto sinal o músculo gera e de quanto se perde no trajeto, e aqui perde-se no trajeto: gordura, edema, um tórax em tonel, ou simplesmente elétrodos apoiados onde não devem.',
+    },
+    pitfall: {
+      es: 'El error es el que estaba por cometer el residente: leer «bajo voltaje» y pedir el eco buscando derrame. Bajo voltaje PERIFÉRICO y bajo voltaje GENERALIZADO no son el mismo hallazgo ni tienen la misma lista de causas, y lo que los separa está en el mismo papel: las precordiales. Acá V4 mide 20 mm, o sea que el criterio generalizado —ninguna precordial por encima de 10— no se cumple ni de lejos. El derrame pericárdico importante, además, no suele venir solo: trae taquicardia, y este hombre está a 70 por minuto; y cuando el corazón se balancea dentro del líquido aparece alternancia eléctrica, complejos que cambian de tamaño latido a latido. Acá no hay: en V4 los latidos pares miden 19,5 mm y los impares 19,7. Segundo error, el opuesto: dar por normal un electro porque «no se ve nada». Los complejos chiquitos no son ausencia de hallazgo, son el hallazgo, y hay que escribirlo. Y tercero, no confundir complejos chicos con ondas R perdidas: la R crece bien de V1 a V4 —de 0,8 a 13,5 mm— así que no hay infarto anterior antiguo por ningún lado.',
+      en: 'The mistake is the one the resident was about to make: read "low voltage" and order the echo looking for an effusion. PERIPHERAL low voltage and GENERALIZED low voltage are not the same finding and do not have the same list of causes, and what separates them is on the same sheet of paper: the chest leads. Here V4 measures 20 mm, so the generalized criterion — no chest lead above 10 — is not remotely met. A significant pericardial effusion, moreover, rarely comes alone: it brings tachycardia, and this man is at 70 per minute; and when the heart swings inside the fluid, electrical alternans appears — complexes that change size from beat to beat. There is none here: in V4 the even beats measure 19.5 mm and the odd ones 19.7. The second mistake is the opposite one: calling an ECG normal because "there is nothing to see". Small complexes are not the absence of a finding, they are the finding, and it has to be written down. And third, do not confuse small complexes with lost R waves: the R grows properly from V1 to V4 — from 0.8 to 13.5 mm — so there is no old anterior infarct anywhere.',
+      pt: 'O erro é o que o residente estava prestes a cometer: ler «baixa voltagem» e pedir o eco à procura de derrame. Baixa voltagem PERIFÉRICA e baixa voltagem GENERALIZADA não são o mesmo achado nem têm a mesma lista de causas, e o que as separa está no mesmo papel: as precordiais. Aqui V4 mede 20 mm, ou seja, o critério generalizado — nenhuma precordial acima de 10 — não se cumpre nem de longe. Um derrame pericárdico importante, além disso, raramente vem sozinho: traz taquicardia, e este homem está a 70 por minuto; e quando o coração balança dentro do líquido aparece alternância elétrica, complexos que mudam de tamanho batimento a batimento. Aqui não há: em V4 os batimentos pares medem 19,5 mm e os ímpares 19,7. Segundo erro, o oposto: dar como normal um ECG porque «não se vê nada». Os complexos pequenos não são ausência de achado, são o achado, e têm de ser escritos. E terceiro, não confundir complexos pequenos com ondas R perdidas: a R cresce bem de V1 a V4 — de 0,8 a 13,5 mm — portanto não há infarto anterior antigo em lado nenhum.',
+    },
+    action: {
+      es: 'El apto se firma y el eco no se pide por esto. En alguien de 62 años, con sobrepeso, sin síntomas y con el resto del electro normal, un bajo voltaje limitado a los miembros se explica mirando al paciente, no pidiéndole estudios: contextura, edema en las piernas, un tórax enfisematoso. Vale la pena, eso sí, revisar dónde estaban los electrodos: apoyarlos en el tronco en vez de en los miembros baja el voltaje de las seis derivaciones y es la causa más barata de corregir. Y el informe se escribe completo —«bajo voltaje en las derivaciones de los miembros, precordiales de amplitud normal»—, porque la próxima vez que alguien vea este trazado va a querer saber si esto es nuevo. Lo que sí cambia todo es el contexto: bajo voltaje con disnea, hipotensión o ingurgitación yugular es un eco urgente, y bajo voltaje generalizado en alguien con insuficiencia cardíaca y paredes gruesas en el eco —voltaje chico con músculo grande— es amiloidosis hasta que se demuestre lo contrario.',
+      en: 'The clearance is signed and the echo is not ordered for this. In someone aged 62, overweight, without symptoms and with an otherwise normal ECG, low voltage confined to the limb leads is explained by looking at the patient, not by ordering tests: build, leg oedema, an emphysematous chest. It is worth checking where the electrodes were, though: placing them on the torso instead of on the limbs lowers the voltage in all six leads and is the cheapest cause to correct. And the report is written in full — "low voltage in the limb leads, chest leads of normal amplitude" — because the next person to see this tracing will want to know whether it is new. What does change everything is the context: low voltage with breathlessness, hypotension or a raised JVP is an urgent echo, and generalized low voltage in someone with heart failure and thick walls on the echo — small voltage with big muscle — is amyloidosis until proven otherwise.',
+      pt: 'O atestado assina-se e o eco não se pede por isto. Em alguém de 62 anos, com sobrepeso, sem sintomas e com o resto do ECG normal, uma baixa voltagem limitada aos membros explica-se olhando para o paciente, não pedindo exames: compleição, edema nas pernas, um tórax enfisematoso. Vale a pena, isso sim, verificar onde estavam os elétrodos: apoiá-los no tronco em vez de nos membros baixa a voltagem das seis derivações e é a causa mais barata de corrigir. E o laudo escreve-se completo — «baixa voltagem nas derivações dos membros, precordiais de amplitude normal» —, porque a próxima pessoa que vir este traçado vai querer saber se isto é novo. O que muda tudo é o contexto: baixa voltagem com dispneia, hipotensão ou ingurgitação jugular é um eco urgente, e baixa voltagem generalizada em alguém com insuficiência cardíaca e paredes espessas no eco — voltagem pequena com músculo grande — é amiloidose até prova em contrário.',
+    },
+  },
+
+  {
     id: 'normal-control',
     record: '595',
     age: 47, sex: 'F',

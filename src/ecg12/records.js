@@ -107,6 +107,10 @@ export const RECORDS = {
     age: 35, sex: 'M', scp: ['NORM', 'LPFB'],
     report: 'sinusrhythmus ueberdrehter rechtstyp linksposteriorer hemiblock',
   },
+  4215: {
+    age: 62, sex: 'M', scp: ['NORM', 'LVOLT'],
+    report: 'sinusrhythmus lagetyp normal periphere niederspannung',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -114,4 +118,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '595'];

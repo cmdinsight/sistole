@@ -86,6 +86,16 @@ const L = {
     en: 'The second R in V1 and the axis deviation are two separate blocks read on the same beat: the wide QRS with a second R is the right bundle, the axis beyond −45° with rS inferiorly is the left anterior fascicle.',
     pt: 'A segunda R de V1 e o desvio do eixo são dois bloqueios distintos lidos sobre o mesmo batimento: o QRS largo com segunda R é o ramo direito, o eixo além de −45° com rS na face inferior é o fascículo anterior esquerdo.',
   },
+  // El bajo voltaje se define sobre la amplitud de PICO A PICO del QRS, que no
+  // es ninguna de las otras medidas: no importa si el complejo es positivo o
+  // negativo, importa cuánto mide de punta a punta.
+  voltageNote: {
+    es: 'Amplitud del QRS de pico a pico —lo que sube la R más lo que baja la S— en cada derivación. Hay bajo voltaje cuando NINGUNA de las seis derivaciones de los miembros llega a 5 mm; el criterio generalizado pide además que ninguna precordial llegue a 10 mm. Alcanza con que una sola derivación pase el umbral para que no se cumpla.',
+    en: 'Peak-to-peak QRS amplitude — how far the R goes up plus how far the S goes down — in each lead. There is low voltage when NONE of the six limb leads reaches 5 mm; the generalized criterion also requires that no chest lead reaches 10 mm. A single lead above the threshold is enough for the criterion to fail.',
+    pt: 'Amplitude do QRS de pico a pico — o que a R sobe mais o que a S desce — em cada derivação. Há baixa voltagem quando NENHUMA das seis derivações dos membros chega a 5 mm; o critério generalizado exige ainda que nenhuma precordial chegue a 10 mm. Basta uma derivação acima do limiar para o critério não se cumprir.',
+  },
+  limbGroup: { es: 'miembros', en: 'limb', pt: 'membros' },
+  chestGroup: { es: 'precordiales', en: 'chest', pt: 'precordiais' },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
@@ -230,6 +240,30 @@ function Measured({ q, metrics, lang, gain }) {
            'text-sky-300 border-sky-900/60 bg-sky-950/30')),
     ];
     note = L.qrsNote[lang];
+  } else if (metrics.kind === 'voltage') {
+    // Un grupo por umbral: 5 mm en los miembros, 10 mm en las precordiales. Se
+    // marca la derivación que está POR DEBAJO, que es la anormal — al revés que
+    // en casi todos los otros paneles, donde lo llamativo es lo que sobra.
+    //
+    // El criterio es del GRUPO, no de cada derivación: una V1 de 7 mm no es
+    // anormal por sí sola, y pintarla de alarma diría algo que no es cierto. Se
+    // marca el grupo entero cuando TODAS sus derivaciones quedan por debajo del
+    // umbral, que es justamente cuando el criterio se cumple.
+    const grupo = (leads, umbral, etiqueta) => {
+      if (!leads.length) return [];
+      const cumple = leads.every((l) => q.r[l] - q.s[l] <= umbral);
+      const tono = cumple ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60';
+      return [
+        chip(`g-${etiqueta}`, '', etiqueta, 'text-slate-500 border-slate-800 bg-slate-950/60'),
+        ...leads.map((l) => chip(`v-${l}`, l, mmAbs(q.r[l] - q.s[l], lang), tono)),
+      ];
+    };
+    chips = [
+      ...grupo(metrics.limb ?? [], 0.5, L.limbGroup[lang]),
+      ...grupo(metrics.chest ?? [], 1.0, L.chestGroup[lang]),
+    ];
+    note = L.voltageNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);
