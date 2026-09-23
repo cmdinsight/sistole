@@ -68,7 +68,13 @@ for (const c of CASES) {
   // definición, y esta prueba sólo busca detectar una medición imposible, no
   // decidir qué es normal. Cuánto debe durar el QRS de cada caso lo dice su
   // findings con la regla qrsMs.
-  check(`${tag}: el QRS medido es plausible`, q.qrsMs >= 50 && q.qrsMs <= 200, `(${q.qrsMs.toFixed(0)} ms)`);
+  //
+  // El techo era 200 ms, que alcanzaba mientras lo más ancho de la colección
+  // fuera un bloqueo de rama. Un ritmo que nace EN el ventrículo se propaga de
+  // músculo en músculo y llega más lejos: el caso del idioventricular acelerado
+  // mide 220 ms y está bien medido. Se subió a 250, que sigue siendo un techo de
+  // cordura y no un criterio clínico.
+  check(`${tag}: el QRS medido es plausible`, q.qrsMs >= 50 && q.qrsMs <= 250, `(${q.qrsMs.toFixed(0)} ms)`);
   // Cuánto ocupa el trazado EN LA HOJA, que es lo que decide si se puede leer.
   // Se mide en milímetros de papel y no en milivoltios, porque desde que la
   // ganancia se elige sola un registro de mucho voltaje se dibuja a la mitad y

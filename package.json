@@ -14,7 +14,8 @@
     "test:measure": "node scripts/test-measure.mjs",
     "test:cases": "node scripts/test-cases.mjs",
     "search:ptbxl": "node scripts/ptbxl-search.mjs",
-    "preview:ecg12": "node scripts/preview-ecg12.mjs"
+    "preview:ecg12": "node scripts/preview-ecg12.mjs",
+    "index:cinc": "node scripts/cinc-index.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

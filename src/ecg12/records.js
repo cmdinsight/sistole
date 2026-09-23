@@ -231,6 +231,18 @@ export const RECORDS = {
     report: 'complete heart block; atrioventricular dissociation; ventricular escape rhythm; '
       + 'sinus tachycardia (SNOMED-CT)',
   },
+  // Del CinC 2021, base de Ningbo. PTB-XL no tiene ningún código para esto.
+  //
+  // La base lo etiqueta además como bloqueo AV de segundo grado, y el trazado no
+  // lo sostiene: para hablar de segundo grado hacen falta P que conduzcan con un
+  // PR reconocible y alguna que no, y acá NINGUNA conduce — el PR latido a
+  // latido va de 84 a 332 ms sin orden. Es disociación, no conducción parcial.
+  JS22128: {
+    source: 'cinc2021', age: 39, sex: 'F',
+    scp: ['61277005', '427084000', '55930002', '195042002'],
+    report: 'accelerated idioventricular rhythm; sinus tachycardia; s t changes; '
+      + '2nd degree av block (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -238,4 +250,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', 'JS22128', '595'];

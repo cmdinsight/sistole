@@ -352,6 +352,12 @@ function Measured({ q, metrics, lang, gain }) {
     const d = q.disociacion;
     if (!d) return null;
     chips = [
+      // El ancho del QRS sólo cuando el caso lo pide: en un bloqueo completo es
+      // un dato más, y en un ritmo que nace en el ventrículo es LA prueba de
+      // dónde nace.
+      ...(metrics.qrs ? [chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60')] : []),
       chip('a', L.disoA[lang], `${Math.round(d.lpm)} lpm`,
            'text-amber-300 border-amber-900/60 bg-amber-950/30'),
       chip('v', L.disoV[lang], `${Math.round(q.hr)} lpm`,
