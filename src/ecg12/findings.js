@@ -27,6 +27,11 @@ const mmStr = (x) => `${(x * 10).toFixed(1)} mm`;
 // trepa muy por encima. El 0,08 es el valle entre las dos poblaciones.
 export const RR_IRREGULAR = 0.08;
 
+// Y el techo de DISPERSIÓN recortada por debajo del cual se puede afirmar que un
+// ritmo es regular. Ver la regla `irregular`, más abajo, para por qué hacen
+// falta las dos cifras.
+export const RR_DISPERSO = 0.22;
+
 // Cada regla sabe describirse y sabe evaluarse. Agregar un tipo de hallazgo
 // nuevo es agregar una entrada acá, y queda disponible para buscar y para
 // comprobar al mismo tiempo.
@@ -450,12 +455,40 @@ const REGLAS = {
     fallos: q.hr >= lo && q.hr <= hi ? [] : [`${q.hr.toFixed(0)} lpm`],
     margen: Math.min(q.hr - lo, hi - q.hr) / 60,
   }),
+  // Regular o irregular, y son dos preguntas distintas según hacia dónde se
+  // pida, así que se miden con dos cifras distintas.
+  //
+  // Para decir IRREGULAR alcanza con el coeficiente de variación: es lo que
+  // separa la fibrilación auricular del ritmo sinusal y está calibrado para eso.
+  //
+  // Para decir REGULAR hace falta además la dispersión recortada, y la razón
+  // está en measure.js: el coeficiente usa la mediana de las desviaciones y es
+  // ciego cuando la MINORÍA de los latidos se desvía. Un trazado con tres RR de
+  // 1930 ms y dos de 1500 daba un coeficiente de 0,004 —perfectamente regular
+  // según el número— y no lo es. Afirmar regularidad con esa sola cifra era
+  // prometer más de lo que se estaba midiendo, y esta regla se usa como guarda
+  // en 30 de los casos.
+  //
+  // El umbral de 0,22 sale de los propios casos y del registro que destapó el
+  // problema. Los 30 casos que afirman ritmo regular van de 0,005 a 0,168 de
+  // dispersión, así que el más justo tiene un 31 % de margen. JS22357 —tres RR
+  // de 1930 ms y dos de 1500— da 0,247 y ahora falla, que es lo correcto. En 70
+  // registros NORMALES el percentil 90 de la dispersión da 0,180 y el 99 da
+  // 0,279: a 0,22 alrededor de un 6 % de los normales no puede afirmar
+  // regularidad, y eso es el lado seguro del error — la regla se vuelve más
+  // difícil de cumplir, no más fácil de cumplir mal. Los que tienen pausa de
+  // verdad dan 0,80 y 1,02.
   irregular: (quiere, q) => {
     const esIrregular = q.rrCv > RR_IRREGULAR;
+    const disperso = q.rrSpread > RR_DISPERSO;
+    const ok = quiere ? esIrregular : (!esIrregular && !disperso);
     return {
       label: `el ritmo es ${quiere ? 'irregular' : 'regular'}`,
-      fallos: esIrregular === quiere ? [] : [`variación del RR ${q.rrCv.toFixed(3)}`],
-      margen: quiere ? q.rrCv - RR_IRREGULAR : RR_IRREGULAR - q.rrCv,
+      fallos: ok ? [] : [disperso && !quiere
+        ? `dispersión del RR ${q.rrSpread.toFixed(3)}`
+        : `variación del RR ${q.rrCv.toFixed(3)}`],
+      margen: quiere ? q.rrCv - RR_IRREGULAR
+                     : Math.min(RR_IRREGULAR - q.rrCv, (RR_DISPERSO - q.rrSpread) / 3),
     };
   },
 };

@@ -934,6 +934,30 @@ export function measure(signal) {
   // muy por encima, y ese salto es el que separa los dos ritmos sin mirar la P.
   const rrCv = rr.length ? median(rr.map((x) => Math.abs(x - rrMed))) / rrMed : 0;
 
+  // Y la DISPERSIÓN recortada del RR, que mide otra cosa y hace falta.
+  //
+  // rrCv usa la mediana de las desviaciones, que es robusta a un latido suelto
+  // —una extrasístole no lo mueve— y por eso mismo es CIEGA cuando la minoría se
+  // desvía. En JS22357 los RR miden 1936, 1460, 1928, 1572 y 1936 ms: dos de
+  // cinco se apartan un 25 % y la mediana de las desviaciones sigue dando 8 ms,
+  // o sea un coeficiente de 0,004. Ese trazado no es regular y el número decía
+  // que sí. Un estadístico robusto puede esconder justo lo que se le pregunta.
+  //
+  // La dispersión recortada —el percentil 90 menos el 10, sobre la mediana— ve
+  // las dos poblaciones y sigue descartando un latido aislado. Sobre los 30
+  // registros de casos que afirman ritmo regular va de 0,005 a 0,168; los dos
+  // que tienen pausa de verdad —extrasístole bloqueada y Wenckebach— dan 1,02 y
+  // 0,80, y no afirman nada; la fibrilación auricular da 0,46 y 0,51.
+  //
+  // Con pocos latidos el recorte degenera en el rango, porque el percentil 10 de
+  // cinco valores es el mínimo. Es una guarda, no una prueba.
+  const rrSpread = (() => {
+    if (rr.length < 3) return 0;
+    const v = rr.slice().sort((a, b) => a - b);
+    const q = (p) => v[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * p)))];
+    return (q(0.90) - q(0.10)) / rrMed;
+  })();
+
   // Se descartan el primero y el último latido: pueden quedar cortados por los
   // bordes de los 10 segundos y falsear la medición.
   const usable = beats.slice(1, -1);
@@ -1166,6 +1190,7 @@ export function measure(signal) {
     noise,
     rr,
     rrCv,
+    rrSpread,
     beats,
     st,
     t,
