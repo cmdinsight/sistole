@@ -243,6 +243,12 @@ export const RECORDS = {
     report: 'accelerated idioventricular rhythm; sinus tachycardia; s t changes; '
       + '2nd degree av block (SNOMED-CT)',
   },
+  // Del CinC 2021, base de Ningbo. Una sola etiqueta en toda la base, que es
+  // raro y vale: nada que aclarar ni que descartar.
+  JS22432: {
+    source: 'cinc2021', age: 28, sex: 'F', scp: ['426664006'],
+    report: 'accelerated junctional rhythm (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -250,4 +256,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', 'JS22128', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', 'JS22128', 'JS22432', '595'];

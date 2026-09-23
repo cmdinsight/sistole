@@ -81,6 +81,26 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
   }),
 
+  // Que NO haya una onda P delante del QRS. Es un hallazgo negativo y hay que
+  // leerlo con el cuidado que merece un negativo.
+  //
+  // Lo que afirma exactamente: la medición del PR, que exige una deflexión de
+  // al menos 0,3 mm seguida de un segmento isoeléctrico antes del QRS, no
+  // encontró nada en ninguna de sus cinco derivaciones, sobre el latido
+  // promedio. No afirma que la aurícula esté quieta —puede estar despolarizando
+  // al mismo tiempo que el ventrículo, o hacia atrás, y quedar tapada.
+  //
+  // Calibración, que es lo que fija cuánto pesa: sobre 70 registros NORMALES la
+  // medición del PR devuelve null en 7, o sea el 10 %, y 5 de esos 7 tienen buen
+  // trazado. Un electro normal de cada diez la satisface. Sirve como UNA de
+  // varias condiciones sobre un trazado ya mirado, y no alcanza sola para
+  // afirmar que el impulso no nació en la aurícula.
+  noPWave: (_, q) => ({
+    label: 'ninguna onda P precede al QRS',
+    fallos: q.prMs === null ? [] : [`PR de ${Math.round(q.prMs)} ms en ${q.pLead}`],
+    margen: q.prMs === null ? 1 : -1,
+  }),
+
   // ── DISOCIACIÓN AURICULOVENTRICULAR ──────────────────────────────────────
   // Que la aurícula y el ventrículo vayan cada uno a su ritmo. La medición está
   // en measure.js y devuelve null cuando no puede afirmarlo, que es casi

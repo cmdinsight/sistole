@@ -125,6 +125,12 @@ const L = {
     pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 94 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
   },
   pLabel: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  pNinguna: { es: 'no se encuentra', en: 'none found', pt: 'não se encontra' },
+  unionNote: {
+    es: 'Tres cifras y una ausencia. El QRS angosto dice que el impulso bajó por el His y las dos ramas, o sea que nació EN o POR ENCIMA de la unión: un foco del músculo ventricular no puede dar un complejo así. La frecuencia dice a qué velocidad está disparando ese foco. Y la onda P no aparece: la medición busca, sobre el latido promedio y en cinco derivaciones, una deflexión de al menos 0,3 mm seguida de un segmento isoeléctrico antes del QRS, y no encuentra ninguna. Es un hallazgo negativo y conviene saber cuánto pesa: en 7 de 70 electros normales esta misma medición tampoco encuentra nada. No prueba que la aurícula esté quieta; dice que no hay una P conduciendo por delante.',
+    en: 'Three figures and one absence. The narrow QRS says the impulse came down the His and both bundles, that is, it was born IN or ABOVE the junction: a focus in ventricular muscle cannot produce a complex like this. The rate says how fast that focus is firing. And the P wave does not appear: the measurement looks, on the averaged beat and across five leads, for a deflection of at least 0.3 mm followed by an isoelectric segment before the QRS, and finds none. It is a negative finding and it is worth knowing what it weighs: in 7 out of 70 normal ECGs this same measurement also finds nothing. It does not prove the atrium is silent; it says there is no P conducting ahead of it.',
+    pt: 'Três valores e uma ausência. O QRS estreito diz que o impulso desceu pelo His e pelos dois ramos, ou seja, nasceu NA ou ACIMA da junção: um foco do músculo ventricular não pode dar um complexo assim. A frequência diz a que velocidade está a disparar esse foco. E a onda P não aparece: a medição procura, sobre o batimento médio e em cinco derivações, uma deflexão de pelo menos 0,3 mm seguida de um segmento isoelétrico antes do QRS, e não encontra nenhuma. É um achado negativo e convém saber quanto pesa: em 7 de 70 eletros normais esta mesma medição também não encontra nada. Não prova que a aurícula esteja quieta; diz que não há uma P a conduzir à frente.',
+  },
   pNote: {
     es: 'Altura de la onda P sobre el latido promedio, en la derivación donde mejor se ve. Normal hasta 2,5 mm en II: por encima habla de sobrecarga de la aurícula derecha. Sobre los registros normales de la base la mediana es 1,0 mm y ninguno llega a 2,5.',
     en: 'P wave height on an averaged beat, in the lead where it shows best. Normal up to 2.5 mm in II: above that it speaks of right atrial overload. In the database\u2019s normal records the median is 1.0 mm and none reaches 2.5.',
@@ -472,6 +478,21 @@ function Measured({ q, metrics, lang, gain }) {
            'text-slate-400 border-slate-800 bg-slate-950/60')),
     ];
     note = L.pNote[lang];
+  } else if (metrics.kind === 'junctional') {
+    chips = [
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs < 120 ? 'text-emerald-300 border-emerald-900/60 bg-emerald-950/30'
+                         : 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('cv', L.rrVar[lang], num(q.rrCv, 3, lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // La ausencia se muestra como ausencia, no como un cero ni como un guion
+      // suelto: es el hallazgo, y tiene que leerse como tal.
+      chip('p', L.pLabel[lang], q.prMs === null ? L.pNinguna[lang] : `${Math.round(q.prMs)} ms`,
+           q.prMs === null ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.unionNote[lang];
   } else if (metrics.kind === 'wenckebach') {
     if (q.prSalto === null) return null;
     const rr = q.rr || [];
