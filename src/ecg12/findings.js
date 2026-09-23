@@ -81,6 +81,30 @@ const REGLAS = {
     margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
   }),
 
+  // ── DISOCIACIÓN AURICULOVENTRICULAR ──────────────────────────────────────
+  // Que la aurícula y el ventrículo vayan cada uno a su ritmo. La medición está
+  // en measure.js y devuelve null cuando no puede afirmarlo, que es casi
+  // siempre: dispara en 1 de cada 11 bloqueos completos. A cambio no disparó en
+  // ninguno de 70 normales, 50 bloqueos de primer grado ni 12 fibrilaciones.
+  //
+  // Esta regla sirve para CUSTODIAR un caso cuyo trazado ya se miró. Como
+  // criterio de búsqueda no sirve, y como prueba clínica menos: que no dispare
+  // no dice nada sobre el paciente.
+  //
+  // `min` es cuántas veces más rápida tiene que ir la aurícula. En un bloqueo
+  // completo el escape ventricular es lento y la razón se va a 2 o más; pedir
+  // apenas 1,15 dejaría pasar casos donde las dos frecuencias casi coinciden y
+  // ahí el método pierde pie.
+  avDissociation: ({ min }, q) => {
+    const d = q.disociacion;
+    return {
+      label: `la aurícula va al menos ${min} veces más rápido que el ventrículo, con su propio ritmo`,
+      fallos: !d ? ['no se pudo medir un ritmo auricular independiente']
+            : d.razon < min ? [`razón ${d.razon.toFixed(2)}×`] : [],
+      margen: d ? d.razon - min : -1,
+    };
+  },
+
   // ── LA ONDA J ────────────────────────────────────────────────────────────
   // Dos reglas separadas para las dos mitades del hallazgo, porque son
   // preguntas distintas y conviene que fallen por separado:

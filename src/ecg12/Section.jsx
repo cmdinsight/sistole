@@ -151,6 +151,16 @@ const L = {
     en: 'Three figures per lead, and the case lies in comparing them. The height of the J point, the height of the notch — how far the hump rises and comes back down before the ST segment — and the ST measured 60 ms later. When the J point is high and the ST 60 ms afterwards has already returned close to the line, what there was is a J wave. In an acute infarct the ST leaves the J point and STAYS up: the two figures look alike. A notch of zero does not mean a normal ST, it means the QRS ended by descending cleanly.',
     pt: 'Três valores por derivação, e o caso está em compará-los. A altura do ponto J, a altura do entalhe — quanto sobe a corcova e volta a descer antes do segmento ST — e o ST medido 60 ms adiante. Quando o ponto J está muito alto e o ST 60 ms depois já voltou perto da linha, o que houve foi uma onda J. Num enfarte agudo o ST sai do ponto J e FICA em cima: os dois valores parecem-se. Um entalhe de zero não significa ST normal, significa que o QRS terminou a descer limpo.',
   },
+  disoA: { es: 'aurícula', en: 'atria', pt: 'aurícula' },
+  disoV: { es: 'ventrículo', en: 'ventricles', pt: 'ventrículo' },
+  disoRazon: { es: 'razón A/V', en: 'A/V ratio', pt: 'razão A/V' },
+  disoP: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  disoLeads: { es: (n) => `${n} derivaciones`, en: (n) => `${n} leads`, pt: (n) => `${n} derivações` },
+  disoNote: {
+    es: 'Dos frecuencias en el mismo trazado. La auricular no sale de contar ondas P una por una —son demasiado chicas para eso— sino de restar el latido promedio, que se lleva todo lo que está atado al ventrículo, y buscar en lo que queda un ritmo que se repita. En un electro con conducción normal no queda nada: la P está atada al ventrículo y se va con la resta. Que aparezca una segunda frecuencia, más rápida y con forma de onda P, es el hallazgo. La medición se comprueba en las dos mitades del trazado por separado y desaparece si no coinciden; cuando no puede afirmarlo, no dice nada, y eso pasa a menudo.',
+    en: 'Two rates in the same tracing. The atrial one does not come from counting P waves one by one — they are far too small for that — but from subtracting the averaged beat, which takes away everything tied to the ventricle, and looking in what remains for a rhythm that repeats. In an ECG with normal conduction nothing remains: the P is tied to the ventricle and goes with the subtraction. That a second rate appears, faster and shaped like a P wave, is the finding. The measurement is checked on each half of the tracing separately and disappears if they disagree; when it cannot assert it, it says nothing, and that happens often.',
+    pt: 'Duas frequências no mesmo traçado. A auricular não vem de contar ondas P uma a uma — são demasiado pequenas para isso — mas de subtrair o batimento médio, que leva tudo o que está preso ao ventrículo, e procurar no que resta um ritmo que se repita. Num eletro com condução normal não resta nada: a P está presa ao ventrículo e vai-se com a subtração. Que apareça uma segunda frequência, mais rápida e com forma de onda P, é o achado. A medição é verificada nas duas metades do traçado em separado e desaparece se não coincidirem; quando não pode afirmá-lo, não diz nada, e isso acontece muitas vezes.',
+  },
   uLabel: { es: 'onda U', en: 'U wave', pt: 'onda U' },
   uTLabel: { es: 'U/T', en: 'U/T', pt: 'U/T' },
   uTWave: { es: 'onda T', en: 'T wave', pt: 'onda T' },
@@ -335,6 +345,24 @@ function Measured({ q, metrics, lang, gain }) {
     const grupoJ = bajoLimbJ && bajoChestJ ? L.groupBoth[lang]
                  : bajoChestJ ? L.groupChest[lang] : L.groupLimb[lang];
     note = L.jNote[lang] + (bajoLimbJ || bajoChestJ ? ` ${L.halfGainNote[lang](grupoJ)}` : '');
+  } else if (metrics.kind === 'dissociation') {
+    // Sin medición no hay panel. Es deliberado: este hallazgo se mide en 1 de
+    // cada 11 bloqueos completos, y un panel que dijera "0" o "no" donde en
+    // realidad no pudo medir estaría afirmando algo que la medición no sabe.
+    const d = q.disociacion;
+    if (!d) return null;
+    chips = [
+      chip('a', L.disoA[lang], `${Math.round(d.lpm)} lpm`,
+           'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('v', L.disoV[lang], `${Math.round(q.hr)} lpm`,
+           'text-sky-300 border-sky-900/60 bg-sky-950/30'),
+      chip('r', L.disoRazon[lang], `${num(d.razon, 2, lang)}×`,
+           'text-violet-300 border-violet-900/60 bg-violet-950/30'),
+      chip('p', L.disoP[lang], `${mmAbs(d.pAmp, lang)} · ${Math.round(d.pMs)} ms`,
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('n', '', L.disoLeads[lang](d.leads), 'text-slate-500 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.disoNote[lang];
   } else if (metrics.kind === 'uwave') {
     // Se muestran las tres: la T que separó la medición, la U, y la razón. La T
     // va con su propia cifra y no con la de t[lead] a propósito — cuando la U

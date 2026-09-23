@@ -661,6 +661,266 @@ function latidosPrematuros(leads, beats, fs, rrMed) {
   return { prematuros, prematuridad: peorPrem, forma: peorForma };
 }
 
+// ═══════════════════════════════════════════════════════════════
+// DISOCIACIÓN AURICULOVENTRICULAR
+// ═══════════════════════════════════════════════════════════════
+// Que la aurícula y el ventrículo latan cada uno por su cuenta. Es lo que
+// define el bloqueo AV completo —y lo que confirma una taquicardia
+// ventricular—, o sea el hallazgo cuya conducta es un marcapasos. Por eso la
+// medición tiene que errar hacia el "no sé" y no hacia el "sí".
+//
+// ── TRES INTENTOS QUE NO FUNCIONARON, Y LO QUE ENSEÑARON ─────────────────
+//
+// Los tres anteriores quisieron contestar "¿a qué frecuencia va la aurícula?", y
+// para eso hay que ver las ondas P:
+//
+//   1. Detectar cada P por picos: 5 de 6 registros sin medición. Una P de
+//      0,1 mV no se separa de 0,04 mV de ruido latido a latido.
+//   2. Autocorrelación con el QRS tapado: acertó tres frecuencias de referencia
+//      pero en 50 registros NORMALES dio razón auricular/ventricular de 1,31 de
+//      mediana —tiene que dar 1,00— y marcó disociación en 6 de 50.
+//   3. Resta del latido promedio: 1 de 3.
+//
+// ── LO QUE SÍ FUNCIONA: PLEGAR ──────────────────────────────────────────
+//
+// La pregunta se da vuelta. No "a qué frecuencia va la aurícula" sino "¿queda
+// en el trazado algún ritmo que NO sea el del ventrículo?".
+//
+// Primero se resta el latido promedio alineado por la R. Eso saca todo lo que
+// está atado al ventrículo, y acá está la asimetría que hace posible todo: en
+// conducción 1:1 la P está atada al ventrículo y se va con la resta; cuando la
+// aurícula va por su cuenta, la P sobrevive. Un electro normal queda sin nada
+// periódico que encontrar, que es la respuesta correcta.
+//
+// Después se PLIEGA el residuo en cada período candidato: se promedian todas
+// las muestras que caen en la misma fase. Con el período justo, las P se suman
+// entre sí y el ruido se divide por la raíz del número de pliegues; con el
+// período equivocado, las P caen en fases distintas y se borran igual que el
+// ruido. Se barre de 45 a 200 por minuto y se mira dónde se levanta algo.
+//
+// Y esto es lo importante: en un electro normal el barrido TAMBIÉN encuentra
+// algo —lo que queda del QRS y de la T después de la resta— pero lo encuentra
+// en el período del VENTRÍCULO. La razón entre las dos frecuencias da 1,00. El
+// hallazgo no es que aparezca un pico, es DÓNDE aparece.
+//
+// ── LAS GUARDAS, CADA UNA POR UN ERROR CONCRETO ─────────────────────────
+//
+// Con el barrido solo no alcanza, y las guardas no salieron de la teoría sino
+// de mirar los que fallaban. Están explicadas una por una en formaAuricular() y
+// en dosMitades(). La última es la que más costó: una deriva de la línea de
+// base puede satisfacer todas las demás a la vez, porque es lenta y afecta a
+// todas las derivaciones juntas. Lo que no puede hacer es repetir el mismo
+// período en la primera mitad del trazado y en la segunda.
+//
+// ── CALIBRACIÓN ─────────────────────────────────────────────────────────
+//
+//                                      dispara
+//   NORMAL ...........................  0 / 70
+//   BLOQUEO AV 1° (conducción 1:1) ...  0 / 50
+//   FIBRILACIÓN AURICULAR (sin P) ....  0 / 12
+//   BLOQUEO AV COMPLETO ..............  1 / 11
+//   DISOCIACIÓN AV (CinC 2021) .......  2 / 55
+//
+// Cero falsos positivos en 132 registros donde la conducción es 1:1 o no hay
+// ondas P. Eso es lo que se necesitaba y lo que ninguno de los tres intentos
+// anteriores logró.
+//
+// LO QUE ESTO NO ES: un detector. Encuentra 1 de cada 11 bloqueos completos.
+// Sirve para CUSTODIAR un caso cuyo trazado ya se miró, no para buscar
+// disociación en una base ni —muchísimo menos— para descartarla en un paciente.
+// Que no dispare no dice nada.
+//
+// Y un límite de fondo: si las dos frecuencias fueran iguales, las P caerían
+// siempre en la misma fase y esto no vería nada. La disociación isorrítmica
+// queda fuera del alcance del método, no de este umbral.
+const LEADS_A = ['II', 'III', 'aVF', 'V1', 'I', 'V2'];
+
+// La señal menos el latido promedio alineado por la R.
+function residuoVentricular(sig, beats, fs, rrMed) {
+  const antes = Math.round(0.45 * fs);
+  const despues = Math.round(Math.min(0.85, rrMed * 0.95) * fs);
+  const tpl = new Float64Array(antes + despues + 1);
+  let n = 0;
+  for (const r0 of beats) {
+    if (r0 - antes < 0 || r0 + despues >= sig.length) continue;
+    for (let k = 0; k < tpl.length; k++) tpl[k] += sig[r0 - antes + k];
+    n++;
+  }
+  if (n < 4) return null;
+  for (let k = 0; k < tpl.length; k++) tpl[k] /= n;
+  const res = new Float64Array(sig.length);
+  const cubierto = new Uint8Array(sig.length);
+  for (const r0 of beats) {
+    for (let k = 0; k < tpl.length; k++) {
+      const i = r0 - antes + k;
+      if (i < 0 || i >= sig.length || cubierto[i]) continue;
+      res[i] = sig[i] - tpl[k];
+      cubierto[i] = 1;
+    }
+  }
+  return { res, cubierto };
+}
+
+function prepararAuricular(leads, beats, fs, rrMed) {
+  if (beats.length < 4) return null;
+  const usa = LEADS_A.filter((l) => leads[l]);
+  if (usa.length < 4) return null;
+  const n = leads[usa[0]].length;
+
+  // El QRS se TAPA, no se resta. Un desalineamiento de 4 ms sobre la pendiente
+  // del QRS deja un residuo enorme, y con período igual al RR: el detector lo
+  // toma por onda P y la medición contesta otra pregunta.
+  const valido = new Uint8Array(n).fill(1);
+  const w = Math.round(0.075 * fs);
+  for (const r0 of beats) for (let i = Math.max(0, r0 - w); i < Math.min(n, r0 + w); i++) valido[i] = 0;
+
+  const rs = [];
+  for (const l of usa) {
+    const r = residuoVentricular(leads[l], beats, fs, rrMed);
+    if (!r) return null;
+    for (let i = 0; i < n; i++) if (!r.cubierto[i]) valido[i] = 0;
+    rs.push(r.res);
+  }
+  return { rs, valido, n, fs, rrMed, usa };
+}
+
+// La forma plegada de una derivación, con su media quitada.
+function plegado(p, res, T) {
+  const suma = new Float64Array(T), cuenta = new Int32Array(T);
+  for (let i = 0; i < p.n; i++) { if (!p.valido[i]) continue; const b = i % T; suma[b] += res[i]; cuenta[b]++; }
+  let m = 0, cn = 0;
+  for (let b = 0; b < T; b++) if (cuenta[b]) { suma[b] /= cuenta[b]; m += suma[b]; cn++; }
+  if (cn < T * 0.6) return null;
+  m /= cn;
+  for (let b = 0; b < T; b++) suma[b] -= m;
+  return suma;
+}
+
+// Cuánta señal coherente queda al plegar en el período T.
+function energiaPlegada(p, T) {
+  let total = 0;
+  for (const res of p.rs) {
+    const f = plegado(p, res, T);
+    if (!f) return null;
+    let e = 0;
+    for (let b = 0; b < T; b++) e += f[b] * f[b];
+    total += e / T;
+  }
+  return Math.sqrt(total / p.rs.length);
+}
+
+// ¿Lo que se levantó tiene forma de onda P, y lo ve más de una derivación?
+//
+//   · UN SOLO lóbulo de la polaridad dominante. Una aurícula late una vez por
+//     ciclo; dos lóbulos del mismo signo quieren decir que el período que
+//     encontró el barrido es el doble del verdadero. Se cuentan sobre la forma
+//     CON SIGNO: tomando el valor absoluto, el valle que sigue a toda P cuenta
+//     como segunda deflexión y se caían los buenos.
+//   · que dure lo que dura una P —entre 40 y 160 ms, y no más del 30 % del
+//     ciclo—, y que mida lo que mide una P: entre 0,35 y 3 mm. Sin el techo, un
+//     registro con 8 mm de deflexión salía informado como onda P.
+//   · que DOS derivaciones más la vean en la misma fase. Es la misma condición
+//     que hace confiable la medición del PR.
+function formaAuricular(p, T) {
+  const tol = Math.round(0.040 * p.fs);
+  const vistas = [];
+  for (const res of p.rs) {
+    const f = plegado(p, res, T);
+    if (!f) continue;
+    let pico = 0;
+    for (let b = 0; b < T; b++) if (Math.abs(f[b]) > Math.abs(f[pico])) pico = b;
+    vistas.push({ f, pico, alto: Math.abs(f[pico]) });
+  }
+  if (!vistas.length) return null;
+  vistas.sort((a, b) => b.alto - a.alto);
+  const { f, pico, alto } = vistas[0];
+
+  const acuerdan = vistas.slice(1).filter((v) => {
+    const d = Math.abs(v.pico - pico);
+    return Math.min(d, T - d) <= tol && v.alto >= 0.035;
+  }).length;
+
+  const signo = Math.sign(f[pico]);
+  const arriba = new Uint8Array(T);
+  for (let b = 0; b < T; b++) arriba[b] = signo * f[b] >= alto / 2 ? 1 : 0;
+  let lobulos = 0, ancho = 0;
+  for (let b = 0; b < T; b++) {
+    if (!arriba[b] || arriba[(b - 1 + T) % T]) continue;
+    lobulos++;
+    let w = 0;
+    while (w < T && arriba[(b + w) % T]) w++;
+    for (let k = 0; k < w; k++) if ((b + k) % T === pico) ancho = w;
+  }
+  return { anchoMs: (Math.max(ancho, 1) / p.fs) * 1000, frac: Math.max(ancho, 1) / T, alto, lobulos, acuerdan };
+}
+
+function barrido(p, { minLpm = 45, maxLpm = 200 } = {}) {
+  const T0 = Math.round((60 / maxLpm) * p.fs), T1 = Math.round((60 / minLpm) * p.fs);
+  const curva = [];
+  for (let T = T0; T <= T1; T++) {
+    const a = energiaPlegada(p, T);
+    if (a === null) continue;
+    // Bajo puro ruido la amplitud plegada crece como raíz de T —menos pliegues,
+    // menos promediado—. Sin normalizar, el barrido gana siempre en el período
+    // más largo y el hallazgo sería un artefacto de la aritmética.
+    curva.push({ T, norm: a / Math.sqrt(T) });
+  }
+  if (curva.length < 10) return null;
+  let mejor = curva[0];
+  for (const c of curva) if (c.norm > mejor.norm) mejor = c;
+  const fondo = median(curva.map((c) => c.norm));
+  return { mejor, realce: fondo ? mejor.norm / fondo : 0 };
+}
+
+// La prueba de las dos mitades: el mismo período en los primeros cinco segundos
+// y en los últimos cinco. Es lo único que separa una aurícula de una deriva de
+// la línea de base, porque la deriva satisface todas las demás guardas a la vez
+// —es lenta y mueve todas las derivaciones juntas— y no puede repetir su
+// período en dos tramos distintos del trazado.
+function dosMitades(p, T) {
+  const mitad = Math.floor(p.n / 2);
+  const trozo = (desde, hasta) => {
+    const b = barrido({ ...p, rs: p.rs.map((r) => r.slice(desde, hasta)),
+                        valido: p.valido.slice(desde, hasta), n: hasta - desde });
+    return b ? b.mejor.T : null;
+  };
+  const a = trozo(0, mitad), b = trozo(mitad, p.n);
+  if (a === null || b === null) return false;
+  const cerca = (x, y) => Math.abs(x - y) / Math.max(x, y) <= 0.08;
+  return cerca(a, b) && cerca(a, T) && cerca(b, T);
+}
+
+function disociacionAV(leads, beats, fs, rrMed) {
+  const p = prepararAuricular(leads, beats, fs, rrMed);
+  if (!p) return null;
+  const b = barrido(p);
+  if (!b) return null;
+
+  // ¿El máximo cayó en el período del VENTRÍCULO? Entonces no hay ningún otro
+  // ritmo en el trazado, que es la respuesta normal. Los submúltiplos no hace
+  // falta contemplarlos: plegar en T/2 una señal de período T manda cada
+  // muestra a una fase distinta y se borra sola.
+  const Trr = rrMed * fs;
+  if ([1, 2].some((k) => Math.abs(b.mejor.T - k * Trr) < 0.10 * k * Trr)) return null;
+
+  const lpm = 60 / (b.mejor.T / fs);
+  const razon = lpm / (60 / rrMed);
+  // La aurícula tiene que ir MÁS RÁPIDO que el ventrículo. Es lo que pasa en un
+  // bloqueo completo —el escape de abajo es lento— y descartar la dirección
+  // contraria quitó dos falsos positivos de un saque.
+  if (razon < 1.15) return null;
+
+  const f = formaAuricular(p, b.mejor.T);
+  if (!f) return null;
+  if (f.lobulos !== 1 || f.acuerdan < 2) return null;
+  if (f.anchoMs < 40 || f.anchoMs > 160 || f.frac > 0.30) return null;
+  if (f.alto < 0.035 || f.alto > 0.30) return null;
+  if (b.realce < 1.8) return null;
+  if (!dosMitades(p, b.mejor.T)) return null;
+
+  return { lpm, razon, pAmp: f.alto, pMs: f.anchoMs, realce: b.realce, leads: f.acuerdan + 1 };
+}
+
 export function measure(signal) {
   const { fs, leads } = signal;
   const det = detectionSignal(leads, fs);
@@ -720,6 +980,10 @@ export function measure(signal) {
   // El PR latido a latido necesita la energía de pendiente del compuesto para
   // ubicar el comienzo de cada QRS por separado.
   const { prSerie, prSalto, prLeads } = prPorLatido(leads, usable, fs, slopeEnergy(det, fs, 0.03));
+
+  // Si la aurícula late por su cuenta. Cuesta unos 55 ms, contra 12 del resto
+  // de la medición, y se hace una sola vez al abrir un caso.
+  const disociacion = disociacionAV(leads, beats, fs, rrMed);
 
   // El PR necesita el latido promedio y el comienzo del QRS, así que se mide
   // acá, una vez que los dos existen.
@@ -914,6 +1178,7 @@ export function measure(signal) {
     uAmp,
     uMs,
     uOverT,
+    disociacion,
     qt,
     // El QT que se informa es el MÁS LARGO de las derivaciones donde la T se
     // puede medir, no el promedio. Es la convención clínica y tiene su razón: la

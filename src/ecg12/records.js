@@ -219,6 +219,18 @@ export const RECORDS = {
     scp: ['164937009', '29320008'],
     report: 'u wave abnormal; atrioventricular junctional rhythm (SNOMED-CT)',
   },
+  // Del CinC 2021, base de Ningbo. PTB-XL tiene 11 bloqueos completos y varios
+  // informes dicen ellos mismos que las P son "inconspicuous"; éste las tiene
+  // medibles.
+  //
+  // La etiqueta dice taquicardia sinusal y la medición da una aurícula a 118:
+  // las dos cosas se escribieron sin mirar a la otra.
+  JS12522: {
+    source: 'cinc2021', age: 42, sex: 'M',
+    scp: ['27885002', '50799005', '81898007', '427084000'],
+    report: 'complete heart block; atrioventricular dissociation; ventricular escape rhythm; '
+      + 'sinus tachycardia (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -226,4 +238,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', '595'];
