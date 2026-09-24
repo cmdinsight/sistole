@@ -27,6 +27,11 @@ const mmStr = (x) => `${(x * 10).toFixed(1)} mm`;
 // trepa muy por encima. El 0,08 es el valle entre las dos poblaciones.
 export const RR_IRREGULAR = 0.08;
 
+// Y el techo de DISPERSIÓN recortada por debajo del cual se puede afirmar que un
+// ritmo es regular. Ver la regla `irregular`, más abajo, para por qué hacen
+// falta las dos cifras.
+export const RR_DISPERSO = 0.22;
+
 // Cada regla sabe describirse y sabe evaluarse. Agregar un tipo de hallazgo
 // nuevo es agregar una entrada acá, y queda disponible para buscar y para
 // comprobar al mismo tiempo.
@@ -79,6 +84,108 @@ const REGLAS = {
     label: `segunda onda R de al menos ${mmStr(min)} en ${leads.join(', ')}`,
     fallos: leads.filter((l) => q.rPrime[l] < min).map((l) => q.rPrime[l] ? `${l}=${uv(q.rPrime[l])}` : `${l}=sin segunda R`),
     margen: Math.min(...leads.map((l) => q.rPrime[l] - min)),
+  }),
+
+  // Que NO haya una onda P delante del QRS. Es un hallazgo negativo y hay que
+  // leerlo con el cuidado que merece un negativo.
+  //
+  // Lo que afirma exactamente: la medición del PR, que exige una deflexión de
+  // al menos 0,3 mm seguida de un segmento isoeléctrico antes del QRS, no
+  // encontró nada en ninguna de sus cinco derivaciones, sobre el latido
+  // promedio. No afirma que la aurícula esté quieta —puede estar despolarizando
+  // al mismo tiempo que el ventrículo, o hacia atrás, y quedar tapada.
+  //
+  // Calibración, que es lo que fija cuánto pesa: sobre 70 registros NORMALES la
+  // medición del PR devuelve null en 7, o sea el 10 %, y 5 de esos 7 tienen buen
+  // trazado. Un electro normal de cada diez la satisface. Sirve como UNA de
+  // varias condiciones sobre un trazado ya mirado, y no alcanza sola para
+  // afirmar que el impulso no nació en la aurícula.
+  noPWave: (_, q) => ({
+    label: 'ninguna onda P precede al QRS',
+    fallos: q.prMs === null ? [] : [`PR de ${Math.round(q.prMs)} ms en ${q.pLead}`],
+    margen: q.prMs === null ? 1 : -1,
+  }),
+
+  // ── DISOCIACIÓN AURICULOVENTRICULAR ──────────────────────────────────────
+  // Que la aurícula y el ventrículo vayan cada uno a su ritmo. La medición está
+  // en measure.js y devuelve null cuando no puede afirmarlo, que es casi
+  // siempre: dispara en 1 de cada 11 bloqueos completos. A cambio no disparó en
+  // ninguno de 70 normales, 50 bloqueos de primer grado ni 12 fibrilaciones.
+  //
+  // Esta regla sirve para CUSTODIAR un caso cuyo trazado ya se miró. Como
+  // criterio de búsqueda no sirve, y como prueba clínica menos: que no dispare
+  // no dice nada sobre el paciente.
+  //
+  // `min` es cuántas veces más rápida tiene que ir la aurícula. En un bloqueo
+  // completo el escape ventricular es lento y la razón se va a 2 o más; pedir
+  // apenas 1,15 dejaría pasar casos donde las dos frecuencias casi coinciden y
+  // ahí el método pierde pie.
+  avDissociation: ({ min }, q) => {
+    const d = q.disociacion;
+    return {
+      label: `la aurícula va al menos ${min} veces más rápido que el ventrículo, con su propio ritmo`,
+      fallos: !d ? ['no se pudo medir un ritmo auricular independiente']
+            : d.razon < min ? [`razón ${d.razon.toFixed(2)}×`] : [],
+      margen: d ? d.razon - min : -1,
+    };
+  },
+
+  // ── LA ONDA J ────────────────────────────────────────────────────────────
+  // Dos reglas separadas para las dos mitades del hallazgo, porque son
+  // preguntas distintas y conviene que fallen por separado:
+  //
+  //   · jPoint  — CUÁNTO sube el punto J sobre la línea de base.
+  //   · jNotch  — si esa subida tiene FORMA de onda J: una joroba que sube y
+  //     vuelve a bajar antes del segmento ST.
+  //
+  // Es la segunda la que hace el diagnóstico. Un punto J elevado lo tiene
+  // también un infarto agudo, y ahí el ST sale del J hacia arriba y se queda
+  // arriba; en la repolarización precoz el trazado hace la joroba y desciende.
+  // Pedir sólo la altura sería enseñar a confundirlos.
+  //
+  // El consenso de 2015 pone el umbral en 1 mm sobre dos derivaciones contiguas
+  // inferiores o laterales. Contra los grupos etiquetados de PTB-XL y del CinC
+  // 2021: exigir además 2 mm y una muesca de 1 mm deja 4 de 25 registros
+  // etiquetados como repolarización precoz y NINGUNO de 32 normales.
+  jPoint: ({ leads, min }, q) => ({
+    label: `punto J elevado al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.jAmp[l] < min).map((l) => `${l}=${uv(q.jAmp[l])}`),
+    margen: Math.min(...leads.map((l) => q.jAmp[l] - min)),
+  }),
+
+  jNotch: ({ leads, min }, q) => ({
+    label: `muesca de al menos ${mmStr(min)} en el punto J de ${leads.join(', ')}`,
+    fallos: leads.filter((l) => q.jNotch[l] < min)
+                 .map((l) => (q.jNotch[l] ? `${l}=${uv(q.jNotch[l])}` : `${l}=sin muesca`)),
+    margen: Math.min(...leads.map((l) => q.jNotch[l] - min)),
+  }),
+
+  // ── LA ONDA U ────────────────────────────────────────────────────────────
+  // Otra vez dos reglas, y otra vez porque son dos preguntas. Cuánto mide la
+  // onda U, y cuánto mide COMPARADA con la T.
+  //
+  // La segunda es la que importa. Una U de 2 mm al lado de una T de 10 mm es
+  // normal; la misma U de 2 mm al lado de una T de 1,3 mm es el electro de una
+  // hipopotasemia. Lo que cambia con el potasio no es sólo que la U crece: es
+  // que la T se aplana al mismo tiempo, y la razón entre las dos recoge las dos
+  // mitades del cambio en un solo número.
+  //
+  // Calibrado contra los grupos etiquetados: pedir U ≥ 1,5 mm Y U/T ≥ 1 deja 3
+  // de 17 registros etiquetados con onda U anormal en el CinC 2021, y 0 de 32
+  // normales de PTB-XL. La mediana de la U en los normales es 0,00 mm: en un
+  // electro normal esta medición directamente no encuentra una segunda onda.
+  uWave: ({ leads, min }, q) => ({
+    label: `onda U de al menos ${mmStr(min)} en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => (q.uAmp[l] ?? 0) < min)
+                 .map((l) => (q.uAmp[l] === null ? `${l}=sin onda U separable` : `${l}=${uv(q.uAmp[l])}`)),
+    margen: Math.min(...leads.map((l) => (q.uAmp[l] ?? 0) - min)),
+  }),
+
+  uToT: ({ leads, min }, q) => ({
+    label: `onda U de al menos ${min} veces la T en ${leads.join(', ')}`,
+    fallos: leads.filter((l) => (q.uOverT[l] ?? 0) < min)
+                 .map((l) => (q.uOverT[l] === null ? `${l}=sin onda U separable` : `${l}=${q.uOverT[l].toFixed(2)}×`)),
+    margen: Math.min(...leads.map((l) => (q.uOverT[l] ?? 0) - min)),
   }),
 
   // Altura mínima de la onda R. Sirve para exigir que la R INICIAL exista, que
@@ -175,6 +282,24 @@ const REGLAS = {
     label: `entre ${lo} y ${hi} latidos prematuros de forma distinta`,
     fallos: q.prematuros >= lo && q.prematuros <= hi ? [] : [`hay ${q.prematuros}`],
     margen: Math.min(q.prematuros - lo, hi - q.prematuros),
+  }),
+
+  // Cuánto se estira el PR dentro del registro, latido a latido. Es el hallazgo
+  // definitorio del Wenckebach, y el único que no se puede promediar: promediar
+  // los PR de un Wenckebach borra exactamente lo que hay que ver.
+  //
+  // Calibrado contra los grupos etiquetados, con el estadístico recortado a los
+  // percentiles 10-90: en ritmo sinusal normal da 20 ms de mediana —que es el
+  // ruido de medir latido a latido, porque ahí el PR es constante— y los tres
+  // Wenckebach del CinC 2021 dan 164, 180 y 228 ms.
+  //
+  // Sólo hay número cuando DOS derivaciones independientes dan la misma serie
+  // dentro de 25 ms. Si no coinciden, es ruido y measure.js devuelve null.
+  prLengthening: ({ min }, q) => ({
+    label: `el PR se estira al menos ${min} ms de latido a latido`,
+    fallos: q.prSalto !== null && q.prSalto >= min
+      ? [] : [q.prSalto === null ? 'sin serie de PR fiable' : `${Math.round(q.prSalto)} ms`],
+    margen: q.prSalto === null ? -1 : (q.prSalto - min) / 100,
   }),
 
   // La PAUSA, medida como cuántas veces el RR más corto entra en el más largo.
@@ -330,12 +455,40 @@ const REGLAS = {
     fallos: q.hr >= lo && q.hr <= hi ? [] : [`${q.hr.toFixed(0)} lpm`],
     margen: Math.min(q.hr - lo, hi - q.hr) / 60,
   }),
+  // Regular o irregular, y son dos preguntas distintas según hacia dónde se
+  // pida, así que se miden con dos cifras distintas.
+  //
+  // Para decir IRREGULAR alcanza con el coeficiente de variación: es lo que
+  // separa la fibrilación auricular del ritmo sinusal y está calibrado para eso.
+  //
+  // Para decir REGULAR hace falta además la dispersión recortada, y la razón
+  // está en measure.js: el coeficiente usa la mediana de las desviaciones y es
+  // ciego cuando la MINORÍA de los latidos se desvía. Un trazado con tres RR de
+  // 1930 ms y dos de 1500 daba un coeficiente de 0,004 —perfectamente regular
+  // según el número— y no lo es. Afirmar regularidad con esa sola cifra era
+  // prometer más de lo que se estaba midiendo, y esta regla se usa como guarda
+  // en 30 de los casos.
+  //
+  // El umbral de 0,22 sale de los propios casos y del registro que destapó el
+  // problema. Los 30 casos que afirman ritmo regular van de 0,005 a 0,168 de
+  // dispersión, así que el más justo tiene un 31 % de margen. JS22357 —tres RR
+  // de 1930 ms y dos de 1500— da 0,247 y ahora falla, que es lo correcto. En 70
+  // registros NORMALES el percentil 90 de la dispersión da 0,180 y el 99 da
+  // 0,279: a 0,22 alrededor de un 6 % de los normales no puede afirmar
+  // regularidad, y eso es el lado seguro del error — la regla se vuelve más
+  // difícil de cumplir, no más fácil de cumplir mal. Los que tienen pausa de
+  // verdad dan 0,80 y 1,02.
   irregular: (quiere, q) => {
     const esIrregular = q.rrCv > RR_IRREGULAR;
+    const disperso = q.rrSpread > RR_DISPERSO;
+    const ok = quiere ? esIrregular : (!esIrregular && !disperso);
     return {
       label: `el ritmo es ${quiere ? 'irregular' : 'regular'}`,
-      fallos: esIrregular === quiere ? [] : [`variación del RR ${q.rrCv.toFixed(3)}`],
-      margen: quiere ? q.rrCv - RR_IRREGULAR : RR_IRREGULAR - q.rrCv,
+      fallos: ok ? [] : [disperso && !quiere
+        ? `dispersión del RR ${q.rrSpread.toFixed(3)}`
+        : `variación del RR ${q.rrCv.toFixed(3)}`],
+      margen: quiere ? q.rrCv - RR_IRREGULAR
+                     : Math.min(RR_IRREGULAR - q.rrCv, (RR_DISPERSO - q.rrSpread) / 3),
     };
   },
 };

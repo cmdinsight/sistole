@@ -16,6 +16,34 @@
 // escrito, sin traducir ni corregir. Es la anotación original: si se la
 // retocara, dejaría de servir como referencia contra la cual contrastar.
 
+// Dos fuentes, no una. PTB-XL cubre casi todo, pero hay hallazgos que no tiene
+// —ni un solo Wenckebach con ondas P visibles, ninguna repolarización precoz,
+// ninguna onda U— y para ésos se recurre al desafío CinC 2021, que junta ocho
+// bases (PTB-XL entre ellas) en el mismo formato y con acceso abierto.
+// Cada registro declara de dónde sale; el que no lo diga es de PTB-XL.
+export const SOURCES = {
+  ptbxl: {
+    dataset: 'PTB-XL',
+    version: '1.0.3',
+    url: 'https://physionet.org/content/ptb-xl/1.0.3/',
+    license: 'Open Data Commons Attribution License v1.0 (ODC-BY 1.0)',
+    citation: 'Wagner P, Strodthoff N, Bousseljot R-D, Kreiseler D, Lunze FI, Samek W, Schaeffter T. '
+      + 'PTB-XL, a large publicly available electrocardiography dataset. Scientific Data 7:154 (2020). '
+      + 'PhysioNet, doi:10.13026/kfzx-aw45',
+  },
+  cinc2021: {
+    dataset: 'CinC 2021',
+    version: '1.0.3',
+    url: 'https://physionet.org/content/challenge-2021/1.0.3/',
+    license: 'Creative Commons Attribution 4.0 (CC BY 4.0)',
+    citation: 'Reyna MA, Sadr N, Perez Alday EA, et al. Will Two Do? Varying Dimensions in '
+      + 'Electrocardiography: the PhysioNet/Computing in Cardiology Challenge 2021. '
+      + 'Computing in Cardiology 48 (2021). PhysioNet, doi:10.13026/34va-7q14',
+  },
+};
+
+// Se conserva SOURCE apuntando a PTB-XL: es la fuente de la enorme mayoría de
+// los registros y lo que la sección cita por defecto.
 export const SOURCE = {
   dataset: 'PTB-XL',
   version: '1.0.3',
@@ -157,6 +185,70 @@ export const RECORDS = {
     report: 'sinus rhythm. probable right atrial enlargement. minor non-specific st segment '
       + 'depression and t wave flattening in chest leads.',
   },
+  // Del desafío CinC 2021, base de Ningbo. PTB-XL no tiene ningún Wenckebach
+  // con ondas P medibles: los dos que trae están documentados como imposibles
+  // en scripts/ejemplos/mobitz.mjs.
+  JS12422: {
+    source: 'cinc2021', age: 61, sex: 'M', scp: ['54016002', '426177001'],
+    report: 'mobitz type i wenckebach atrioventricular block; sinus bradycardia (SNOMED-CT)',
+  },
+  // Del CinC 2021, base de Ningbo. PTB-XL no tiene un solo registro etiquetado
+  // con repolarización precoz.
+  //
+  // La base le pone además dos etiquetas que el trazado no sostiene, y conviene
+  // dejarlo dicho: 6374002 (bloqueo de rama) sobre un QRS de 96 ms y sin R' en
+  // V1, y 55827005 (hipertrofia ventricular izquierda) sobre un Sokolow de
+  // 36,5 mm en un varón de 24 años, que es voltaje alto de gente joven y
+  // delgada, no hipertrofia. Las dos son el mismo malentendido que este caso
+  // enseña a no cometer.
+  JS22294: {
+    source: 'cinc2021', age: 24, sex: 'M',
+    scp: ['428417006', '426177001', '427393009', '164930006', '55827005', '6374002'],
+    report: 'early repolarization; sinus bradycardia; sinus arrhythmia; st interval abnormal; '
+      + 'left ventricular high voltage; bundle branch block (SNOMED-CT)',
+  },
+  // Del CinC 2021, base de Ningbo. Los nombres de los códigos salen de la tabla
+  // oficial del desafío, que scripts/cinc.mjs baja y guarda.
+  //
+  // La base lo etiqueta también como ritmo de la unión (29320008), y el trazado
+  // no lo sostiene: hay una P de 0,5 mm en II antes de cada QRS, con un PR de
+  // 292 ms. Eso es un PR largo, que forma parte del mismo cuadro, no un ritmo
+  // nacido en el nodo AV. Es una P chica y se entiende que se pase por alto.
+  JS22392: {
+    source: 'cinc2021', age: 45, sex: 'M',
+    scp: ['164937009', '29320008'],
+    report: 'u wave abnormal; atrioventricular junctional rhythm (SNOMED-CT)',
+  },
+  // Del CinC 2021, base de Ningbo. PTB-XL tiene 11 bloqueos completos y varios
+  // informes dicen ellos mismos que las P son "inconspicuous"; éste las tiene
+  // medibles.
+  //
+  // La etiqueta dice taquicardia sinusal y la medición da una aurícula a 118:
+  // las dos cosas se escribieron sin mirar a la otra.
+  JS12522: {
+    source: 'cinc2021', age: 42, sex: 'M',
+    scp: ['27885002', '50799005', '81898007', '427084000'],
+    report: 'complete heart block; atrioventricular dissociation; ventricular escape rhythm; '
+      + 'sinus tachycardia (SNOMED-CT)',
+  },
+  // Del CinC 2021, base de Ningbo. PTB-XL no tiene ningún código para esto.
+  //
+  // La base lo etiqueta además como bloqueo AV de segundo grado, y el trazado no
+  // lo sostiene: para hablar de segundo grado hacen falta P que conduzcan con un
+  // PR reconocible y alguna que no, y acá NINGUNA conduce — el PR latido a
+  // latido va de 84 a 332 ms sin orden. Es disociación, no conducción parcial.
+  JS22128: {
+    source: 'cinc2021', age: 39, sex: 'F',
+    scp: ['61277005', '427084000', '55930002', '195042002'],
+    report: 'accelerated idioventricular rhythm; sinus tachycardia; s t changes; '
+      + '2nd degree av block (SNOMED-CT)',
+  },
+  // Del CinC 2021, base de Ningbo. Una sola etiqueta en toda la base, que es
+  // raro y vale: nada que aclarar ni que descartar.
+  JS22432: {
+    source: 'cinc2021', age: 28, sex: 'F', scp: ['426664006'],
+    report: 'accelerated junctional rhythm (SNOMED-CT)',
+  },
   595: {
     age: 47, sex: 'F', scp: ['NORM'],
     report: 'sinus rhythm. normal ecg.',
@@ -164,4 +256,4 @@ export const RECORDS = {
 };
 
 // El orden es el de los casos. scripts/fetch-ptbxl.mjs baja exactamente estos.
-export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', '595'];
+export const RECORD_IDS = ['12899', '20139', '13913', '2993', '2960', '12632', '5252', '14219', '1451', '8198', '15985', '2017', '41', '16389', '13052', '4215', '7953', '9619', '11331', '3957', '10094', '7889', '4110', '4647', '18550', 'JS12422', 'JS22294', 'JS22392', 'JS12522', 'JS22128', 'JS22432', '595'];

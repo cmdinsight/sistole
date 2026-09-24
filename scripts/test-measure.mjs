@@ -14,6 +14,7 @@ import { synth12 } from '../src/ecg12/synth.js';
 import { measure } from '../src/ecg12/measure.js';
 import { encodeRecord, decodeRecord } from '../src/ecg12/record.js';
 import { suggestGain } from '../src/ecg12/draw.js';
+import { RR_DISPERSO } from '../src/ecg12/findings.js';
 
 let pass = 0, fail = 0;
 const check = (n, c, e = '') => { c ? (pass++, console.log(`  ✓ ${n}`)) : (fail++, console.log(`  ✗ ${n}  ${e}`)); };
@@ -246,6 +247,28 @@ console.log('\n[10] La ganancia del dibujo se elige sola y por grupo');
   const apenas = escalar(base, 1.6, ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']);
   check('una superposición parcial no alcanza para bajar la ganancia',
         suggestGain(apenas).chest === 10, `(${JSON.stringify(suggestGain(apenas))})`);
+}
+
+
+// ── La dispersión del RR ve lo que el coeficiente esconde ──────────────────
+// Tres intervalos de 1930 ms y dos de 1500: el coeficiente de variación usa la
+// mediana de las desviaciones y da 0,004, o sea "perfectamente regular". No lo
+// es. Esta prueba fija que la dispersión recortada sí lo vea, porque la regla
+// `irregular: false` se apoya en ella y se usa como guarda en 30 casos.
+{
+  const rr = [1.936, 1.460, 1.928, 1.572, 1.936];
+  const med = 1.928;
+  const cv = (() => {
+    const d = rr.map((x) => Math.abs(x - med)).sort((a, b) => a - b);
+    return d[d.length >> 1] / med;
+  })();
+  const spread = (() => {
+    const v = rr.slice().sort((a, b) => a - b);
+    const q = (p) => v[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * p)))];
+    return (q(0.90) - q(0.10)) / med;
+  })();
+  check('el coeficiente de variación no ve el RR bimodal', cv < 0.01, `(${cv.toFixed(3)})`);
+  check('la dispersión recortada sí lo ve', spread > RR_DISPERSO, `(${spread.toFixed(3)} > ${RR_DISPERSO})`);
 }
 
 console.log(`\n${'─'.repeat(44)}\n${pass} pasaron, ${fail} fallaron\n`);

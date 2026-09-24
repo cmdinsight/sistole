@@ -18,7 +18,23 @@ import { writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchRecord, prepareRecord, remotePath } from './ptbxl.mjs';
-import { RECORD_IDS, SOURCE } from '../src/ecg12/records.js';
+import { RECORD_IDS, SOURCE, SOURCES } from '../src/ecg12/records.js';
+import { fetchRecord as fetchCinc } from './cinc.mjs';
+import { readFileSync as leer } from 'node:fs';
+
+// Los identificadores del CinC 2021 empiezan con letra (JS12422); los de PTB-XL
+// son números. El índice que dejó el escaneo de cabeceras dice en qué grupo
+// está cada uno.
+const esCinc = (id) => /^[A-Za-z]/.test(String(id));
+let indiceCinc = null;
+function grupoCinc(id) {
+  indiceCinc = indiceCinc || JSON.parse(leer(join(root, '.cinc-cache', 'indice.json'), 'utf8'));
+  for (const lista of Object.values(indiceCinc)) {
+    const c = lista.find((x) => x.id === id);
+    if (c) return c.g;
+  }
+  throw new Error(`${id} no está en .cinc-cache/indice.json`);
+}
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'public', 'ecg12');
@@ -34,12 +50,15 @@ for (const id of RECORD_IDS) {
     console.log(`  · ${id}  ya estaba (--force para rehacerlo)`);
     continue;
   }
-  const hea = await fetchRecord(id);
+  const cinc = esCinc(id);
+  const hea = cinc ? await fetchCinc('ningbo', grupoCinc(id), id) : await fetchRecord(id);
   const payload = prepareRecord(hea);
-  const { dir, name } = remotePath(id);
+  const { dir, name } = cinc
+    ? { dir: `training/ningbo/g${grupoCinc(id)}`, name: id }
+    : remotePath(id);
   writeFileSync(dest, JSON.stringify({
     id: String(id),
-    source: `${SOURCE.dataset} ${SOURCE.version} · ${dir}/${name}`,
+    source: `${(cinc ? SOURCES.cinc2021 : SOURCES.ptbxl).dataset} ${(cinc ? SOURCES.cinc2021 : SOURCES.ptbxl).version} · ${dir}/${name}`,
     ...payload,
   }));
   bytes += statSync(dest).size;

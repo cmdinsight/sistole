@@ -18,9 +18,16 @@ import { readFileSync } from 'node:fs';
  *   archivo formato ganancia(baseline)/unidad resolución cero inicial checksum bloque descripción
  */
 export function parseHeader(text) {
-  const lines = text.split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('#'));
+  const todas = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = todas.filter((l) => !l.startsWith('#'));
+  // Los comentarios no son adorno: en las bases del desafío CinC 2021 llevan la
+  // edad, el sexo y los códigos SNOMED del diagnóstico. PTB-XL los trae en un
+  // CSV aparte y por eso hasta ahora se descartaban.
+  const comentarios = {};
+  for (const l of todas.filter((x) => x.startsWith('#'))) {
+    const m = /^#\s*([A-Za-z]+)\s*:\s*(.*)$/.exec(l);
+    if (m) comentarios[m[1].toLowerCase()] = m[2].trim();
+  }
 
   const [name, nSigStr, fsStr, nSampStr] = lines[0].split(/\s+/);
   const nSig = parseInt(nSigStr, 10);
@@ -30,6 +37,7 @@ export function parseHeader(text) {
     fs: parseFloat(fsStr),
     nSamples: parseInt(nSampStr, 10),
     signals: [],
+    comentarios,
   };
 
   for (let i = 1; i <= nSig; i++) {
@@ -37,9 +45,17 @@ export function parseHeader(text) {
     // La ganancia viene como "1000.0(0)/mV": ganancia, baseline entre paréntesis
     // y unidad tras la barra. Los dos últimos son opcionales.
     const m = /^([-\d.eE+]+)(?:\((-?\d+)\))?(?:\/(\S+))?$/.exec(f[2] || '');
+    // El campo de formato admite sufijos: "16x1+24" es formato 16, una muestra
+    // por cuadro y los datos a partir del byte 24. Ese desplazamiento es lo que
+    // deja leer los .mat del desafío CinC como si fueran un .dat corriente: son
+    // una matriz de MATLAB guardada por columnas, que para 12 señales es
+    // exactamente el intercalado que este lector ya espera, detrás de una
+    // cabecera de 24 bytes.
+    const fmt = /^(\d+)(?:x(\d+))?(?::(-?\d+))?(?:\+(\d+))?$/.exec(f[1] || '');
     header.signals.push({
       file: f[0],
-      format: parseInt(f[1], 10),
+      format: fmt ? parseInt(fmt[1], 10) : parseInt(f[1], 10),
+      byteOffset: fmt && fmt[4] !== undefined ? parseInt(fmt[4], 10) : 0,
       gain: m && parseFloat(m[1]) ? parseFloat(m[1]) : 200,
       baseline: m && m[2] !== undefined ? parseInt(m[2], 10) : 0,
       units: (m && m[3]) || 'mV',
@@ -70,9 +86,17 @@ export function readRecord(heaPath) {
 
   const datPath = heaPath.replace(/[^/\\]+$/, header.signals[0].file);
   const buf = readFileSync(datPath);
+  const salto = header.signals[0].byteOffset || 0;
+  const otros = header.signals.find((s) => (s.byteOffset || 0) !== salto);
+  if (otros) throw new Error('Las señales arrancan en bytes distintos del archivo.');
   // Se crea una vista Int16 sobre el buffer sin copiarlo. El byteOffset importa:
-  // Node puede entregar buffers que son una ventana de un pool mayor.
-  const raw = new Int16Array(buf.buffer, buf.byteOffset, Math.floor(buf.byteLength / 2));
+  // Node puede entregar buffers que son una ventana de un pool mayor. Y si el
+  // arranque queda en un byte impar hay que copiar: Int16Array exige alineación.
+  const desde = buf.byteOffset + salto;
+  const largo = Math.floor((buf.byteLength - salto) / 2);
+  const raw = desde % 2 === 0
+    ? new Int16Array(buf.buffer, desde, largo)
+    : new Int16Array(buf.buffer.slice(desde, desde + largo * 2));
 
   const n = Math.min(header.nSamples, Math.floor(raw.length / header.nSig));
   const leads = {};

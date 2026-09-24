@@ -4,7 +4,7 @@ import TwelveLead from './TwelveLead.jsx';
 import { sheetSize, suggestGain, MM_PER_MV } from './draw.js';
 import { loadRecord, prefetchRecord } from './load.js';
 import { measure } from './measure.js';
-import { SOURCE } from './records.js';
+import { SOURCE, SOURCES, RECORDS } from './records.js';
 import { CASES, shuffledOptions } from './cases.js';
 
 const L = {
@@ -125,16 +125,56 @@ const L = {
     pt: 'Um batimento conta como extrassístole ventricular quando cumpre as duas coisas: chega antes dos 85 % do ciclo E parece-se menos de 94 % com o modelo do batimento típico. Nenhuma basta sozinha — prematura também é uma extrassístole atrial, que sai idêntica às outras, e diferente também sai uma deformada pelo ruído.',
   },
   pLabel: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  pNinguna: { es: 'no se encuentra', en: 'none found', pt: 'não se encontra' },
+  unionNote: {
+    es: 'Tres cifras y una ausencia. El QRS angosto dice que el impulso bajó por el His y las dos ramas, o sea que nació EN o POR ENCIMA de la unión: un foco del músculo ventricular no puede dar un complejo así. La frecuencia dice a qué velocidad está disparando ese foco. Y la onda P no aparece: la medición busca, sobre el latido promedio y en cinco derivaciones, una deflexión de al menos 0,3 mm seguida de un segmento isoeléctrico antes del QRS, y no encuentra ninguna. Es un hallazgo negativo y conviene saber cuánto pesa: en 7 de 70 electros normales esta misma medición tampoco encuentra nada. No prueba que la aurícula esté quieta; dice que no hay una P conduciendo por delante.',
+    en: 'Three figures and one absence. The narrow QRS says the impulse came down the His and both bundles, that is, it was born IN or ABOVE the junction: a focus in ventricular muscle cannot produce a complex like this. The rate says how fast that focus is firing. And the P wave does not appear: the measurement looks, on the averaged beat and across five leads, for a deflection of at least 0.3 mm followed by an isoelectric segment before the QRS, and finds none. It is a negative finding and it is worth knowing what it weighs: in 7 out of 70 normal ECGs this same measurement also finds nothing. It does not prove the atrium is silent; it says there is no P conducting ahead of it.',
+    pt: 'Três valores e uma ausência. O QRS estreito diz que o impulso desceu pelo His e pelos dois ramos, ou seja, nasceu NA ou ACIMA da junção: um foco do músculo ventricular não pode dar um complexo assim. A frequência diz a que velocidade está a disparar esse foco. E a onda P não aparece: a medição procura, sobre o batimento médio e em cinco derivações, uma deflexão de pelo menos 0,3 mm seguida de um segmento isoelétrico antes do QRS, e não encontra nenhuma. É um achado negativo e convém saber quanto pesa: em 7 de 70 eletros normais esta mesma medição também não encontra nada. Não prova que a aurícula esteja quieta; diz que não há uma P a conduzir à frente.',
+  },
   pNote: {
     es: 'Altura de la onda P sobre el latido promedio, en la derivación donde mejor se ve. Normal hasta 2,5 mm en II: por encima habla de sobrecarga de la aurícula derecha. Sobre los registros normales de la base la mediana es 1,0 mm y ninguno llega a 2,5.',
     en: 'P wave height on an averaged beat, in the lead where it shows best. Normal up to 2.5 mm in II: above that it speaks of right atrial overload. In the database\u2019s normal records the median is 1.0 mm and none reaches 2.5.',
     pt: 'Altura da onda P sobre um batimento médio, na derivação onde melhor se vê. Normal até 2,5 mm em II: acima disso fala de sobrecarga da aurícula direita. Nos registros normais da base a mediana é 1,0 mm e nenhum chega a 2,5.',
+  },
+  prSeriesLabel: { es: 'PR latido a latido', en: 'PR beat by beat', pt: 'PR batimento a batimento' },
+  prJumpLabel: { es: 'se estira', en: 'stretches', pt: 'estica-se' },
+  wenckebachNote: {
+    es: 'El PR de cada latido, en milisegundos, y cuánto se estira de punta a punta. Se mide latido a latido y no sobre un promedio, porque acá cada latido tiene un PR distinto y promediarlos borraría el hallazgo. Sólo aparece cuando dos derivaciones independientes dan la misma serie: si no coinciden, es ruido. En ritmo sinusal normal esta cifra ronda los 20 ms.',
+    en: 'The PR of each beat, in milliseconds, and how far it stretches end to end. It is measured beat by beat and not on an average, because here every beat has a different PR and averaging would erase the finding. It only appears when two independent leads give the same series: if they disagree, it is noise. In normal sinus rhythm this figure is around 20 ms.',
+    pt: 'O PR de cada batimento, em milissegundos, e quanto se estica de ponta a ponta. Mede-se batimento a batimento e não sobre uma média, porque aqui cada batimento tem um PR diferente e a média apagaria o achado. Só aparece quando duas derivações independentes dão a mesma série: se não coincidirem, é ruído. Em ritmo sinusal normal este valor ronda os 20 ms.',
   },
   sagLabel: { es: 'cubeta', en: 'sag', pt: 'cubeta' },
   sagNote: {
     es: 'La cubeta es cuánto se hunde el ST por debajo del punto J antes de volver a subir. Un ST plano o que baja derecho da cero; sólo la forma cóncava lo levanta.',
     en: 'The sag is how far the ST dips below the J point before rising again. A flat or straight-sloping ST gives zero; only the concave shape raises it.',
     pt: 'A cubeta é o quanto o ST afunda abaixo do ponto J antes de voltar a subir. Um ST plano ou que desce reto dá zero; só a forma côncava o eleva.',
+  },
+  jLabel: { es: 'punto J', en: 'J point', pt: 'ponto J' },
+  jNotchLabel: { es: 'muesca', en: 'notch', pt: 'entalhe' },
+  jStLabel: { es: 'ST a 60 ms', en: 'ST at 60 ms', pt: 'ST a 60 ms' },
+  jNote: {
+    es: 'Tres cifras por derivación, y el caso está en compararlas. La altura del punto J, la altura de la muesca —cuánto sube la joroba y vuelve a bajar antes del segmento ST— y el ST medido 60 ms más adelante. Cuando el punto J está muy alto y el ST 60 ms después ya volvió cerca de la línea, lo que hubo fue una onda J. En un infarto agudo el ST sale del punto J y se QUEDA arriba: las dos cifras se parecen. Una muesca de cero no significa ST normal, significa que el QRS terminó bajando limpio.',
+    en: 'Three figures per lead, and the case lies in comparing them. The height of the J point, the height of the notch — how far the hump rises and comes back down before the ST segment — and the ST measured 60 ms later. When the J point is high and the ST 60 ms afterwards has already returned close to the line, what there was is a J wave. In an acute infarct the ST leaves the J point and STAYS up: the two figures look alike. A notch of zero does not mean a normal ST, it means the QRS ended by descending cleanly.',
+    pt: 'Três valores por derivação, e o caso está em compará-los. A altura do ponto J, a altura do entalhe — quanto sobe a corcova e volta a descer antes do segmento ST — e o ST medido 60 ms adiante. Quando o ponto J está muito alto e o ST 60 ms depois já voltou perto da linha, o que houve foi uma onda J. Num enfarte agudo o ST sai do ponto J e FICA em cima: os dois valores parecem-se. Um entalhe de zero não significa ST normal, significa que o QRS terminou a descer limpo.',
+  },
+  disoA: { es: 'aurícula', en: 'atria', pt: 'aurícula' },
+  disoV: { es: 'ventrículo', en: 'ventricles', pt: 'ventrículo' },
+  disoRazon: { es: 'razón A/V', en: 'A/V ratio', pt: 'razão A/V' },
+  disoP: { es: 'onda P', en: 'P wave', pt: 'onda P' },
+  disoLeads: { es: (n) => `${n} derivaciones`, en: (n) => `${n} leads`, pt: (n) => `${n} derivações` },
+  disoNote: {
+    es: 'Dos frecuencias en el mismo trazado. La auricular no sale de contar ondas P una por una —son demasiado chicas para eso— sino de restar el latido promedio, que se lleva todo lo que está atado al ventrículo, y buscar en lo que queda un ritmo que se repita. En un electro con conducción normal no queda nada: la P está atada al ventrículo y se va con la resta. Que aparezca una segunda frecuencia, más rápida y con forma de onda P, es el hallazgo. La medición se comprueba en las dos mitades del trazado por separado y desaparece si no coinciden; cuando no puede afirmarlo, no dice nada, y eso pasa a menudo.',
+    en: 'Two rates in the same tracing. The atrial one does not come from counting P waves one by one — they are far too small for that — but from subtracting the averaged beat, which takes away everything tied to the ventricle, and looking in what remains for a rhythm that repeats. In an ECG with normal conduction nothing remains: the P is tied to the ventricle and goes with the subtraction. That a second rate appears, faster and shaped like a P wave, is the finding. The measurement is checked on each half of the tracing separately and disappears if they disagree; when it cannot assert it, it says nothing, and that happens often.',
+    pt: 'Duas frequências no mesmo traçado. A auricular não vem de contar ondas P uma a uma — são demasiado pequenas para isso — mas de subtrair o batimento médio, que leva tudo o que está preso ao ventrículo, e procurar no que resta um ritmo que se repita. Num eletro com condução normal não resta nada: a P está presa ao ventrículo e vai-se com a subtração. Que apareça uma segunda frequência, mais rápida e com forma de onda P, é o achado. A medição é verificada nas duas metades do traçado em separado e desaparece se não coincidirem; quando não pode afirmá-lo, não diz nada, e isso acontece muitas vezes.',
+  },
+  uLabel: { es: 'onda U', en: 'U wave', pt: 'onda U' },
+  uTLabel: { es: 'U/T', en: 'U/T', pt: 'U/T' },
+  uTWave: { es: 'onda T', en: 'T wave', pt: 'onda T' },
+  uNone: { es: 'no se separa', en: 'not separable', pt: 'não se separa' },
+  uNote: {
+    es: 'La T y la U son dos jorobas seguidas, y se separan buscando el valle que queda entre ellas: la primera es la T, la segunda la U. Se mide sobre el latido promedio, que es lo que hace visible una onda de dos décimas de milivoltio. La razón U/T es el número del hallazgo, porque con el potasio bajo pasan las dos cosas a la vez —la U crece y la T se aplana— y una sola cifra no las recoge. Cuando dice «no se separa» es que no hay valle entre las dos: puede ser que no haya onda U o que esté fundida con la T, y en cualquiera de los dos casos no hay medición, no hay un cero.',
+    en: 'The T and the U are two humps in a row, told apart by finding the trough between them: the first is the T, the second the U. It is measured on an averaged beat, which is what makes a wave of two tenths of a millivolt visible. The U/T ratio is the figure that carries the finding, because with low potassium two things happen at once — the U grows and the T flattens — and a single number does not capture both. When it says "not separable" there is no trough between them: there may be no U wave, or it may be fused with the T, and in either case there is no measurement, not a zero.',
+    pt: 'A T e a U são duas corcovas seguidas, e separam-se procurando o vale que fica entre elas: a primeira é a T, a segunda a U. Mede-se sobre o batimento médio, que é o que torna visível uma onda de duas décimas de milivolt. A razão U/T é o número do achado, porque com o potássio baixo acontecem as duas coisas ao mesmo tempo — a U cresce e a T aplana-se — e um só valor não as recolhe. Quando diz «não se separa» é que não há vale entre as duas: pode não haver onda U ou estar fundida com a T, e em qualquer dos casos não há medição, não há um zero.',
   },
   qtMs: { es: 'QT', en: 'QT', pt: 'QT' },
   qtcB: { es: 'QTc Bazett', en: 'QTc Bazett', pt: 'QTc Bazett' },
@@ -165,6 +205,12 @@ const SHEET = sheetSize({});
 
 // El separador decimal cambia con el idioma: en español y en portugués es la
 // coma. Mostrar "3.9 mm" en español se lee como otra cosa.
+// Las bases distintas de PTB-XL que algún registro declara. Se calcula de los
+// registros y no se escribe a mano: si mañana se suma otra fuente, la cita
+// aparece sola, y si se quita el último registro de una, deja de citarse.
+const OTRAS_FUENTES = [...new Set(Object.values(RECORDS).map((r) => r.source).filter(Boolean))]
+  .map((k) => SOURCES[k]).filter(Boolean);
+
 const num = (v, d, lang) => v.toFixed(d).replace('.', lang === 'en' ? '.' : ',');
 
 // Formatea un desnivel del ST como lo diría un médico: en milímetros de papel,
@@ -187,6 +233,9 @@ const mm = (mv, lang) => {
 // el scroll, que es lo que hace cualquiera con un electro impreso, y además se
 // permite tocar una derivación para verla sola y en grande.
 function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
+  // De qué base salió ESTE registro. Por defecto PTB-XL, que es de donde viene
+  // la enorme mayoría; los que declaran otra la usan.
+  const fuente = SOURCES[RECORDS[signal.id]?.source || 'ptbxl'] || SOURCE;
   return (
     <div className="rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
       <div className="relative">
@@ -200,14 +249,16 @@ function EcgSheet({ signal, theme, highlight, lang, onLeadClick, gain }) {
             de sm:, donde ya entra completo. */}
         <div className="sm:hidden pointer-events-none absolute inset-y-0 right-0 w-7 bg-gradient-to-l from-slate-950/55 to-transparent" />
       </div>
-      {/* De dónde salió este electro. No es un pie de página decorativo: la
-          licencia de PTB-XL pide atribución, y además el estudiante tiene
-          derecho a saber que está mirando el registro de un paciente real y a
-          poder ir a buscarlo. */}
+      {/* De dónde salió este electro. No es un pie de página decorativo: las dos
+          bases piden atribución, y además el estudiante tiene derecho a saber
+          que está mirando el registro de un paciente real y a poder ir a
+          buscarlo. Ojo: la fuente sale del REGISTRO, no es fija. Cuando se
+          sumó la segunda base, este pie seguía diciendo PTB-XL sobre un
+          registro del CinC, que es una atribución equivocada. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-slate-800/80">
-        <a href={`${SOURCE.url}#files`} target="_blank" rel="noopener noreferrer"
+        <a href={`${fuente.url}#files`} target="_blank" rel="noopener noreferrer"
            className="text-[10px] text-slate-500 hover:text-indigo-300 font-mono uppercase tracking-wider truncate transition-colors">
-          {SOURCE.dataset} · {lang === 'es' ? 'registro' : lang === 'pt' ? 'registro' : 'record'} {signal.id}
+          {fuente.dataset} · {lang === 'es' ? 'registro' : lang === 'pt' ? 'registro' : 'record'} {signal.id}
         </a>
         <span className="flex items-center gap-1 text-[10px] text-slate-500 flex-shrink-0">
           <Maximize2 className="w-3 h-3" /><span className="hidden xs:inline sm:inline">{L.tapLead[lang]}</span>
@@ -274,6 +325,80 @@ function Measured({ q, metrics, lang, gain }) {
            'text-sky-300 border-sky-900/60 bg-sky-950/30')),
     ];
     note = L.qrsNote[lang];
+  } else if (metrics.kind === 'jwave') {
+    // Tres cifras por derivación y no una, porque el hallazgo ESTÁ en la
+    // diferencia entre ellas: un punto J de 8 mm con el ST de vuelta en 1,2 mm
+    // sesenta milisegundos más tarde es una onda J, y los mismos 8 mm que se
+    // sostienen son un infarto. Mostrar sólo el punto J sería mostrar el número
+    // que las dos cosas comparten.
+    chips = metrics.leads.flatMap((l) => [
+      chip(`j-${l}`, `${L.jLabel[lang]} ${l}`, mm(q.jAmp[l], lang),
+           q.jAmp[l] >= 0.2 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                            : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip(`n-${l}`, L.jNotchLabel[lang], mmAbs(q.jNotch[l], lang),
+           q.jNotch[l] >= 0.1 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                              : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip(`s-${l}`, L.jStLabel[lang], mm(q.st[l], lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ]);
+    // La misma advertencia que en el panel del ST, y acá hace más falta: este
+    // caso se juega en un punto J de 8 mm y las precordiales de este registro se
+    // dibujan a media ganancia, así que sobre el papel se ven 4. Sin el aviso,
+    // el alumno que mida con la regla encuentra la mitad de lo que dice el panel
+    // y no sabe cuál de los dos está mal.
+    const bajoLimbJ = gain.limb !== MM_PER_MV;
+    const bajoChestJ = gain.chest !== MM_PER_MV;
+    const grupoJ = bajoLimbJ && bajoChestJ ? L.groupBoth[lang]
+                 : bajoChestJ ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.jNote[lang] + (bajoLimbJ || bajoChestJ ? ` ${L.halfGainNote[lang](grupoJ)}` : '');
+  } else if (metrics.kind === 'dissociation') {
+    // Sin medición no hay panel. Es deliberado: este hallazgo se mide en 1 de
+    // cada 11 bloqueos completos, y un panel que dijera "0" o "no" donde en
+    // realidad no pudo medir estaría afirmando algo que la medición no sabe.
+    const d = q.disociacion;
+    if (!d) return null;
+    chips = [
+      // El ancho del QRS sólo cuando el caso lo pide: en un bloqueo completo es
+      // un dato más, y en un ritmo que nace en el ventrículo es LA prueba de
+      // dónde nace.
+      ...(metrics.qrs ? [chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs >= 120 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                          : 'text-slate-400 border-slate-800 bg-slate-950/60')] : []),
+      chip('a', L.disoA[lang], `${Math.round(d.lpm)} lpm`,
+           'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('v', L.disoV[lang], `${Math.round(q.hr)} lpm`,
+           'text-sky-300 border-sky-900/60 bg-sky-950/30'),
+      chip('r', L.disoRazon[lang], `${num(d.razon, 2, lang)}×`,
+           'text-violet-300 border-violet-900/60 bg-violet-950/30'),
+      chip('p', L.disoP[lang], `${mmAbs(d.pAmp, lang)} · ${Math.round(d.pMs)} ms`,
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('n', '', L.disoLeads[lang](d.leads), 'text-slate-500 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.disoNote[lang];
+  } else if (metrics.kind === 'uwave') {
+    // Se muestran las tres: la T que separó la medición, la U, y la razón. La T
+    // va con su propia cifra y no con la de t[lead] a propósito — cuando la U
+    // supera a la T, t[lead] se queda con la U y la llama T, y entonces el panel
+    // diría que la razón es 1 justo donde el hallazgo es que pasa de 1.
+    chips = metrics.leads.flatMap((l) => {
+      const hay = q.uAmp[l] !== null;
+      const tPropia = hay && q.uOverT[l] ? q.uAmp[l] / q.uOverT[l] : null;
+      return [
+        chip(`t-${l}`, `${L.uTWave[lang]} ${l}`, tPropia === null ? L.uNone[lang] : mmAbs(tPropia, lang),
+             'text-slate-400 border-slate-800 bg-slate-950/60'),
+        chip(`u-${l}`, L.uLabel[lang], hay ? mmAbs(q.uAmp[l], lang) : L.uNone[lang],
+             hay && q.uAmp[l] >= 0.15 ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                                      : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+        chip(`r-${l}`, L.uTLabel[lang], q.uOverT[l] === null ? L.uNone[lang] : `${num(q.uOverT[l], 2, lang)}×`,
+             (q.uOverT[l] ?? 0) >= 1 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                                     : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      ];
+    });
+    const bajoLimbU = gain.limb !== MM_PER_MV;
+    const bajoChestU = gain.chest !== MM_PER_MV;
+    const grupoU = bajoLimbU && bajoChestU ? L.groupBoth[lang]
+                 : bajoChestU ? L.groupChest[lang] : L.groupLimb[lang];
+    note = L.uNote[lang] + (bajoLimbU || bajoChestU ? ` ${L.halfGainNote[lang](grupoU)}` : '');
   } else if (metrics.kind === 'voltage') {
     // Un grupo por umbral: 5 mm en los miembros, 10 mm en las precordiales. Se
     // marca la derivación que está POR DEBAJO, que es la anormal — al revés que
@@ -353,6 +478,37 @@ function Measured({ q, metrics, lang, gain }) {
            'text-slate-400 border-slate-800 bg-slate-950/60')),
     ];
     note = L.pNote[lang];
+  } else if (metrics.kind === 'junctional') {
+    chips = [
+      chip('w', L.qrsWidth[lang], `${Math.round(q.qrsMs)} ms`,
+           q.qrsMs < 120 ? 'text-emerald-300 border-emerald-900/60 bg-emerald-950/30'
+                         : 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      chip('cv', L.rrVar[lang], num(q.rrCv, 3, lang),
+           'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // La ausencia se muestra como ausencia, no como un cero ni como un guion
+      // suelto: es el hallazgo, y tiene que leerse como tal.
+      chip('p', L.pLabel[lang], q.prMs === null ? L.pNinguna[lang] : `${Math.round(q.prMs)} ms`,
+           q.prMs === null ? 'text-violet-300 border-violet-900/60 bg-violet-950/30'
+                           : 'text-slate-400 border-slate-800 bg-slate-950/60'),
+    ];
+    note = L.unionNote[lang];
+  } else if (metrics.kind === 'wenckebach') {
+    if (q.prSalto === null) return null;
+    const rr = q.rr || [];
+    const razon = rr.length >= 4 ? Math.max(...rr) / Math.min(...rr) : null;
+    chips = [
+      chip('j', L.prJumpLabel[lang], `${Math.round(q.prSalto)} ms`, 'text-amber-300 border-amber-900/60 bg-amber-950/30'),
+      ...(razon !== null ? [chip('r', L.ratioLabel[lang], num(razon, 2, lang),
+           razon < 2 ? 'text-amber-300 border-amber-900/60 bg-amber-950/30'
+                     : 'text-slate-400 border-slate-800 bg-slate-950/60')] : []),
+      chip('hr', L.hr[lang], `${Math.round(q.hr)} ${L.bpm[lang]}`, 'text-slate-400 border-slate-800 bg-slate-950/60'),
+      // La serie entera: es donde se ve el escalón, que ningún número resume.
+      ...(q.prSerie || []).map((v, i) => chip(`pr${i}`, '', v === null ? '—' : `${Math.round(v)}`,
+           v === null ? 'text-slate-600 border-slate-800 bg-slate-950/60'
+                      : 'text-violet-300 border-violet-900/60 bg-violet-950/30')),
+    ];
+    note = L.wenckebachNote[lang];
   } else if (metrics.kind === 'qt') {
     if (q.qtMs === null) return null;
     const medibles = Object.values(q.qt).filter((v) => v !== null);
@@ -625,8 +781,9 @@ export default function TwelveLeadSection({
         <p className="text-[11px] text-slate-600 max-w-md mx-auto leading-relaxed">
           <a href={SOURCE.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">
             {SOURCE.citation}
+            {OTRAS_FUENTES.map((f) => <span key={f.dataset}><br />{f.citation}</span>)}
           </a>
-          <br />{SOURCE.license}
+          <br />{[SOURCE, ...OTRAS_FUENTES].map((f) => f.license).join(' · ')}
         </p>
         <button onClick={restart}
           className="px-6 py-3 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-bold transition-colors">

@@ -53,6 +53,11 @@
 //
 // Un método que le dice a 1 de cada 8 electros normales que tiene disociación
 // AV no se puede usar para un hallazgo cuya conducta es un marcapasos.
+//
+// ACTUALIZACIÓN: se pudo, con un cuarto camino que no busca las ondas P una por
+// una. La historia entera —por qué los tres de arriba no podían funcionar, qué
+// sí funciona y qué sigue sin poder afirmarse— está en disociacion-av.mjs. El
+// caso salió sobre un registro del CinC 2021, no de PTB-XL.
 export default {
   prMs: [230, 400],
   // Sin esto la medición no se sostiene: ver el límite conocido, más arriba.
