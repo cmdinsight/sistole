@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/gsap.min.js"></script>
+    <script src="assets/ecg.js"></script>
+    <style>
+      @font-face { font-family: 'Instrument Serif'; font-weight: 400; font-style: normal; font-display: block; src: url('assets/fonts/instrument-serif-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Instrument Serif'; font-weight: 400; font-style: italic; font-display: block; src: url('assets/fonts/instrument-serif-latin-400-italic.woff2') format('woff2'); }
+      @font-face { font-family: 'IBM Plex Sans'; font-weight: 400; font-style: normal; font-display: block; src: url('assets/fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'IBM Plex Sans'; font-weight: 500; font-style: normal; font-display: block; src: url('assets/fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'IBM Plex Sans'; font-weight: 600; font-style: normal; font-display: block; src: url('assets/fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'IBM Plex Sans'; font-weight: 700; font-style: normal; font-display: block; src: url('assets/fonts/ibm-plex-sans-latin-700-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-weight: 400; font-style: normal; font-display: block; src: url('assets/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-weight: 500; font-style: normal; font-display: block; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'JetBrains Mono'; font-weight: 600; font-style: normal; font-display: block; src: url('assets/fonts/jetbrains-mono-latin-600-normal.woff2') format('woff2'); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px; height: 1920px; overflow: hidden;
+        background: #03060c;
+      }
+      #root {
+        position: relative; width: 1080px; height: 1920px; overflow: hidden;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif; color: #e2e8f0;
+        background: radial-gradient(ellipse at 50% 0%, #0f1a26 0%, #03060c 70%);
+      }
+      .clip { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      .display { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; }
+      .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+      .eyebrow {
+        font-family: 'JetBrains Mono', monospace; font-size: 30px; letter-spacing: 0.22em;
+        text-transform: uppercase; color: #7dd3fc;
+      }
+      .center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+
+      /* Fondo: grilla de papel de monitor, muy tenue */
+      #bggrid { position: absolute; inset: 0; opacity: 0.55; }
+
+      /* ── Escena 1 ── */
+      #s1 .badge {
+        font-family: 'JetBrains Mono', monospace; font-size: 34px; letter-spacing: 0.3em;
+        color: #03060c; background: #7dffb0; padding: 14px 30px; border-radius: 999px; font-weight: 600;
+      }
+      #s1 .title { font-size: 190px; line-height: 0.92; color: #f8fafc; margin-top: 60px; }
+      #s1 .title em { color: #7dffb0; font-style: italic; }
+      #s1 .sub { font-size: 44px; color: #94a3b8; margin-top: 40px; }
+      #s1-line { position: absolute; left: 0; top: 1340px; width: 1080px; height: 220px; overflow: hidden; }
+
+      /* ── Escena 2 ── */
+      #s2 { padding: 0 90px; }
+      #s2 .head { font-size: 92px; line-height: 1.02; color: #f8fafc; margin-bottom: 80px; text-align: left; width: 100%; }
+      #s2 .head em { color: #7dffb0; }
+      .feat {
+        width: 100%; display: flex; align-items: center; gap: 36px; text-align: left;
+        background: rgba(15, 23, 42, 0.75); border: 2px solid #1e293b; border-radius: 36px;
+        padding: 40px 44px; margin-bottom: 34px;
+      }
+      .feat .n { font-family: 'JetBrains Mono', monospace; font-size: 40px; color: #7dffb0; min-width: 70px; }
+      .feat .t { font-size: 46px; font-weight: 600; color: #f1f5f9; line-height: 1.15; }
+      .feat .d { font-size: 32px; color: #94a3b8; margin-top: 8px; line-height: 1.3; }
+
+      /* ── Escena 3: el caso ── */
+      #s3 { padding: 0 80px; }
+      .card {
+        width: 100%; background: rgba(8, 13, 20, 0.92); border: 2px solid #1e293b;
+        border-radius: 44px; padding: 60px 60px; text-align: left;
+      }
+      #s3 .who { font-size: 78px; color: #f8fafc; line-height: 1.05; margin: 22px 0 34px; }
+      #s3 .stem { font-size: 44px; line-height: 1.4; color: #cbd5e1; }
+      #s3 .stem b { color: #f8fafc; font-weight: 600; }
+      .vitals { display: flex; gap: 20px; margin-top: 46px; flex-wrap: wrap; }
+      .vital {
+        font-family: 'JetBrains Mono', monospace; font-size: 34px; color: #7dd3fc;
+        border: 2px solid #164e63; background: rgba(8, 47, 73, 0.35); border-radius: 20px; padding: 14px 24px;
+      }
+      .vital span { color: #64748b; margin-right: 12px; }
+
+      /* ── Escena 4: el electro y la pregunta ── */
+      #s4 .top { position: absolute; top: 120px; left: 40px; right: 40px; text-align: left; }
+      #s4 .top .eyebrow { margin-left: 8px; }
+      #s4 .top .q { font-size: 76px; color: #f8fafc; margin-top: 14px; margin-left: 8px; }
+      #sheet-wrap {
+        position: absolute; top: 330px; left: 40px; width: 1000px; height: 560px;
+        border-radius: 28px; overflow: hidden; border: 2px solid #1e293b; background: #080d14;
+      }
+      #sheet-reveal { position: absolute; top: 0; left: 0; height: 560px; width: 0; overflow: hidden; }
+      #sweep { position: absolute; top: 0; left: 0; width: 6px; height: 560px; background: #7dffb0; box-shadow: 0 0 24px #7dffb0; opacity: 0; }
+      .opts { position: absolute; top: 960px; left: 60px; right: 60px; }
+      .opt {
+        display: flex; align-items: center; gap: 30px; font-size: 46px; color: #e2e8f0; font-weight: 500;
+        background: rgba(15, 23, 42, 0.85); border: 3px solid #1e293b; border-radius: 30px;
+        padding: 34px 40px; margin-bottom: 26px; position: relative;
+      }
+      .opt .k {
+        font-family: 'JetBrains Mono', monospace; font-size: 34px; color: #94a3b8; width: 64px; height: 64px;
+        border: 2px solid #334155; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      }
+      .opt .ok {
+        position: absolute; right: 40px; top: 50%; margin-top: -34px; width: 68px; height: 68px; border-radius: 50%;
+        background: #22c55e; color: #03060c; font-size: 44px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+        opacity: 0;
+      }
+      #opt-good-bg { position: absolute; inset: -3px; border-radius: 30px; border: 3px solid #22c55e; background: rgba(20, 83, 45, 0.55); opacity: 0; }
+      #timer { position: absolute; top: 1612px; left: 60px; width: 960px; height: 14px; border-radius: 7px; background: #1e293b; overflow: hidden; }
+      #timer-fill { width: 960px; height: 14px; background: linear-gradient(90deg, #7dffb0, #38bdf8); border-radius: 7px; }
+      #timer-label { position: absolute; top: 1650px; left: 0; right: 0; text-align: center; font-size: 36px; color: #94a3b8; }
+      #timer-label b { color: #7dffb0; }
+      #answer-banner {
+        position: absolute; top: 1610px; left: 60px; right: 60px; text-align: center; font-size: 60px; color: #f8fafc; opacity: 0;
+      }
+      #answer-banner em { color: #7dffb0; }
+
+      /* ── Escena 5: por qué ── */
+      #s5 .top { position: absolute; top: 110px; left: 60px; right: 60px; }
+      #s5 .top h2 { font-size: 80px; color: #f8fafc; margin-top: 14px; line-height: 1.05; }
+      .strip svg { display: block; }
+      .strip {
+        position: absolute; left: 40px; width: 1000px; height: 230px; border-radius: 26px; overflow: hidden;
+        border: 3px solid #1e293b; background: #080d14;
+      }
+      .strip.up { border-color: #22c55e; }
+      .strip.down { border-color: #38bdf8; }
+      .strip .lab {
+        position: absolute; left: 22px; top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 600; color: #f8fafc;
+        background: rgba(3, 6, 12, 0.8); padding: 4px 16px; border-radius: 12px;
+      }
+      .chip {
+        position: absolute; right: 22px; top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 34px; font-weight: 600;
+        padding: 8px 20px; border-radius: 14px;
+      }
+      .chip.up { color: #bbf7d0; background: rgba(20, 83, 45, 0.9); border: 2px solid #22c55e; }
+      .chip.down { color: #bae6fd; background: rgba(8, 47, 73, 0.9); border: 2px solid #38bdf8; }
+      .group-tag {
+        position: absolute; left: 60px; font-size: 40px; font-weight: 600;
+      }
+      #caption5 {
+        position: absolute; left: 60px; right: 60px; top: 1640px; font-size: 44px; line-height: 1.35; color: #cbd5e1; text-align: center;
+      }
+      #caption5 b { color: #f8fafc; }
+
+      /* ── Escena 6: perla ── */
+      #s6 { padding: 0 80px; }
+      #s6 .big { font-size: 96px; line-height: 1.04; color: #f8fafc; margin: 34px 0 50px; }
+      #s6 .big em { color: #fbbf24; }
+      #s6 .card p { font-size: 46px; line-height: 1.4; color: #cbd5e1; }
+      #s6 .card p b { color: #fbbf24; font-weight: 600; }
+
+      /* ── Escena 7: cierre ── */
+      #s7 .logo { width: 300px; height: 300px; border-radius: 70px; }
+      #s7 .brand { font-size: 170px; color: #f8fafc; margin-top: 24px; line-height: 1; }
+      #s7 .tag { font-size: 44px; color: #94a3b8; margin-top: 20px; }
+      #s7 .tag b { color: #7dffb0; font-weight: 600; }
+      #url {
+        margin-top: 110px; padding: 44px 60px; border-radius: 40px; border: 4px solid #7dffb0;
+        background: rgba(6, 40, 26, 0.6); box-shadow: 0 0 80px rgba(125, 255, 176, 0.28);
+      }
+      #url .l { font-family: 'JetBrains Mono', monospace; font-size: 30px; color: #7dffb0; letter-spacing: 0.24em; text-transform: uppercase; }
+      #url .u { font-family: 'JetBrains Mono', monospace; font-size: 74px; color: #f8fafc; font-weight: 600; margin-top: 14px; letter-spacing: -0.01em; }
+      #s7 .also { font-size: 36px; color: #64748b; margin-top: 44px; }
+      #s7-line { position: absolute; left: 0; top: 1640px; width: 1080px; height: 180px; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="42" data-width="1080" data-height="1920">
+      <svg id="bggrid" width="1080" height="1920">
+        <defs>
+          <pattern id="gmin" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M24 0H0V24" fill="none" stroke="rgba(56,189,248,0.05)" stroke-width="1" />
+          </pattern>
+          <pattern id="gmaj" width="120" height="120" patternUnits="userSpaceOnUse">
+            <rect width="120" height="120" fill="url(#gmin)" />
+            <path d="M120 0H0V120" fill="none" stroke="rgba(56,189,248,0.10)" stroke-width="1.5" />
+          </pattern>
+        </defs>
+        <rect width="1080" height="1920" fill="url(#gmaj)" />
+      </svg>
+
+      <!-- 1 · Anuncio -->
+      <section id="s1" class="clip center" data-start="0" data-duration="4.6" data-track-index="1">
+        <div class="badge" id="s1-badge">NUEVO EN SÍSTOLE</div>
+        <h1 class="title display" id="s1-title">12<br /><em>Derivaciones</em></h1>
+        <p class="sub" id="s1-sub">Electros reales. Casos clínicos. Tu diagnóstico.</p>
+        <div id="s1-line"></div>
+      </section>
+
+      <!-- 2 · Qué trae -->
+      <section id="s2" class="clip center" data-start="4.6" data-duration="4.6" data-track-index="1">
+        <h2 class="head display" id="s2-head">Leé el electro<br /><em>completo.</em></h2>
+        <div class="feat" id="f1"><div class="n">01</div><div><div class="t">32 casos con trazados reales</div><div class="d">Pacientes que existieron, no dibujos</div></div></div>
+        <div class="feat" id="f2"><div class="n">02</div><div><div class="t">Localizá la lesión</div><div class="d">Inferior, anterior, lateral, posterior…</div></div></div>
+        <div class="feat" id="f3"><div class="n">03</div><div><div class="t">Cada hallazgo, medido</div><div class="d">La explicación se apoya en la señal</div></div></div>
+      </section>
+
+      <!-- 3 · El caso -->
+      <section id="s3" class="clip center" data-start="9.2" data-duration="5.4" data-track-index="1">
+        <div class="card" id="s3-card">
+          <div class="eyebrow">Caso clínico</div>
+          <div class="who display">Mujer, 67 años</div>
+          <p class="stem">Hipertensa. <b>Dolor retroesternal opresivo</b> de 50 minutos, con náuseas y sudoración fría. Pálida y mal perfundida.</p>
+          <div class="vitals">
+            <div class="vital"><span>PA</span>104/62</div>
+            <div class="vital"><span>SatO₂</span>95%</div>
+            <div class="vital"><span>FR</span>18</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · El electro y la pregunta -->
+      <section id="s4" class="clip" data-start="14.6" data-duration="10.6" data-track-index="1">
+        <div class="top" id="s4-top">
+          <div class="eyebrow">Su electro · 12 derivaciones</div>
+          <div class="q display">¿Cuál es tu diagnóstico?</div>
+        </div>
+        <div id="sheet-wrap">
+          <div id="sheet-reveal"><svg id="sheet" width="996" height="556" data-layout-allow-overflow></svg></div>
+          <div id="sweep"></div>
+        </div>
+        <div class="opts">
+          <div class="opt" id="o1"><div id="opt-good-bg"></div><div class="k" style="position:relative">A</div><div style="position:relative">IAM inferior</div><div class="ok" id="o1-ok">✓</div></div>
+          <div class="opt" id="o2"><div class="k">B</div><div>IAM anterior</div></div>
+          <div class="opt" id="o3"><div class="k">C</div><div>Pericarditis aguda</div></div>
+          <div class="opt" id="o4"><div class="k">D</div><div>Repolarización precoz</div></div>
+        </div>
+        <div id="timer"><div id="timer-fill"></div></div>
+        <div id="timer-label"><b>Pausá el video</b> y pensalo</div>
+        <div id="answer-banner" class="display">Respuesta: <em>IAM inferior</em></div>
+      </section>
+
+      <!-- 5 · Por qué -->
+      <section id="s5" class="clip" data-start="25.2" data-duration="7.6" data-track-index="1">
+        <div class="top">
+          <div class="eyebrow">Por qué</div>
+          <h2 class="display">Elevación en la cara inferior…<br />y su espejo.</h2>
+        </div>
+        <div class="group-tag" id="tag-up" style="top: 380px; color: #86efac">↑ ST elevado · II, III, aVF</div>
+        <div class="strip up" id="st-II" style="top: 450px"><svg width="994" height="224"></svg><div class="lab">II</div><div class="chip up">+0,25 mV</div></div>
+        <div class="strip up" id="st-III" style="top: 700px"><svg width="994" height="224"></svg><div class="lab">III</div><div class="chip up">+0,38 mV</div></div>
+        <div class="strip up" id="st-aVF" style="top: 950px"><svg width="994" height="224"></svg><div class="lab">aVF</div><div class="chip up">+0,31 mV</div></div>
+        <div class="group-tag" id="tag-down" style="top: 1210px; color: #7dd3fc">↓ Descenso recíproco · I, aVL</div>
+        <div class="strip down" id="st-aVL" style="top: 1280px"><svg width="994" height="224"></svg><div class="lab">aVL</div><div class="chip down">−0,27 mV</div></div>
+        <div id="caption5">El descenso en <b>I y aVL</b> es el espejo que separa un <b>infarto</b> de una pericarditis.</div>
+      </section>
+
+      <!-- 6 · Perla -->
+      <section id="s6" class="clip center" data-start="32.8" data-duration="3.8" data-track-index="1">
+        <div class="card" id="s6-card">
+          <div class="eyebrow" style="color:#fbbf24">Perla clínica</div>
+          <div class="big display">III más elevada que II → <em>coronaria derecha</em></div>
+          <p>Antes de dar nitratos, <b>pedí V3R–V4R</b>: si el ventrículo derecho está comprometido, el nitrato puede hundirle la presión.</p>
+        </div>
+      </section>
+
+      <!-- 7 · Dónde encontrarlo -->
+      <section id="s7" class="clip center" data-start="36.6" data-duration="5.4" data-track-index="1">
+        <img class="logo" id="s7-logo" src="assets/icon-512.png" alt="Sístole" />
+        <div class="brand display" id="s7-brand">Sístole</div>
+        <div class="tag" id="s7-tag">Nueva sección: <b>12 Derivaciones</b></div>
+        <div id="url">
+          <div class="l">Entrá ya en</div>
+          <div class="u">sistole.cmdtech.uy</div>
+        </div>
+        <div class="also" id="s7-also">También en iOS y Android</div>
+        <div id="s7-line"></div>
+      </section>
+    </div>
+
+    <script>
+      // ── Trazados: electro REAL (PTB-XL 12899), el mismo del caso en la app ──
+      const NS = 'http://www.w3.org/2000/svg';
+      const E = window.ECG;
+      const FS = E.fs;
+
+      function median(a) { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; }
+      // Línea de base de cada derivación: mediana de los 10 s. Sólo decide dónde
+      // se ubica verticalmente el trazo; no altera el ST respecto del PR.
+      const BASE = {};
+      for (const k in E.leads) BASE[k] = median(E.leads[k]);
+
+      function tracePath(lead, t0, t1, x0, y0, pxS, pxMv) {
+        const a = E.leads[lead], b = BASE[lead];
+        const i0 = Math.round(t0 * FS), i1 = Math.round(t1 * FS);
+        let d = '';
+        for (let i = i0; i < i1; i++) {
+          const x = x0 + ((i - i0) / FS) * pxS;
+          const y = y0 - (a[i] - b) * pxMv;
+          d += (i === i0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1);
+        }
+        return d;
+      }
+      function el(tag, attrs, parent) {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n); return n;
+      }
+      function grid(svg, w, h, mm) {
+        const id = 'g' + Math.round(mm * 10) + svg.parentNode.id;
+        const defs = el('defs', {}, svg);
+        const p1 = el('pattern', { id: id + 'a', width: mm, height: mm, patternUnits: 'userSpaceOnUse' }, defs);
+        el('path', { d: `M${mm} 0H0V${mm}`, fill: 'none', stroke: 'rgba(56,189,248,0.10)', 'stroke-width': 1 }, p1);
+        const p5 = el('pattern', { id: id + 'b', width: mm * 5, height: mm * 5, patternUnits: 'userSpaceOnUse' }, defs);
+        el('rect', { width: mm * 5, height: mm * 5, fill: `url(#${id}a)` }, p5);
+        el('path', { d: `M${mm * 5} 0H0V${mm * 5}`, fill: 'none', stroke: 'rgba(56,189,248,0.24)', 'stroke-width': 1.4 }, p5);
+        el('rect', { width: w, height: h, fill: `url(#${id}b)` }, svg);
+      }
+
+      // Hoja 3×4 + tira de ritmo en DII, a velocidad y ganancia estándar (25 mm/s, 10 mm/mV).
+      (function sheet() {
+        const svg = document.getElementById('sheet');
+        const MM = 4; // px por mm → 250 mm de papel en 1000 px
+        grid(svg, 1000, 560, MM);
+        const layout = [['I', 'aVR', 'V1', 'V4'], ['II', 'aVL', 'V2', 'V5'], ['III', 'aVF', 'V3', 'V6']];
+        const hot = { II: '#86efac', III: '#86efac', aVF: '#86efac', I: '#7dd3fc', aVL: '#7dd3fc' };
+        const rowH = 124, top = 82;
+        layout.forEach((row, r) => row.forEach((lead, c) => {
+          const x0 = c * 250, y0 = top + r * rowH;
+          el('path', { d: tracePath(lead, c * 2.5, c * 2.5 + 2.5, x0, y0, 25 * MM, 10 * MM), fill: 'none', stroke: '#7dffb0', 'stroke-width': 2.2, 'stroke-linejoin': 'round' }, svg);
+          const t = el('text', { x: x0 + 10, y: y0 - 38, fill: '#7d90a8', 'font-size': 22, 'font-family': 'JetBrains Mono, monospace', 'font-weight': 600, class: 'ld ld-' + lead }, svg);
+          t.textContent = lead;
+          if (c) el('line', { x1: x0, x2: x0, y1: y0 - 18, y2: y0 + 18, stroke: '#7d90a8', 'stroke-width': 2 }, svg);
+        }));
+        const yR = top + 3 * rowH + 20;
+        el('path', { d: tracePath('II', 0, 10, 0, yR, 25 * MM, 10 * MM), fill: 'none', stroke: '#7dffb0', 'stroke-width': 2.2, 'stroke-linejoin': 'round' }, svg);
+        const t = el('text', { x: 10, y: yR - 36, fill: '#7d90a8', 'font-size': 22, 'font-family': 'JetBrains Mono, monospace', 'font-weight': 600 }, svg);
+        t.textContent = 'II';
+      })();
+
+      // Tiras ampliadas: 5 s por tira, 2× en tiempo y ~1,9× en voltaje para que el ST se vea.
+      ['II', 'III', 'aVF', 'aVL'].forEach((lead) => {
+        const box = document.getElementById('st-' + lead);
+        const svg = box.querySelector('svg');
+        const MM = 8;
+        grid(svg, 1000, 230, MM);
+        const y0 = lead === 'aVL' ? 128 : 165;
+        el('line', { x1: 0, x2: 1000, y1: y0, y2: y0, stroke: 'rgba(148,163,184,0.55)', 'stroke-width': 2, 'stroke-dasharray': '10 10' }, svg);
+        const col = lead === 'aVL' ? '#7dd3fc' : '#86efac';
+        el('path', { d: tracePath(lead, 1.0, 1.0 + 1000 / (25 * MM), 0, y0, 25 * MM, 150), fill: 'none', stroke: col, 'stroke-width': 3.2, 'stroke-linejoin': 'round' }, svg);
+      });
+
+      // ECG decorativo de las escenas 1 y 7 (DII real, en bucle).
+      function heroLine(id, color) {
+        const box = document.getElementById(id);
+        const svg = el('svg', { width: 1080, height: box.clientHeight || 200 }, box);
+        const h = box.clientHeight || 200;
+        el('path', { d: tracePath('II', 0.2, 0.2 + 1080 / 220, 0, h * 0.62, 220, 60), fill: 'none', stroke: color, 'stroke-width': 4, 'stroke-linejoin': 'round', opacity: 0.9 }, svg);
+      }
+      heroLine('s1-line', '#7dffb0');
+      heroLine('s7-line', '#7dffb0');
+      for (const id of ['s1-line', 's7-line']) {
+        const box = document.getElementById(id);
+        const w = document.createElement('div');
+        w.id = id + '-mask';
+        w.style.cssText = 'position:absolute;top:0;right:0;height:100%;width:1080px;background:linear-gradient(90deg,rgba(3,6,12,0.2),#03060c 60px);';
+        box.appendChild(w);
+      }
+
+      // ── Línea de tiempo ──
+      const tl = gsap.timeline({ paused: true });
+      const ease = 'power3.out';
+
+      // 1 · Anuncio (0 – 4.6)
+      tl.fromTo('#s1-badge', { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease }, 0.2);
+      tl.fromTo('#s1-title', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.9, ease }, 0.5);
+      tl.fromTo('#s1-sub', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease }, 1.2);
+      tl.fromTo('#s1-line-mask', { x: 0 }, { x: 1140, duration: 2.6, ease: 'none' }, 0.6);
+      tl.to('#s1', { opacity: 0, duration: 0.4 }, 4.2);
+
+      // 2 · Qué trae (4.6 – 9.2)
+      tl.fromTo('#s2-head', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease }, 4.75);
+      ['#f1', '#f2', '#f3'].forEach((s, i) => tl.fromTo(s, { opacity: 0, x: -80 }, { opacity: 1, x: 0, duration: 0.6, ease }, 5.3 + i * 0.45));
+      tl.to('#s2', { opacity: 0, duration: 0.4 }, 8.8);
+
+      // 3 · El caso (9.2 – 14.6)
+      tl.fromTo('#s3-card', { opacity: 0, y: 80, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease }, 9.35);
+      tl.fromTo('#s3 .vital', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.15, ease }, 10.4);
+      tl.to('#s3', { opacity: 0, duration: 0.4 }, 14.2);
+
+      // 4 · Electro + pregunta (14.6 – 25.2)
+      tl.fromTo('#s4-top', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease }, 14.7);
+      tl.set('#sweep', { opacity: 1 }, 15.0);
+      tl.fromTo('#sheet-reveal', { width: 0 }, { width: 1000, duration: 2.6, ease: 'none' }, 15.0);
+      tl.fromTo('#sweep', { x: 0 }, { x: 1000, duration: 2.6, ease: 'none' }, 15.0);
+      tl.set('#sweep', { opacity: 0 }, 17.6);
+      ['#o1', '#o2', '#o3', '#o4'].forEach((s, i) => tl.fromTo(s, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease }, 17.4 + i * 0.2));
+      tl.fromTo('#timer', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.4);
+      tl.fromTo('#timer-label', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.4);
+      tl.fromTo('#timer-fill', { scaleX: 1, transformOrigin: '0% 50%' }, { scaleX: 0, duration: 3.6, ease: 'none' }, 18.6);
+      tl.to(['#timer', '#timer-label'], { opacity: 0, duration: 0.3 }, 22.2);
+      // Revelación
+      tl.to('#opt-good-bg', { opacity: 1, duration: 0.35 }, 22.3);
+      tl.fromTo('#o1-ok', { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2.2)' }, 22.35);
+      tl.to('#o1', { scale: 1.04, duration: 0.25, yoyo: true, repeat: 1, ease: 'power1.inOut' }, 22.35);
+      tl.to(['#o2', '#o3', '#o4'], { opacity: 0.28, duration: 0.4 }, 22.4);
+      tl.fromTo('#answer-banner', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease }, 22.6);
+      tl.to('#s4 .ld-II, #s4 .ld-III, #s4 .ld-aVF', { fill: '#86efac', duration: 0.3 }, 23.0);
+      tl.to('#s4 .ld-I, #s4 .ld-aVL', { fill: '#7dd3fc', duration: 0.3 }, 23.3);
+      tl.to('#s4', { opacity: 0, duration: 0.4 }, 24.8);
+
+      // 5 · Por qué (25.2 – 32.8)
+      tl.fromTo('#s5 .top', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease }, 25.3);
+      tl.fromTo('#tag-up', { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease }, 25.8);
+      ['#st-II', '#st-III', '#st-aVF'].forEach((s, i) => tl.fromTo(s, { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.6, ease }, 26.0 + i * 0.35));
+      tl.fromTo('#st-II .chip, #st-III .chip, #st-aVF .chip', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.15, ease: 'back.out(2)' }, 27.2);
+      tl.fromTo('#tag-down', { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease }, 28.3);
+      tl.fromTo('#st-aVL', { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.6, ease }, 28.5);
+      tl.fromTo('#st-aVL .chip', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }, 29.1);
+      tl.fromTo('#caption5', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease }, 29.6);
+      tl.to('#s5', { opacity: 0, duration: 0.4 }, 32.4);
+
+      // 6 · Perla (32.8 – 36.6)
+      tl.fromTo('#s6-card', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.7, ease }, 32.9);
+      tl.to('#s6', { opacity: 0, duration: 0.4 }, 36.2);
+
+      // 7 · Dónde encontrarlo (36.6 – 42)
+      tl.fromTo('#s7-logo', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.8)' }, 36.7);
+      tl.fromTo('#s7-brand', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease }, 37.0);
+      tl.fromTo('#s7-tag', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease }, 37.35);
+      tl.fromTo('#url', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.8)' }, 37.8);
+      tl.to('#url', { scale: 1.05, duration: 0.45, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 38.7);
+      tl.fromTo('#s7-also', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 38.6);
+      tl.fromTo('#s7-line-mask', { x: 0 }, { x: 1140, duration: 2.4, ease: 'none' }, 37.4);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

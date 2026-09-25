@@ -1,0 +1,24 @@
+# Video: nueva sección «12 Derivaciones»
+
+Video vertical (1080×1920, 42 s, 30 fps) para Reels / TikTok / Stories, hecho con
+[HyperFrames](https://hyperframes.heygen.com). El render final es
+`sistole-12-derivaciones.mp4`.
+
+Guion: anuncio → qué trae la sección → caso (mujer de 67 años, dolor torácico) →
+su electro real (PTB-XL 12899, el mismo del caso `inferior-stemi`) con las 4
+opciones y un temporizador → respuesta (IAM inferior) → por qué (ST ↑ en II, III,
+aVF y descenso recíproco en aVL, con los valores medidos de `cases.js`) → perla
+(III > II, V3R–V4R antes del nitrato) → cierre con **sistole.cmdtech.uy**.
+
+## Volver a renderizar
+
+Requiere Node 22+ y FFmpeg (con ffprobe).
+
+```bash
+cd marketing/video-12-derivaciones
+node generar-ecg.mjs assets/ecg.js   # sólo si cambia el trazado
+npm run check
+npm run render -- -o sistole-12-derivaciones.mp4
+```
+
+GSAP y las tipografías están en `assets/` para que el render no dependa de la red.

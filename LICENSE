@@ -1,0 +1,29 @@
+Copyright (c) 2026 CMD Tech. Todos los derechos reservados.
+
+Este repositorio es visible públicamente, pero NO es software libre ni de
+código abierto. Que se pueda leer no otorga ningún permiso de uso.
+
+Sin autorización previa y por escrito de CMD Tech, queda prohibido:
+
+  - copiar, reproducir o redistribuir total o parcialmente el código fuente;
+  - copiar o reutilizar el contenido educativo (casos clínicos, escenarios,
+    explicaciones, textos y traducciones);
+  - publicar, desplegar u ofrecer este software o obras derivadas de él, con
+    o sin fines comerciales.
+
+Los electrocardiogramas de public/ecg12/ provienen de bases de datos de
+PhysioNet (PTB-XL y el desafío PhysioNet/CinC 2021) y se rigen por sus propias
+licencias; la atribución de cada registro está en src/ecg12/records.js. Lo
+anterior se refiere a todo lo demás.
+
+Contacto: https://cmdtech.uy
+
+---
+
+Copyright (c) 2026 CMD Tech. All rights reserved.
+
+This repository is publicly visible but is NOT free or open-source software.
+No permission to use, copy, modify, distribute or deploy the code or its
+educational content is granted without prior written authorization from
+CMD Tech. The ECG recordings in public/ecg12/ come from PhysioNet datasets and
+remain under their own licenses.
