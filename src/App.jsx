@@ -716,6 +716,7 @@ const IDENTIFY_TIP = {
 const USER_KEY='sistole_user_v1';          // legado (single-user)
 const ACCOUNTS_KEY='sistole_accounts_v1';  // registro de cuentas del dispositivo
 const ACTIVE_KEY='sistole_active_v1';      // email de la cuenta activa
+const GUEST_KEY='sistole_guest_v1';        // eligió entrar sin cuenta
 
 const normEmail=(e)=>String(e||'').trim().toLowerCase();
 const accountId=(e)=>normEmail(e).replace(/[^a-z0-9]/g,'_')||'guest';
@@ -761,6 +762,26 @@ const loadActiveUser=()=>{
 // La sesión real ahora la confirma el servidor (ver useUser) — esto sólo evita arrancar en blanco.
 loadActiveUser();
 
+// Las claves que guardan avance. Tienen que coincidir con el mapa de
+// seedAccountStorage y con cloudDataRef: si falta una acá, el invitado que crea
+// una cuenta pierde justo esa parte de lo que hizo, y sin aviso.
+const CLAVES_PROGRESO=['sistole_progress_v2','sistole_sr_v1','sistole_sr12_v1','sistole_adaptive_v1','sistole_errors_v1','sistole_mistakes_v1','sistole_ecg12_bag_v1'];
+
+// Lo que hizo como invitado pasa a la cuenta recién estrenada. Sólo se adopta lo
+// que la cuenta todavía NO tiene: si alguien entra a una cuenta que ya venía con
+// progreso —por ejemplo desde otro dispositivo—, lo del invitado no lo pisa.
+const adoptarProgresoInvitado=(destino)=>{
+  if(destino==='guest') return;
+  try{
+    for(const base of CLAVES_PROGRESO){
+      const deInvitado=localStorage.getItem(`${base}::guest`);
+      if(deInvitado&&!localStorage.getItem(`${base}::${destino}`)){
+        localStorage.setItem(`${base}::${destino}`,deInvitado);
+      }
+    }
+  }catch(e){}
+};
+
 const setActiveAccount=(u)=>{
   try{
     if(!u){ localStorage.removeItem(ACTIVE_KEY); ACTIVE_ID='guest'; return; }
@@ -769,7 +790,9 @@ const setActiveAccount=(u)=>{
     accs[email]={...(accs[email]||{}),...u,email};
     saveAccounts(accs);
     localStorage.setItem(ACTIVE_KEY,email);
+    const previo=ACTIVE_ID;
     ACTIVE_ID=accountId(email);
+    if(previo==='guest') adoptarProgresoInvitado(ACTIVE_ID);
   }catch(e){}
 };
 
@@ -913,7 +936,7 @@ function useUser(){
   return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword};
 }
 
-function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,authError,clearAuthError}){
+function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,authError,clearAuthError,onGuest}){
   const list=Object.values(accounts||{}).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
   const [tab,setTab]=useState(list.length>0?'login':'signup');
   // signup
@@ -962,6 +985,8 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
     forgotDoneTitle:{es:'Revisá tu correo',en:'Check your email',pt:'Confira seu e-mail'},
     forgotDone:{es:'Si hay una cuenta con ese correo, en un momento te llega el enlace. Vence en una hora.',en:'If an account exists with that email, the link is on its way. It expires in one hour.',pt:'Se existir uma conta com esse e-mail, o link chegará em instantes. Expira em uma hora.'},
     forgotSpam:{es:'No lo ves? Mirá en spam o correo no deseado.',en:"Don't see it? Check your spam folder.",pt:'Não encontrou? Veja na pasta de spam.'},
+    guest:{es:'Entrar sin cuenta',en:'Continue without an account',pt:'Entrar sem conta'},
+    guestNote:{es:'Tenés todo el contenido igual. El progreso queda en este dispositivo, y si después creás una cuenta se te conserva.',en:'You get all the content either way. Progress stays on this device, and if you create an account later it is kept.',pt:'Você tem todo o conteúdo do mesmo jeito. O progresso fica neste dispositivo, e se depois criar uma conta ele é mantido.'},
   };
   const roleIcon=r=>r==='medico'?'🩺':r==='estudiante'?'📚':'🏥';
   const roleName=r=>r==='medico'?L.medico[lang]:r==='estudiante'?L.estudiante[lang]:L.otro[lang];
@@ -1163,6 +1188,22 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
           )}
 
           <p className="text-center text-slate-600 text-xs leading-relaxed pt-1">{L.privacy[lang]}</p>
+
+          {/* Entrar sin cuenta. No es un detalle de comodidad: sin esto la app no
+              muestra NADA hasta registrarse, y eso rompe dos cosas a la vez. La
+              guía 5.1.1(v) de Apple no admite exigir datos personales para
+              funciones que no los necesitan —estudiar electros no los necesita,
+              sincronizar el progreso sí—, y una app empaquetada que arranca sin
+              señal se queda en esta pantalla, que es justo cuando más serviría. */}
+          {onGuest && (
+            <div className="pt-3 border-t border-slate-800/60 space-y-2">
+              <button onClick={onGuest}
+                className="w-full py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800/50 transition">
+                {L.guest[lang]}
+              </button>
+              <p className="text-center text-slate-600 text-xs leading-relaxed">{L.guestNote[lang]}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -3134,7 +3175,7 @@ function SimStatsPanel({stats,lang}){
   );
 }
 
-function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose,onOpenFeedback}){
+function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose,onOpenFeedback,onCreateAccount}){
   const cur=getLevelInfo(progress.xp);
   const nxt=getNextLevel(progress.xp);
   const pct=nxt?Math.round(((progress.xp-cur.min)/(nxt.min-cur.min))*100):100;
@@ -3152,6 +3193,25 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
         <div className="px-5 sm:px-6 pt-5 pb-16 space-y-6">
           {/* User info card — editable */}
           {user&&<UserCard user={user} lang={lang} onSave={onSaveUser}/>}
+          {/* Sin cuenta el avance existe igual, pero vive sólo en este teléfono.
+              Conviene decirlo acá, que es donde el usuario viene a mirar lo que
+              lleva hecho, y no en una pantalla que ya eligió saltear. */}
+          {!user&&onCreateAccount&&(
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+              <div>
+                <div className="font-semibold text-slate-100">{lang==='en'?'Guest':lang==='pt'?'Convidado':'Invitado'}</div>
+                <p className="text-slate-400 text-sm leading-relaxed mt-1">
+                  {lang==='en'?'Your progress is saved on this device only. Create an account to keep it and pick up on another one.'
+                   :lang==='pt'?'Seu progresso fica salvo só neste aparelho. Crie uma conta para mantê-lo e continuar em outro.'
+                   :'Tu progreso queda guardado sólo en este dispositivo. Creá una cuenta para conservarlo y seguir en otro.'}
+                </p>
+              </div>
+              <button onClick={onCreateAccount}
+                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition">
+                {lang==='en'?'Create an account':lang==='pt'?'Criar conta':'Crear una cuenta'}
+              </button>
+            </div>
+          )}
 
           {/* Level card */}
           <div className="p-5 rounded-2xl border" style={{borderColor:cur.color+'44',background:cur.color+'0d'}}>
@@ -11222,6 +11282,12 @@ export default function App() {
   const t=T[lang];
   const audio=useAudio();
   const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword}=useUser();
+  // Si eligió entrar sin cuenta. Se recuerda para que no le vuelva a preguntar
+  // en cada arranque; el progreso ya va al espacio 'guest' de localStorage, que
+  // es el que usa la app por defecto cuando no hay cuenta activa.
+  const [guest,setGuest]=useState(()=>{try{return localStorage.getItem(GUEST_KEY)==='1';}catch(e){return false;}});
+  const entrarComoInvitado=useCallback(()=>{try{localStorage.setItem(GUEST_KEY,'1');}catch(e){}setGuest(true);},[]);
+  const salirDeInvitado=useCallback(()=>{try{localStorage.removeItem(GUEST_KEY);}catch(e){}setGuest(false);},[]);
   const [resetToken,setResetToken]=useState(readResetToken);
   const acctKey=user?normEmail(user.email):'guest';
   const {progress,earnXP,toasts,dismissToast,saveProgress}=useProgress(acctKey);
@@ -11478,7 +11544,7 @@ export default function App() {
   // enlace válido en la bandeja quedarían sin poder usarlo. El interruptor
   // decide si se OFRECE la recuperación, no si se honra un enlace ya emitido.
   if(resetToken) return <ResetPasswordScreen lang={lang} token={resetToken} onReset={resetPassword} onDone={()=>{clearResetTokenFromUrl();setResetToken('');setAuthError('');}} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
-  if(!user) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} onForgot={requestPasswordReset} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')}/>;
+  if(!user&&!guest) return <RegistrationModal lang={lang} accounts={accounts} onSignup={signup} onLogin={login} onForgot={requestPasswordReset} authBusy={authBusy} authError={authError} clearAuthError={()=>setAuthError('')} onGuest={entrarComoInvitado}/>;
 
   return(
     <div className="min-h-screen w-full text-slate-200" style={{fontFamily:"'IBM Plex Sans',-apple-system,sans-serif",background:'radial-gradient(ellipse at top,#0f1a26 0%,#0a1420 40%,#03060c 100%)'}}>
@@ -11508,7 +11574,7 @@ export default function App() {
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-900/30 border border-indigo-700/50 hover:bg-indigo-800/40 hover:border-indigo-600/60 active:scale-[0.98] transition-all text-indigo-200">
                 <User className="w-4 h-4 text-indigo-400 flex-shrink-0"/>
                 <span className="hidden sm:block font-medium text-sm">
-                  {user?user.name.split(' ')[0]:(lang==='en'?'Profile':lang==='pt'?'Perfil':'Perfil')}
+                  {user?user.name.split(' ')[0]:(lang==='en'?'Guest':lang==='pt'?'Convidado':'Invitado')}
                 </span>
               </button>
             </div>
@@ -11949,7 +12015,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetSR12();resetAdapt();resetBag(BAG12_KEY);saveProgress({xp:0,achievements:[],stats:{...DEFAULT_STATS}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
+        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetSR12();resetAdapt();resetBag(BAG12_KEY);saveProgress({xp:0,achievements:[],stats:{...DEFAULT_STATS}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}} onCreateAccount={()=>{setShowProfile(false);salirDeInvitado();}}/>}
         {showFeedback&&<FeedbackModal lang={lang} onClose={()=>setShowFeedback(false)} onSubmit={sendFeedback}/>}
     </div>
   );
