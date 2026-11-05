@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const { email, password } = req.body || {};
   const cleanEmail = normEmail(email);
 
-  const rows = await sql`SELECT id, email, name, role, password_hash FROM users WHERE email = ${cleanEmail}`;
+  const rows = await sql`SELECT id, email, name, role, accepts_news, password_hash FROM users WHERE email = ${cleanEmail}`;
   const user = rows[0];
   const ok = user && (await verifyPassword(String(password || ''), user.password_hash));
   if (!ok) {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
   const progRows = await sql`SELECT data FROM progress WHERE user_id = ${user.id}`;
   res.status(200).json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    user: { id: user.id, email: user.email, name: user.name, role: user.role, accepts_news: user.accepts_news },
     data: progRows[0] ? progRows[0].data : null,
   });
 }

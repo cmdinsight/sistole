@@ -22,14 +22,27 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PATCH') {
-    const { name, role } = req.body || {};
+    const { name, role, acceptsNews } = req.body || {};
+
+    // Cambiar solo el permiso de novedades (casilla del perfil o botón del cartel), sin tocar
+    // nombre ni rol. Guarda la fecha cuando acepta y la borra cuando se da de baja.
+    if (typeof acceptsNews === 'boolean' && name === undefined && role === undefined) {
+      const [updated] = await sql`
+        UPDATE users
+        SET accepts_news = ${acceptsNews}, accepts_news_at = ${acceptsNews ? new Date() : null}
+        WHERE id = ${user.id}
+        RETURNING id, email, name, role, accepts_news
+      `;
+      return res.status(200).json({ user: updated });
+    }
+
     const cleanName = String(name || '').trim();
     if (!cleanName) return res.status(400).json({ error: 'El nombre no puede estar vacío.' });
     const cleanRole = ROLES.includes(role) ? role : user.role;
 
     const [updated] = await sql`
       UPDATE users SET name = ${cleanName}, role = ${cleanRole} WHERE id = ${user.id}
-      RETURNING id, email, name, role
+      RETURNING id, email, name, role, accepts_news
     `;
     return res.status(200).json({ user: updated });
   }
