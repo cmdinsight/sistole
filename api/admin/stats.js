@@ -10,10 +10,18 @@ export default async function handler(req, res) {
   const [{ count }] = await sql`SELECT COUNT(*)::int AS count FROM users`;
 
   const users = await sql`
-    SELECT id, name, email, role, country, created_at
+    SELECT id, name, email, role, country, accepts_news, created_at
     FROM users
     ORDER BY created_at DESC
     LIMIT 500
+  `;
+
+  // Cuántos aceptaron recibir novedades y cursos de CMD por correo (solo a ellos se les puede escribir).
+  const [news] = await sql`
+    SELECT
+      COUNT(*) FILTER (WHERE accepts_news)::int AS total,
+      COUNT(*) FILTER (WHERE accepts_news AND country = 'UY')::int AS uy
+    FROM users
   `;
 
   const signupsByDay = await sql`
@@ -80,6 +88,7 @@ export default async function handler(req, res) {
   res.status(200).json({
     count,
     users,
+    news,
     signupsByDay,
     roleBreakdown,
     countryBreakdown,

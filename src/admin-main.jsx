@@ -154,7 +154,7 @@ function AdminApp() {
     );
   }
 
-  const { count, users, signupsByDay, roleBreakdown, countryBreakdown, activeCountriesRecent, activity, activation, depth } = data;
+  const { count, users, news, signupsByDay, roleBreakdown, countryBreakdown, activeCountriesRecent, activity, activation, depth } = data;
   const accuracy = pct(depth.totalCorrect, depth.totalAnswered);
   const activatedPct = pct(activation.activated, activation.totalUsers);
   const activeCountryTotal = activeCountriesRecent.reduce((a, r) => a + r.count, 0);
@@ -176,6 +176,7 @@ function AdminApp() {
         <StatCard label="Precisión promedio en Quiz" value={`${accuracy}%`} sub={`${depth.totalCorrect} de ${depth.totalAnswered} respuestas`} />
         <StatCard label="XP promedio" value={Math.round(depth.avgXp)} />
         <StatCard label="Casos completados (prom.)" value={depth.avgCasesDone.toFixed(1)} />
+        {news && <StatCard label="Aceptan novedades de CMD" value={news.total} sub={`${news.uy} de Uruguay · solo a ellos se les puede escribir`} />}
       </div>
 
       <GrowthChart data={signupsByDay} />
@@ -213,6 +214,7 @@ function AdminApp() {
               <th style={s.th}>Email</th>
               <th style={s.th}>Rol</th>
               <th style={s.th}>País</th>
+              <th style={s.th}>Novedades</th>
               <th style={s.th}>Creado</th>
             </tr>
           </thead>
@@ -223,6 +225,7 @@ function AdminApp() {
                 <td style={s.td}>{u.email}</td>
                 <td style={s.td}>{ROLE_LABEL[u.role] || u.role}</td>
                 <td style={s.td}>{flagEmoji(u.country)} {u.country || '—'}</td>
+                <td style={s.td}>{u.accepts_news ? 'Sí' : '—'}</td>
                 <td style={s.td}>{new Date(u.created_at).toLocaleString('es-AR')}</td>
               </tr>
             ))}

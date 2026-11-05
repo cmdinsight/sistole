@@ -846,10 +846,10 @@ function useUser(){
   },[]);
 
   // Crear cuenta nueva (servidor)
-  const signup=useCallback(async({name,email,password,role})=>{
+  const signup=useCallback(async({name,email,password,role,acceptsNews})=>{
     setAuthBusy(true);setAuthError('');
     try{
-      const res=await apiJson('/api/auth/register',{method:'POST',body:JSON.stringify({name,email,password,role})});
+      const res=await apiJson('/api/auth/register',{method:'POST',body:JSON.stringify({name,email,password,role,acceptsNews:acceptsNews===true})});
       setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
       return true;
     }catch(e){setAuthError(e.message);return false;}
@@ -874,6 +874,16 @@ function useUser(){
       const res=await apiJson('/api/me',{method:'PATCH',body:JSON.stringify({name,role})});
       setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
     }catch(e){}
+  },[]);
+
+  // Acepta o deja de aceptar novedades y cursos gratis de CMD por correo (perfil y cartel).
+  // Devuelve true si el servidor lo guardó, para que el botón muestre "listo" solo si es cierto.
+  const setAcceptsNews=useCallback(async(value)=>{
+    try{
+      const res=await apiJson('/api/me',{method:'PATCH',body:JSON.stringify({acceptsNews:value===true})});
+      setActiveAccount(res.user);setAccounts(loadAccounts());setUser(res.user);
+      return true;
+    }catch(e){return false;}
   },[]);
 
   // Pide el correo de recuperación. La respuesta es siempre la misma exista o no la
@@ -910,7 +920,7 @@ function useUser(){
     setAccounts(loadAccounts());
   },[]);
 
-  return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword};
+  return{user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,setAcceptsNews,logoutUser,removeAccount,requestPasswordReset,resetPassword};
 }
 
 function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,authError,clearAuthError}){
@@ -921,6 +931,8 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
   const [role,setRole]=useState('medico');
+  // Sin marcar a propósito: solo recibe correos de CMD quien lo pide.
+  const [acceptsNews,setAcceptsNewsBox]=useState(false);
   // login
   const [loginEmail,setLoginEmail]=useState('');
   const [loginPassword,setLoginPassword]=useState('');
@@ -950,6 +962,7 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
     nameErr:{es:'Ingresá tu nombre',en:'Please enter your name',pt:'Insira seu nome'},
     emailErr:{es:'Ingresá un correo válido',en:'Please enter a valid email',pt:'Insira um e-mail válido'},
     dupErr:{es:'Ya existe una cuenta con ese correo. Usá "Iniciar sesión".',en:'An account with that email already exists. Use "Sign in".',pt:'Já existe conta com esse e-mail. Use "Entrar".'},
+    newsLabel:{es:'Quiero recibir por correo novedades y cursos gratis de CMD (Cobertura Médica Deportiva). Me puedo dar de baja cuando quiera.',en:'Send me news and free courses from CMD (Cobertura Médica Deportiva) by email. I can unsubscribe anytime.',pt:'Quero receber por e-mail novidades e cursos gratuitos da CMD (Cobertura Médica Deportiva). Posso cancelar quando quiser.'},
     privacy:{es:'Tu cuenta y tu progreso quedan guardados y disponibles desde cualquier dispositivo.',en:'Your account and progress are saved and available from any device.',pt:'Sua conta e seu progresso ficam salvos e disponíveis em qualquer dispositivo.'},
     passwordLabel:{es:'Contraseña',en:'Password',pt:'Senha'},
     passwordErr:{es:'La contraseña debe tener al menos 8 caracteres',en:'Password must be at least 8 characters',pt:'A senha deve ter pelo menos 8 caracteres'},
@@ -973,7 +986,7 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
     if(!validEmail(email)) e.email=true;
     if(password.length<8) e.password=true;
     if(Object.keys(e).length){setErrors(e);return;}
-    onSignup({name:name.trim(),email:email.trim().toLowerCase(),password,role});
+    onSignup({name:name.trim(),email:email.trim().toLowerCase(),password,role,acceptsNews});
   };
   const doForgot=async()=>{
     const target=forgotEmail.trim().toLowerCase();
@@ -1152,6 +1165,12 @@ function RegistrationModal({lang,accounts,onSignup,onLogin,onForgot,authBusy,aut
                   ))}
                 </div>
               </div>
+
+              <label className="flex items-start gap-3 cursor-pointer select-none text-slate-400 text-xs leading-relaxed">
+                <input type="checkbox" checked={acceptsNews} onChange={e=>setAcceptsNewsBox(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-indigo-500 flex-shrink-0"/>
+                <span>{L.newsLabel[lang]}</span>
+              </label>
 
               {authError&&<p className="text-rose-400 text-xs">{authError}</p>}
 
@@ -2918,6 +2937,76 @@ function UserCard({user,lang,onSave}){
 
 
 
+// Interruptor del perfil para aceptar o dejar de recibir novedades de CMD por correo.
+// Es también la forma de darse de baja: el correo de novedades tiene que apuntar acá.
+function NewsToggle({user,lang,onChange}){
+  const [busy,setBusy]=useState(false);
+  const on=user.accepts_news===true;
+  const L={
+    title:{es:'Novedades de CMD por correo',en:'CMD news by email',pt:'Novidades da CMD por e-mail'},
+    on:{es:'Te avisamos de cursos gratis nuevos de CMD. Podés darte de baja cuando quieras.',en:"We'll email you about new free CMD courses. You can unsubscribe anytime.",pt:'Avisamos você sobre novos cursos gratuitos da CMD. Pode cancelar quando quiser.'},
+    off:{es:'No te mandamos nada. Activalo si querés que te avisemos de cursos gratis nuevos de CMD.',en:"We don't email you. Turn it on to hear about new free CMD courses.",pt:'Não enviamos nada. Ative se quiser saber de novos cursos gratuitos da CMD.'},
+  };
+  const toggle=async()=>{if(busy)return;setBusy(true);await onChange(!on);setBusy(false);};
+  return(
+    <button onClick={toggle} disabled={busy} role="switch" aria-checked={on}
+      className="w-full mt-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 flex items-center gap-4 text-left transition-colors disabled:opacity-60">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-slate-200">{L.title[lang]}</div>
+        <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">{on?L.on[lang]:L.off[lang]}</div>
+      </div>
+      <span className={`relative w-10 h-6 rounded-full flex-shrink-0 transition-colors ${on?'bg-indigo-600':'bg-slate-700'}`}>
+        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${on?'left-5':'left-1'}`}/>
+      </span>
+    </button>
+  );
+}
+
+// Cartel del Curso de Emergencia de CMD. Se muestra solo en español porque el curso está
+// en español y pensado para Uruguay. Se puede cerrar (queda guardado en este dispositivo).
+// Es promoción dentro de la propia app, que la política de privacidad permite; para escribir
+// por correo hace falta que la persona acepte, y por eso el cartel ofrece el botón.
+const CMD_COURSE_URL='https://app.coberturamedicad.com/capacitaciones?utm_source=sistole&utm_medium=cartel&utm_campaign=curso-emergencia';
+const CMD_BANNER_KEY='sistole_cmd_banner_emergencia_v1';
+function CmdCourseBanner({user,lang,onAcceptNews}){
+  const [hidden,setHidden]=useState(()=>{try{return localStorage.getItem(CMD_BANNER_KEY)==='closed';}catch(e){return false;}});
+  const [newsState,setNewsState]=useState('idle'); // idle | busy | done | error
+  if(lang!=='es'||hidden) return null;
+  const close=()=>{try{localStorage.setItem(CMD_BANNER_KEY,'closed');}catch(e){}setHidden(true);};
+  const accept=async()=>{
+    setNewsState('busy');
+    const ok=await onAcceptNews(true);
+    setNewsState(ok?'done':'error');
+  };
+  return(
+    <div className="relative mb-6 p-4 sm:p-5 rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-950/40 via-slate-900/60 to-slate-900/60">
+      <button onClick={close} aria-label="Cerrar"
+        className="absolute top-2 right-2 p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors">
+        <X className="w-4 h-4"/>
+      </button>
+      <div className="font-mono text-[10px] text-rose-300/80 uppercase tracking-[0.2em] mb-1">Nuevo · Gratis · de CMD</div>
+      <div className="font-semibold text-slate-100 text-base pr-6">Curso de Emergencia: prehospitalaria y hospitalaria</div>
+      <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+        Del equipo de CMD Cobertura Médica Deportiva, los creadores de Sístole. Manejo en la ambulancia y en puerta de emergencia, con guías vigentes, autoevaluaciones y diploma al terminar.
+      </p>
+      <div className="flex flex-wrap items-center gap-2 mt-3">
+        <a href={CMD_COURSE_URL} target="_blank" rel="noopener noreferrer"
+          className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold transition-colors">
+          Ver el curso gratis →
+        </a>
+        {user&&user.accepts_news!==true&&newsState!=='done'&&(
+          <button onClick={accept} disabled={newsState==='busy'}
+            className="px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-500 text-slate-300 text-sm transition-colors disabled:opacity-60">
+            {newsState==='busy'?'Un momento…':'Avisame de cursos nuevos por correo'}
+          </button>
+        )}
+        {newsState==='done'&&<span className="text-emerald-400 text-sm">Listo, te avisamos por correo. Lo podés apagar en tu perfil.</span>}
+        {newsState==='error'&&<span className="text-rose-400 text-sm">No se pudo guardar. Probá de nuevo.</span>}
+      </div>
+    </div>
+  );
+}
+
 function ErrorReviewPanel({summary,errors,lang,onClear}){
   const [open,setOpen]=useState(false);
   const [confirmClear,setConfirmClear]=useState(false);
@@ -3134,7 +3223,7 @@ function SimStatsPanel({stats,lang}){
   );
 }
 
-function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose,onOpenFeedback}){
+function ProfileModal({onSetAcceptsNews,progress,srData,adaptData,getMastery,getUnlockedTier,errorSummary,errors,onClearErrors,mistakes,onResolveMistake,onClearMistakes,onDrill,user,lang,onSaveUser,onResetAll,onLogout,onClose,onOpenFeedback}){
   const cur=getLevelInfo(progress.xp);
   const nxt=getNextLevel(progress.xp);
   const pct=nxt?Math.round(((progress.xp-cur.min)/(nxt.min-cur.min))*100):100;
@@ -3152,6 +3241,7 @@ function ProfileModal({progress,srData,adaptData,getMastery,getUnlockedTier,erro
         <div className="px-5 sm:px-6 pt-5 pb-16 space-y-6">
           {/* User info card — editable */}
           {user&&<UserCard user={user} lang={lang} onSave={onSaveUser}/>}
+          {user&&onSetAcceptsNews&&<NewsToggle user={user} lang={lang} onChange={onSetAcceptsNews}/>}
 
           {/* Level card */}
           <div className="p-5 rounded-2xl border" style={{borderColor:cur.color+'44',background:cur.color+'0d'}}>
@@ -11221,7 +11311,7 @@ export default function App() {
   const [mode,setMode]=useState('quiz');
   const t=T[lang];
   const audio=useAudio();
-  const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,logoutUser,removeAccount,requestPasswordReset,resetPassword}=useUser();
+  const {user,accounts,authReady,authBusy,authError,setAuthError,signup,login,updateProfile,setAcceptsNews,logoutUser,removeAccount,requestPasswordReset,resetPassword}=useUser();
   const [resetToken,setResetToken]=useState(readResetToken);
   const acctKey=user?normEmail(user.email):'guest';
   const {progress,earnXP,toasts,dismissToast,saveProgress}=useProgress(acctKey);
@@ -11533,6 +11623,8 @@ export default function App() {
           <TabButton active={mode==='reference'} onClick={()=>setMode('reference')} icon={BookOpen}>{t.reference}</TabButton>
           <TabButton active={mode==='cases'} onClick={()=>setMode('cases')} icon={Stethoscope}>{t.cases}</TabButton>
         </div>
+
+        <CmdCourseBanner user={user} lang={lang} onAcceptNews={setAcceptsNews}/>
 
         {/* ══ 12 DERIVACIONES ══ */}
         {mode==='twelve'&&(
@@ -11949,7 +12041,7 @@ export default function App() {
           lang={lang}
           onClose={()=>{setShowSummary(false);sessionStartRef.current={correct:0,total:0,weakest:{}};}}
         />}
-        {showProfile&&<ProfileModal progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetSR12();resetAdapt();resetBag(BAG12_KEY);saveProgress({xp:0,achievements:[],stats:{...DEFAULT_STATS}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
+        {showProfile&&<ProfileModal onSetAcceptsNews={setAcceptsNews} progress={progress} srData={srData} adaptData={adaptData} getMastery={getMastery} getUnlockedTier={getUnlockedTier} errorSummary={errorGroups} errors={errors} onClearErrors={clearErrors} mistakes={mistakes} onResolveMistake={resolveMistake} onClearMistakes={clearMistakes} onDrill={()=>{setShowProfile(false);setMode('quiz');setDrillOnly(true);setReviewOnly(false);newQuestion();}} user={user} lang={lang} onSaveUser={updateProfile} onResetAll={()=>{resetSR();resetSR12();resetAdapt();resetBag(BAG12_KEY);saveProgress({xp:0,achievements:[],stats:{...DEFAULT_STATS}});}} onLogout={logoutAndSync} onClose={()=>setShowProfile(false)} onOpenFeedback={()=>{setShowProfile(false);setShowFeedback(true);}}/>}
         {showFeedback&&<FeedbackModal lang={lang} onClose={()=>setShowFeedback(false)} onSubmit={sendFeedback}/>}
     </div>
   );

@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   // y recién después se abre la nueva, para no borrar la que acabamos de crear.
   await deleteSessionsForUser(userId);
 
-  const [user] = await sql`SELECT id, email, name, role FROM users WHERE id = ${userId}`;
+  const [user] = await sql`SELECT id, email, name, role, accepts_news FROM users WHERE id = ${userId}`;
   const { token: sessionToken, expiresAt } = await createSession(userId);
   setSessionCookie(res, sessionToken, expiresAt);
 
